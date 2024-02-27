@@ -3,6 +3,7 @@
  import { copyToClip } from "@/utils/copy";
  import { localGet, localSaveAny } from "./mjsave";
  import { t } from "@/locales";
+ import { getToken } from "@/store/modules/auth/helper";
 
  export interface gptsType{
      gid:string
@@ -275,6 +276,23 @@
          if(data.bot && data.bot=='NIJI_JOURNEY'){
              toData.botType= data.bot;
          }
+         let headerAi = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() };
+         let opt: RequestInit = { method: 'POST' };
+         let prompt = {prompt:data.drawText};
+         opt.body= JSON.stringify(prompt) ;
+         opt.headers = headerAi;
+
+         // 验证是否是付费用户
+         const response = fetch('/api/mjTask', opt);
+         const movies = JSON.parse(await (await response).text()); 
+         if(movies.code == 500){
+             chat.text='失败！'+"\n```json\n"+movies.msg+"\n```\n";
+             chat.loading=false;
+             homeStore.setMyData({act:'updateChat', actData:chat });
+             console.log("movies======",movies);
+             return
+         }
+
          d=  await mjFetch('/mj/submit/imagine' ,toData );
          mlog('submit',d );
          //return ;

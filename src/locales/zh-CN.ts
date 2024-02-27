@@ -280,6 +280,12 @@ export default {
     ,typing:'正在输入'
 
     ,authErro:'授权失败'
-    ,authBt:'请重新授权'
+    ,authBt:'请重新输入授权访问密码'
+
+    ,micWhisper:'Whisper语音识别'
+    ,micAsr:'即时识别'
+    ,micRec:'开始录音,请说话！2秒内无声音将自动关闭'
+    ,micRecEnd:'录音已结束'
+    
   }
 }

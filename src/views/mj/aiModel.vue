@@ -192,6 +192,6 @@ onMounted(() => {
  <section class=" text-right flex justify-end space-x-2"  >
     <NButton   @click="reSet()">{{ $t('mj.setBtBack') }}</NButton>
     <NButton type="primary" @click="saveChat">{{ $t('mj.setBtSaveChat') }}</NButton>
-    <!-- <NButton type="primary" @click="save">{{ $t('mj.setBtSaveSys') }}</NButton> -->
+    <NButton type="primary" @click="save">{{ $t('mj.setBtSaveSys') }}</NButton>
  </section>
 </template>

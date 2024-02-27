@@ -1,5 +1,6 @@
 <script setup lang='ts'>
   import { NCard,NImage } from 'naive-ui'
+  import defaultAvatar from '@/assets/ageer.png'
 </script>
 
 <template>
@@ -7,7 +8,7 @@
     <div style="text-align:center">
       <span>联系客服</span>
       <br>
-      <n-image style="margin: 20px;" width="150" src="http://43.139.70.230:6553/down/v7929z21iHCh.png"/>
+      <n-image style="margin: 20px;" width="150" :src="defaultAvatar"/>
       <br>
  
     </div>
