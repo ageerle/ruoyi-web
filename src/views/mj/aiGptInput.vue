@@ -82,10 +82,6 @@ funt();
             //  const formData = new FormData( ); 
             // formData.append('file', file);
             // formData.append('model', 'whisper-1'); 
-
-            // GptUploader('/v1/audio/transcriptions',formData).then(r=>{
-            //     mlog('语音识别成功', r ); 
-            // }).catch(e=>ms.error('上传失败:'+ ( e.message?? JSON.stringify(e)) ));
             homeStore.setMyData({act:'gpt.whisper', actData:{ file , prompt:'whisper' } });
             return ;
 

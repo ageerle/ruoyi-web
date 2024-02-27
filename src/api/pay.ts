@@ -1,4 +1,3 @@
-import { post} from '@/utils/request/'
 import request from '@/utils/request/req';
 export interface OrderReq {
 	money:string; // 商品价格
@@ -6,8 +5,9 @@ export interface OrderReq {
 }
 
 export function payUrl(params:OrderReq) {
-	return post({
+	return request({
 		url: '/pay/payUrl',
+		method: 'post',
 		data: params,
 	})
 }

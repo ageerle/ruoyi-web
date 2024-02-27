@@ -125,7 +125,7 @@ export const GptUploader =   ( url:string, FormData:FormData )=>{
 }
 
 export const whisperUpload = ( FormData:FormData )=>{
-    const url = gptGetUrl('/v1/audio/transcriptions');
+    const url = gptGetUrl('/audio');
     let headers=   {'Content-Type': 'multipart/form-data' }
     headers={...headers,...getHeaderAuthorization()}
     return new Promise<any>((resolve, reject) => {
@@ -224,13 +224,10 @@ export const subModel= async (opt: subModelType)=>{
             "messages": opt.message
            ,stream:true
         }
-        //
-
-        let  headers ={
-                'Content-Type': 'application/json'
-                //,'Authorization': 'Bearer ' +gptServerStore.myData.OPENAI_API_KEY
-                ,'Accept': 'text/event-stream '
-        }
+        
+        let headers=   {'Content-Type': 'application/json;charset=UTF-8',
+        'Authorization':'Bearer ' + getToken(),
+        'Accept': 'text/event-stream '}
         headers={...headers,...getHeaderAuthorization()}
 
         try {
@@ -279,7 +276,7 @@ export interface ttsType{
 }
 export const subTTS = async (tts:ttsType )=>{
     if(!tts.voice) tts.voice='alloy';
-    let url= getUrl('/v1/audio/speech');
+    let url= getUrl('/speech');
     let headers=  {
         'Content-Type': 'application/json'
       }
