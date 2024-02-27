@@ -19,12 +19,12 @@
           项目开源于
           <a
             class="text-blue-600 dark:text-blue-500"
-            href="https://gitee.com/ageerle/ruoyi-ai"
+            href="https://github.com/ageerle/ruoyi-ai"
             target="_blank"
           >
-            Gitee
+          Github
           </a>
-          ,如果你觉得此项目对你有帮助,请在Gitee点个Star谢谢！
+          ,如果你觉得此项目对你有帮助,请在Github点个Star谢谢！
         </p>
       </div>
       </template>
