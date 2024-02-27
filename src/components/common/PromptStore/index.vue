@@ -39,7 +39,6 @@ let intervalId: string | number | NodeJS.Timer | undefined;
 async function getPayUrl(money: string, name: string) {
 	showMeVisible.value = true;
 	const response = await payUrl({ money: money, name: name });
-	console.log("response===", response)
 	imageUrl.value = response.data.url;
 	orderMoney.value = money
 	orderName.value = name
@@ -279,7 +278,7 @@ watch(showMeVisible, (newValue, oldValue) => {
 								</template>
 							</n-tag> -->
 						</n-space>
-
+					
 						<template #footer>
 							<div @click="getPayUrl('60', '高级套餐')" class="outer-container">
 									<NButton>
@@ -295,7 +294,7 @@ watch(showMeVisible, (newValue, oldValue) => {
 					justifyContent: center;
 					alignItems: center;">
 						<n-table :bordered="false" :single-line="false">
-
+							
 							<thead>
 							<tr>
 								<th>模型名称(通常1000个Token约等于750个英文单词或者400~500个汉字)</th>
@@ -323,18 +322,18 @@ watch(showMeVisible, (newValue, oldValue) => {
 								<td>gpt-4-1106-preview</td>
 								<td>0.3元/1K tokens</td>
 								<td>最新版GPT-4,相对GPT-3.5更先进、拥有更多的参数和更强大的语言处理能力</td>
-
+								
 							</tr>
 							<tr>
 								<td>gpt-4-1106-vision-preview</td>
 								<td>0.3元/1K tokens</td>
 								<td> GPT-4 的一个包含视觉处理能力的预览版本，结合了视觉信息处理的能力</td>
-							</tr>
+							</tr>	
 							<tr>
 								<td>gpt4all</td>
 								<td>0.3元/次</td>
 								<td>同时拥有联网查询，高级数据分析，画图 DALL.E功能,GPT 会自动识别并调取相关能力工具</td>
-
+								
 							</tr>
 							<tr>
 								<td>gpt-4-gizmo</td>

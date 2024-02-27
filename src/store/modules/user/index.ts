@@ -34,7 +34,7 @@ export const useUserStore = defineStore('user-store', {
       token.value = '';
       removeToken();
     },
-
+   
     updateUserInfo(userInfo: Partial<UserInfo>) {
       this.userInfo = { ...this.userInfo, ...userInfo }
       this.recordState()

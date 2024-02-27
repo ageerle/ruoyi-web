@@ -1,11 +1,9 @@
-
-
 <script setup lang='ts'>
 import type { Ref } from 'vue'
-import { computed, onMounted, onUnmounted, ref,watch,h } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, onMounted, onUnmounted, ref,watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { NAutoComplete, NButton, NInput, useDialog, useMessage,NAvatar } from 'naive-ui'
+import { NAutoComplete, NButton, NInput, useDialog, useMessage } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -14,13 +12,14 @@ import { useUsingContext } from './hooks/useUsingContext'
 import HeaderComponent from './components/Header/index.vue'
 import {  SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { gptConfigStore, gptsUlistStore, homeStore, useChatStore, usePromptStore } from '@/store'
-import { chatSetting, fetchChatAPIProcess, gptsType, mlog, myFetch } from '@/api'
+import { gptConfigStore, homeStore, useChatStore, usePromptStore } from '@/store'
+import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
 import drawListVue from '../mj/drawList.vue'
 import aiGPT from '../mj/aiGpt.vue'
 import AiSiderInput from '../mj/aiSiderInput.vue'
 import aiGptInput from '../mj/aiGptInput.vue'
+import { router } from '@/router'
 
 let controller = new AbortController()
 
@@ -29,7 +28,7 @@ const openLongReply = import.meta.env.VITE_GLOB_OPEN_LONG_REPLY === 'true'
 const route = useRoute()
 const dialog = useDialog()
 const ms = useMessage()
-const router = useRouter()
+
 const chatStore = useChatStore()
 
 const { isMobile } = useBasicLayout()
@@ -58,14 +57,17 @@ dataSources.value.forEach((item, index) => {
     updateChatSome(+uuid, index, { loading: false })
 })
 
+
 function handleSubmit() {
+  alert("进来了")
   //onConversation() //把这个放到aiGpt
   let message = prompt.value;
   if (!message || message.trim() === '')
     return
    if (loading.value) return;
+  
    loading.value = true
-  homeStore.setMyData({act:'gpt.submit', actData:{ prompt:prompt.value, uuid } });
+   homeStore.setMyData({act:'gpt.submit', actData:{ prompt:prompt.value, uuid } });
    prompt.value='';
 }
 
@@ -427,61 +429,20 @@ function handleStop() {
 // 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
 const searchOptions = computed(() => {
   if (prompt.value.startsWith('/')) {
-    const abc= promptTemplate.value.filter((item: { key: string }) => item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
+    return promptTemplate.value.filter((item: { key: string }) => item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
       return {
         label: obj.value,
         value: obj.value,
       }
     })
-    mlog('搜索选项', abc);
-    return abc;
-  }else if(prompt.value=='@'){
-    const abc=  gptsUlistStore.myData.slice(0,10).map( (v:gptsType) => {
-      return {
-        label:v.info,
-        gpts:v,
-        value:v.gid
-      }
-    })
-   return abc ;
-  }else {
+  }
+  else {
     return []
   }
 })
 
-const goUseGpts= async ( item: gptsType)=>{
-    const saveObj= {model:  `${ item.gid }`   ,gpts:item}
-    gptConfigStore.setMyData(saveObj); 
-    if(chatStore.active){ //保存到对话框
-        const  chatSet = new chatSetting( chatStore.active );
-        if( chatSet.findIndex()>-1 ) chatSet.save( saveObj )
-    }
-    ms.success(t('mjchat.success2'));
-    const gptUrl= `https://gpts.ddaiai.com/open/gptsapi/use`; 
-    myFetch(gptUrl,item );
-     
-    mlog('go local ', homeStore.myData.local );
-    if(homeStore.myData.local!=='Chat') router.replace({name:'Chat',params:{uuid:chatStore.active}});
-
-    gptsUlistStore.setMyData( item );
-
-}
-
 // value反渲染key
-const renderOption = (option: { label: string,gpts?:gptsType }) => {
-  if( prompt.value=='@'){
-    //return [ h( NAvatar,{src:'https://cos.aitutu.cc/gpts/gpt4all.jpg',size:"small",round:true}),option.label ]
-    return [h("div",{class:'flex justify-start items-center'
-    , onclick:()=>{  
-      if(option.gpts)   goUseGpts(option.gpts) ;
-      prompt.value='';
-      setTimeout(() =>  prompt.value='', 80);
-    }}
-    ,[h(NAvatar,{src:option.gpts?.logo, "fallback-src" : 'https://cos.aitutu.cc/gpts/3.5net.png',size:"small",round:true, class:"w-8 h-8"})
-    , h('span', { class: 'pl-1' }, option.gpts?.name  ) 
-    , h('span', { class: 'line-clamp-1 flex-1 pl-1 opacity-50' }, option.label  ) 
-    ])]
-  }
+const renderOption = (option: { label: string }) => {
   for (const i of promptTemplate.value) {
     if (i.value === option.label)
       return [i.key]
@@ -502,7 +463,7 @@ const buttonDisabled = computed(() => {
 const footerClass = computed(() => {
   let classes = ['p-4']
   if (isMobile.value)
-    classes = ['sticky', 'left-0', 'bottom-0', 'right-0', 'p-2', 'pr-3'] //, 'overflow-hidden'
+    classes = ['sticky', 'left-0', 'bottom-0', 'right-0', 'p-2', 'pr-3', 'overflow-hidden']
   return classes
 })
 
@@ -524,20 +485,10 @@ watch(()=>homeStore.myData.act,(n)=>{
     if(n=='scrollToBottom') scrollToBottom();
     if(n=='scrollToBottomIfAtBottom') scrollToBottomIfAtBottom();
     if(n=='gpt.submit' || n=='gpt.resubmit'){ loading.value = true;}
-    if(n=='stopLoading'){ loading.value = false;}
 });
 const st =ref({inputme:true});
 
 watch( ()=>loading.value ,(n)=> homeStore.setMyData({isLoader:n }))
-
-const ychat = computed( ()=>{
-  let text= prompt.value
-  if (loading.value) text= "";
-  else {
-    scrollToBottomIfAtBottom();
-  }
-  return { text, dateTime: t('chat.preview')} as Chat.Chat;
-}) 
 </script>
 
 <template>
@@ -577,13 +528,6 @@ const ychat = computed( ()=>{
                 @delete="handleDelete(index)"
                 :chat="item"
                 :index="index"
-              />
-              <Message  v-if="ychat.text && !homeStore.myData.session.isCloseMdPreview"
-              :key="dataSources.length" :inversion="true"
-              :date-time="$t('mj.typing')"
-              :chat="ychat"
-              :text="ychat.text"
-              :index="dataSources.length"
               />
               <div class="sticky bottom-0 left-0 flex justify-center">
                 <NButton v-if="loading" type="warning" @click="handleStop">
@@ -645,9 +589,9 @@ const ychat = computed( ()=>{
               </span>
             </template>
           </NButton>
-
         </div>
       </div>
+
     </footer>
   </div>
 

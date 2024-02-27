@@ -6,6 +6,7 @@ import { isString } from '@/utils/is'
 import { removeToken } from '@/store/modules/auth/helper'
 import { useRouter } from 'vue-router'
 import { loginOut,getUserInfo} from '@/api/user'
+import { UserData } from "@/typings/user"
 import { defaultSetting,UserInfo } from '@/store/modules/user/helper'
 import to from "await-to-js";
 
@@ -20,16 +21,16 @@ onMounted(() => { getLoginUserInfo() });
  */
 
 async function getLoginUserInfo() {
-  const [err, newUserInfo] = await to(getUserInfo());
+  const [err, newUserInfo] = await to(getUserInfo<UserData>());
       if (err) {
         message.error(err.toString())
       }
-  if(newUserInfo){
+  if(newUserInfo){ 
     userInfo.value.avatar = newUserInfo.data.user.avatar;
     userInfo.value.name = newUserInfo.data.user.nickName;
     userInfo.value.userBalance = newUserInfo.data.user.userBalance;
-  }
-}
+  } 
+}  
 
 /**
  * 退出登录

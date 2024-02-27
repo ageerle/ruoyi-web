@@ -94,12 +94,12 @@ export default {
     downloadError: '请检查网络状态与 JSON 文件有效性',
   },
 
-
+  
   mjset:{
     server:'服务端'
     ,about:'关于'
     ,model:'模型'
-    ,sysname:'熊猫助手'
+    ,sysname:'AI绘图'
   }
 
   ,mjtab:{
@@ -124,7 +124,7 @@ export default {
     ,draw:'绘图'
     ,submiting:'提交中'
     ,submit:'提交'
-    ,wait3:'请勿关闭! 图片生成中...'
+    ,wait3:'请勿关闭! 图片生成中...' 
     ,success:'保存成功'
     ,successTitle:'成功'
     ,modlePlaceholder:'自定义模型多个用空格隔开，不是必须'
@@ -192,7 +192,7 @@ export default {
     ,setMj:'Midjourney 相关'
     ,setMjUrl:'Midjourney接口地址:'
     ,setMjKeyPlaceholder:'使用自定义 Api Secret 绕过密码访问限制'
-    ,setUploader:'上传相关'
+    ,setUploader:'上传相关' 
     ,setUploaderUrl:'上传地址:'
     ,setBtSave:'保存'
     ,setBtBack:'恢复默认'
@@ -206,7 +206,7 @@ export default {
     ,p15:'变焦1.5倍'
     ,p20:'变焦2倍'
     ,p100:'方正'
-
+    
     ,retry:'重分析'
     ,pan_left:'向左'
     ,pan_right:'向右'
@@ -214,7 +214,7 @@ export default {
     ,pan_down:'向下'
     ,up2:'高清2倍'
     ,up4:'高清4倍',
-
+    
     thinking:'思考中...'
     ,noReUpload:'不能重复上传'
     ,uploading:'上传中...'
@@ -222,21 +222,21 @@ export default {
     ,uploadFail:'上传失败:'
     ,upPdf:'<span>上传图片、附件<br/>能上传图片、PDF、EXCEL等文档</span><p>支持拖拽</p>'
     ,upImg:'<span><b>上传图片</b><br/>会自动调用 gpt-4-vision-preview 模型<br>注意：会有额外的图片费用<br/>格式: jpeg jpg png gif</span><p>支持拖拽</p> <p class="pt-2"><b>上传MP3 MP4</b> <br>会自动直接调用 whisper-1 模型<br>格式有：mp3 mp4 mpeg mpga m4a wav webm</p>'
-    ,clearAll:'清参数'
+    ,clearAll:'清参数'  
     ,czoom:'自定义'
     ,customTitle:'自定义变焦'
     ,zoominfo:'修改zoom值,范围在 1.0~2.0 默认设置为1.8',
-
+    
     modleSuccess:'模型加载成功'
     ,setingSuccess:'设置成功'
 
     ,tokenInfo1:'剩余Tokens = 模型长度 - 角色设定 - 上下文(会话历史) - 回复数 - 当前输入'
     ,tokenInfo2:'角色设定留空，系统会给一个默认的'
     ,noSuppertModel:'刷新，暂不支持此模型！'
-    ,failOcr:'识别失败'
-    ,remain:'剩:'
-
-    ,totalUsage:'订阅总额'
+    ,failOcr:'识别失败' 
+    ,remain:'剩:' 
+    
+    ,totalUsage:'订阅总额' 
     ,disableGpt4:'已禁用GPT4'
     ,setTextInfo:'OpenAi Api Key 错误，点击这里重新'
 
@@ -261,7 +261,7 @@ export default {
     ,findVersion:'发现更新版本'
     ,yesLastVersion:'已是最新版本'
     ,infoStar:'此项目开源于 <a  class="text-blue-600 dark:text-blue-500" href="https://github.com/Dooy/chatgpt-web-midjourney-proxy" target="_blank"> GitHub </a>，免费且基于 MIT 协议，没有任何形式的付费行为！ </p><p>如果你觉得此项目对你有帮助，请在 GitHub 帮我点个 Star，谢谢！'
-    ,setBtSaveChat:'保存至会话'
+    ,setBtSaveChat:'仅保存会话'
     ,setBtSaveSys: '保存至系统'
 
     ,wsrvClose:'关闭 wsrv'
@@ -280,12 +280,6 @@ export default {
     ,typing:'正在输入'
 
     ,authErro:'授权失败'
-    ,authBt:'请重新输入授权访问密码'
-
-    ,micWhisper:'Whisper语音识别'
-    ,micAsr:'即时识别'
-    ,micRec:'开始录音,请说话！2秒内无声音将自动关闭'
-    ,micRecEnd:'录音已结束'
-
+    ,authBt:'请重新授权'
   }
 }

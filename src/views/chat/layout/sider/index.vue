@@ -82,7 +82,7 @@ watch(
     :width="260"
     :show-trigger="isMobile ? false : 'arrow-circle'"
     collapse-mode="transform"
-
+    
     bordered
     :style="getMobileClass"
     @update-collapsed="handleUpdateCollapsed"

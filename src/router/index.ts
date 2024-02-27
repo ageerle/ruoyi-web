@@ -81,7 +81,7 @@ const routes: RouteRecordRaw[] = [
     name: 'resetpassword',
     component: () => import('@/views/resetpassword/index.vue'),
   },
-
+  
   {
     path: '/500',
     name: '500',

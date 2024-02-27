@@ -33,7 +33,7 @@ const getUrl=(url:string)=>{
 export const gptGetUrl = getUrl
 export const gptFetch=(url:string,data?:any,opt2?:any )=>{
     mlog('gptFetch', url  );
-    let headers= {'Content-Type':'application/json','Authorization':'Bearer ' + getToken()}
+    let headers= {'Content-Type':'application/json'}
     if(opt2 && opt2.headers ) headers= opt2.headers;
 
     headers={...headers,...getHeaderAuthorization()}
@@ -60,7 +60,7 @@ function uploadR2(file: File) {
 	return new Promise<any>((resolve, reject) => {
 			//预签名
 			axios.post(gptGetUrl("/pre_signed"), { file_name: file.name, content_type: file.type }, {
-					headers: { 'Content-Type': 'application/json' }
+					headers: {'Content-Type':'application/json','Authorization':'Bearer ' + getToken()}
 			}).then(response => {
 							if (response.data.status == "Success") {
 									const signedUrl = response.data.data.up;
@@ -125,7 +125,7 @@ export const GptUploader =   ( url:string, FormData:FormData )=>{
 }
 
 export const whisperUpload = ( FormData:FormData )=>{
-    const url = gptGetUrl('/audio');
+    const url = gptGetUrl('/v1/audio/transcriptions');
     let headers=   {'Content-Type': 'multipart/form-data' }
     headers={...headers,...getHeaderAuthorization()}
     return new Promise<any>((resolve, reject) => {
@@ -143,7 +143,7 @@ export const subGPT= async (data:any, chat:Chat.Chat )=>{
    if(  action=='gpt.dall-e-3' ){ //执行变化
        // chat.model= 'dall-e-3';
 
-       let d= await gptFetch('/dall3', data.data);
+       let d= await gptFetch('/v1/images/generations', data.data);
        try{
             const rz : any= d.data[0];
             chat.text= rz.revised_prompt??`图片已完成`;
@@ -224,11 +224,15 @@ export const subModel= async (opt: subModelType)=>{
             "messages": opt.message
            ,stream:true
         }
+        //
 
-        let headers=   {'Content-Type': 'application/json;charset=UTF-8',
-                        'Authorization':'Bearer ' + getToken(),
-                        'Accept': 'text/event-stream '}
+        let  headers ={
+                'Content-Type': 'application/json'
+                //,'Authorization': 'Bearer ' +gptServerStore.myData.OPENAI_API_KEY
+                ,'Accept': 'text/event-stream '
+        }
         headers={...headers,...getHeaderAuthorization()}
+
         try {
          await fetchSSE( gptGetUrl('/chat'),{
             method: 'POST',
@@ -275,7 +279,7 @@ export interface ttsType{
 }
 export const subTTS = async (tts:ttsType )=>{
     if(!tts.voice) tts.voice='alloy';
-    let url= getUrl('/speech');
+    let url= getUrl('/v1/audio/speech');
     let headers=  {
         'Content-Type': 'application/json'
       }
@@ -359,9 +363,9 @@ export const openaiSetting= ( q:any )=>{
             gptServerStore.setMyData(  {OPENAI_API_BASE_URL:url, MJ_SERVER:url, OPENAI_API_KEY:key,MJ_API_SECRET:key } )
             blurClean();
             gptServerStore.setMyData( gptServerStore.myData );
-
+            
         } catch (error) {
-
+            
         }
     }
     else if(isObject(q)){
@@ -401,7 +405,7 @@ export const countTokens= async ( dataSources:Chat.Chat[], input:string ,uuid:nu
     const msg= await getHistoryMessage(  dataSources,1 ) ;
     rz.history= msg.length==0?0: encodeChat(msg, model.indexOf('gpt-4')>-1? 'gpt-4':'gpt-3.5-turbo').length
     //
-    rz.remain = unit *max- rz.history- rz.planOuter- rz.input- rz.system;
+    rz.remain = unit *max- rz.history- rz.planOuter- rz.input- rz.system; 
 
     return rz ;
 }
@@ -416,12 +420,12 @@ const getModelMax=( model:string )=>{
         return 32;
     }else if( model.indexOf('64k')>-1  ){
         return 64;
-    }else if( model.indexOf('128k')>-1
-    || model=='gpt-4-1106-preview'
-    || model=='gpt-4-0125-preview'
+    }else if( model.indexOf('128k')>-1 
+    || model=='gpt-4-1106-preview' 
+    || model=='gpt-4-0125-preview' 
     || model=='gpt-4-vision-preview' ){
-        return 128;
-    }else if( model.indexOf('gpt-4')>-1  ){
+        return 128; 
+    }else if( model.indexOf('gpt-4')>-1  ){  
         max=8;
     }
 

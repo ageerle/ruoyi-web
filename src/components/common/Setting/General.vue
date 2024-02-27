@@ -80,7 +80,7 @@ async function getLoginUserInfo() {
   if (err) {
         message.error(err.toString())
   }
-  if(newUserInfo){
+  if(newUserInfo){ 
     userBalance.value = newUserInfo.data.user.userBalance
     fileList.value[0].url = newUserInfo.data.user.avatar
     userGrade.value = newUserInfo.data.user.userGrade
@@ -117,8 +117,8 @@ function handleFinish({
     <div class="space-y-6">
       <div class="flex items-center space-x-4">
         <span class="flex-shrink-0 w-[100px]">头像</span>
-        <n-upload action="/api/system/user/edit/avatar"
-          :max=1
+        <n-upload action="/api/system/user/edit/avatar" 
+          :max=1 
           list-type="image-card"
           :default-file-list="fileList"
           :headers="headers" @finish="handleFinish">

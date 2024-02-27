@@ -23,15 +23,6 @@ export function useLanguage() {
       case 'zh-TW':
         setLocale('zh-TW')
         return zhTW
-      case 'vi-VN':
-        setLocale('vi-VN')
-        return zhTW
-      case 'fr-FR':
-        setLocale('fr-FR')
-        return enUS
-      case 'tr-TR':
-        setLocale('tr-TR')
-        return enUS  
       default:
         setLocale('zh-CN')
         return zhCN

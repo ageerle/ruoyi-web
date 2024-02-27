@@ -1,18 +1,18 @@
 import axios, { type AxiosResponse } from 'axios'
-import { useAuthStore } from '@/store'
+import { getToken } from '@/store/modules/auth/helper'
 
 const service = axios.create({
   baseURL: import.meta.env.VITE_GLOB_API_URL,
 })
 
 service.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore().token
+  (config: { headers: { Authorization: string } }) => {
+    const token = getToken()
     if (token)
       config.headers.Authorization = `Bearer ${token}`
     return config
   },
-  (error) => {
+  (error: { response: any }) => {
     return Promise.reject(error.response)
   },
 )
@@ -24,7 +24,7 @@ service.interceptors.response.use(
 
     throw new Error(response.status.toString())
   },
-  (error) => {
+  (error: any) => {
     return Promise.reject(error)
   },
 )

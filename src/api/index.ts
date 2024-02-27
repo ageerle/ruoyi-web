@@ -73,5 +73,4 @@ export * from "./units"
 export * from "./mic"
 export * from "./chat"
 export * from "./sse/fetchsse"
-export * from "./Recognition"
 

@@ -10,7 +10,7 @@ export function setupPageGuard(router: Router) {
           next({ path: '/' });
         }else{
           next();
-        }
+        } 
     } else {
       if (whiteList.indexOf(to.path) !== -1) {
         next();
