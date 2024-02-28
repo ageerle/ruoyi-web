@@ -143,7 +143,7 @@ export const subGPT= async (data:any, chat:Chat.Chat )=>{
    if(  action=='gpt.dall-e-3' ){ //执行变化
        // chat.model= 'dall-e-3';
 
-       let d= await gptFetch('/v1/images/generations', data.data);
+       let d= await gptFetch('/dell3', data.data);
        try{
             const rz : any= d.data[0];
             chat.text= rz.revised_prompt??`图片已完成`;
@@ -237,11 +237,12 @@ export const subModel= async (opt: subModelType)=>{
             signal:opt.signal,
             onMessage: async (data:string)=> {
                  //mlog('🐞测试'  ,  data )  ;
-                 if(data=='[DONE]') opt.onMessage({text:'',isFinish:true})
-                 else {
+                 try{
                     const obj= JSON.parse(data );
                     opt.onMessage({text:obj.choices[0].delta?.content??'' ,isFinish:obj.choices[0].finish_reason!=null })
-                 }
+                }catch{
+                    opt.onMessage({text:data,isFinish:true})    
+                }
             },
             onError(e ){
                 //console.log('eee>>', e )

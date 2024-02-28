@@ -14,7 +14,7 @@ const chatSet = new chatSetting( uuid==null?1002:uuid);
 const nGptStore = ref(  chatSet.getGptConfig() );
 
 const config = ref({
-model:['gpt-3.5-turbo','gpt-3.5-turbo-0125','gpt-4-0125-preview','gpt-4-all']
+model:['gpt-3.5-turbo','gpt-4-0125-preview','gpt-4-all']
 ,maxToken:2048
 }); 
 const st= ref({openMore:false });

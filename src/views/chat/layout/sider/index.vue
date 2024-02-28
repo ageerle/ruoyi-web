@@ -100,7 +100,7 @@ watch(
         <div class="flex items-center p-4 space-x-4">
           <div class="flex-1">
             <NButton block @click="show = true">
-              进入市场选购您的商品
+              {{ $t('store.siderButton') }}
             </NButton>
           </div>
           <NButton @click="handleClearAll">
@@ -108,11 +108,11 @@ watch(
           </NButton>
         </div>
       </main>
-      <Footer></Footer>
+      <Footer />
     </div>
   </NLayoutSider>
   <template v-if="isMobile">
     <div v-show="!collapsed" class="fixed inset-0 z-40 w-full h-full bg-black/40" @click="handleUpdateCollapsed" />
   </template>
-  <PromptStore v-model:visible="show" ></PromptStore>
+  <PromptStore v-model:visible="show" />
 </template>
