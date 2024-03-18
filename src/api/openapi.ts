@@ -126,7 +126,7 @@ export const GptUploader =   ( url:string, FormData:FormData )=>{
 
 export const whisperUpload = ( FormData:FormData )=>{
     const url = gptGetUrl('/audio');
-    let headers=   {'Content-Type': 'multipart/form-data' }
+    let headers=   {'Content-Type': 'multipart/form-data','Authorization':'Bearer ' + getToken()}
     headers={...headers,...getHeaderAuthorization()}
     return new Promise<any>((resolve, reject) => {
             axios.post( url , FormData, {
@@ -143,7 +143,7 @@ export const subGPT= async (data:any, chat:Chat.Chat )=>{
    if(  action=='gpt.dall-e-3' ){ //执行变化
        // chat.model= 'dall-e-3';
 
-       let d= await gptFetch('/dell3', data.data);
+       let d= await gptFetch('/dall3', data.data);
        try{
             const rz : any= d.data[0];
             chat.text= rz.revised_prompt??`图片已完成`;
