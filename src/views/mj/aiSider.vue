@@ -62,6 +62,7 @@ const chatId= computed(()=>chatStore.active??'1002' );
             </a>
 
 
+
             <a :href="`#/draw/${chatId}`" @click="st.active='draw'" class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
                 <n-tooltip placement="right" trigger="hover">
                   <template #trigger> 
@@ -74,8 +75,6 @@ const chatId= computed(()=>chatStore.active??'1002' );
                 </n-tooltip>
             </a>
 
-
-
              <a   @click="homeStore.setMyData({act:'gallery'}) " class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
                 <n-tooltip placement="right" trigger="hover">
                   <template #trigger> 
@@ -87,7 +86,6 @@ const chatId= computed(()=>chatStore.active??'1002' );
                     {{ $t('mjtab.galleryInfo') }}
                 </n-tooltip>
             </a>
-
 
             <!-- <section  class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]"
              >

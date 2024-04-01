@@ -21,6 +21,8 @@ export const KnowledgeCutOffDate: Record<string, string> = {
   "gpt-4-1106-preview": "2023-04",
   "gpt-4-0125-preview": "2023-04",
   "gpt-4-vision-preview": "2023-04",
+  "claude-3-opus-20240229": "2023-08",
+  "claude-3-sonnet-20240229": "2023-08",
 };
 
 const getUrl=(url:string)=>{
@@ -33,7 +35,7 @@ const getUrl=(url:string)=>{
 export const gptGetUrl = getUrl
 export const gptFetch=(url:string,data?:any,opt2?:any )=>{
     mlog('gptFetch', url  );
-    let headers= {'Content-Type':'application/json'}
+    let headers= {'Content-Type':'application/json','Authorization':'Bearer ' + getToken()}
     if(opt2 && opt2.headers ) headers= opt2.headers;
 
     headers={...headers,...getHeaderAuthorization()}
@@ -60,7 +62,7 @@ function uploadR2(file: File) {
 	return new Promise<any>((resolve, reject) => {
 			//预签名
 			axios.post(gptGetUrl("/pre_signed"), { file_name: file.name, content_type: file.type }, {
-					headers: {'Content-Type':'application/json','Authorization':'Bearer ' + getToken()}
+					headers: { 'Content-Type': 'application/json' }
 			}).then(response => {
 							if (response.data.status == "Success") {
 									const signedUrl = response.data.data.up;
@@ -90,38 +92,74 @@ function uploadR2(file: File) {
 	});
 }
 
-export const GptUploader =   ( url:string, FormData:FormData )=>{
-	 if(homeStore.myData.session.isUploadR2){
-			const file = FormData.get('file') as File;
-			return uploadR2(file);
-	 }
+export const GptUploader =   ( _url :string, FormData:FormData )=>{
 
-    // if(gptServerStore.myData.OPENAI_API_BASE_URL){
-    //     return `${ gptServerStore.myData.OPENAI_API_BASE_URL}${url}`;
-    // }
-    url= gptServerStore.myData.UPLOADER_URL? gptServerStore.myData.UPLOADER_URL :  gptGetUrl( url );
+    //R2上传
+    const upLoaderR2= ()=>{
+        const file = FormData.get('file') as File;
+		return uploadR2(file);
+    }
+
+    //执行上传
+    const uploadNomalDo = (url:string, headers:any)=>{
+        return new Promise<any>((resolve, reject) => {
+                axios.post( url , FormData, {
+                headers
+            }).then(response =>  resolve(response.data )
+            ).catch(error =>reject(error)  );
+        })
+    }
+
+    //除R2外默认流程
+    const uploadNomal= (url:string)=>{
+        url= gptServerStore.myData.UPLOADER_URL? gptServerStore.myData.UPLOADER_URL :  gptGetUrl( url );
+        let headers=   {'Content-Type': 'multipart/form-data' }
+        if(gptServerStore.myData.OPENAI_API_BASE_URL && url.indexOf(gptServerStore.myData.OPENAI_API_BASE_URL)>-1  ) {
+            headers={...headers,...getHeaderAuthorization()}
+
+        }else{
+            const authStore = useAuthStore()
+            if( authStore.token ) {
+                const  header2={ 'x-ptoken':  authStore.token };
+                headers= {...headers, ...header2}
+            }
+        }
+        return  uploadNomalDo(url,headers );
+
+    }
+
+    //处理上传流程
+    const uploadType=   ( (homeStore.myData.session.uploadType??'') as string).toLocaleLowerCase() ;
     let headers=   {'Content-Type': 'multipart/form-data' }
-    //
-
-
-
-    if(gptServerStore.myData.OPENAI_API_BASE_URL && url.indexOf(gptServerStore.myData.OPENAI_API_BASE_URL)>-1  ) {
-        headers={...headers,...getHeaderAuthorization()}
-        //mlog("headers", headers );
-    }else{
+    //R2
+    if(uploadType=='r2' ){
+        return upLoaderR2();
+    //容器
+    }else if( uploadType=='container' ) {
          const authStore = useAuthStore()
         if( authStore.token ) {
             const  header2={ 'x-ptoken':  authStore.token };
             headers= {...headers, ...header2}
         }
-    }
-    return new Promise<any>((resolve, reject) => {
-            axios.post( url , FormData, {
-            headers
-        }).then(response =>  resolve(response.data )
-        ).catch(error =>reject(error)  );
-    })
+        let url= `/openapi${_url}`
+        return  uploadNomalDo(url,headers );
 
+    //前端API
+    }else if( uploadType=='api' ) {
+        headers={...headers,...getHeaderAuthorization()}
+        let url= `${ gptServerStore.myData.OPENAI_API_BASE_URL}${_url}`
+        return  uploadNomalDo(url,headers );
+
+    //自定义链接
+    }else if( uploadType=='myurl' ) {
+        return  uploadNomalDo(_url,headers );
+    }
+
+    //默认上传流程
+    if(homeStore.myData.session.isUploadR2){
+    return upLoaderR2();
+    }
+    return uploadNomal( _url);
 }
 
 export const whisperUpload = ( FormData:FormData )=>{
@@ -161,7 +199,9 @@ export const subGPT= async (data:any, chat:Chat.Chat )=>{
 }
 
 interface subModelType{
+    kid: string;
     message:any[]
+    imageContent:any[]
     onMessage:(d:{text:string,isFinish:boolean})=>void
     onError?:(d?:any)=>void
     signal?:AbortSignal
@@ -169,13 +209,13 @@ interface subModelType{
     uuid?:string|number
 }
 function getHeaderAuthorization(){
-    if(!gptServerStore.myData.OPENAI_API_KEY){
-        const authStore = useAuthStore()
-        if( authStore.token ) return { 'x-ptoken':  authStore.token };
-        return {}
-    }
+    // if(!gptServerStore.myData.OPENAI_API_KEY){
+    //     const authStore = useAuthStore()
+    //     if( authStore.token ) return { 'x-ptoken':  authStore.token };
+    //     return {}
+    // }
     return {
-        'Authorization': 'Bearer ' +gptServerStore.myData.OPENAI_API_KEY
+        'Authorization': 'Bearer ' + getToken()
     }
 }
 
@@ -188,7 +228,9 @@ export const getSystemMessage = (uuid?:number )=>{
     }
     if(  sysTem ) return sysTem;
     let model= gptConfigStore.myData.model?gptConfigStore.myData.model: "gpt-3.5-turbo";
-      const DEFAULT_SYSTEM_TEMPLATE = `You are ChatGPT, a large language model trained by OpenAI.
+    let producer= 'You are ChatGPT, a large language model trained by OpenAI.'
+    if(model.includes('claude-3')) producer=  'You are Claude, a large language model trained by Anthropic.';
+      const DEFAULT_SYSTEM_TEMPLATE = `${producer}
 Knowledge cutoff: ${KnowledgeCutOffDate[model]}
 Current model: ${model}
 Current time: ${ new Date().toLocaleString()}
@@ -221,28 +263,41 @@ export const subModel= async (opt: subModelType)=>{
             temperature,
             top_p,
             presence_penalty ,frequency_penalty,
-            "messages": opt.message
+            "messages": opt.message,
+            "imageContent": opt.imageContent
            ,stream:true
+           ,kid:gptConfigStore.myData.kid
         }
-        
-        let headers=   {'Content-Type': 'application/json;charset=UTF-8',
-        'Authorization':'Bearer ' + getToken(),
-        'Accept': 'text/event-stream '}
-        headers={...headers,...getHeaderAuthorization()}
 
+        let headers=   {'Content-Type': 'application/json;charset=UTF-8',
+                        'Authorization':'Bearer ' + getToken(),
+                        'Accept': 'text/event-stream '}
+        headers={...headers,...getHeaderAuthorization()}
         try {
-         await fetchSSE( gptGetUrl('/chat'),{
+            let url = "/chat"
+            // 如果选择了数据库 切换地址
+            if(gptConfigStore.myData.kid){
+                url = "/knowledge/chat"
+            }
+         await fetchSSE( gptGetUrl(url),{
             method: 'POST',
             headers: headers,
             signal:opt.signal,
             onMessage: async (data:string)=> {
                  //mlog('🐞测试'  ,  data )  ;
-                 try{
-                    const obj= JSON.parse(data );
-                    opt.onMessage({text:obj.choices[0].delta?.content??'' ,isFinish:obj.choices[0].finish_reason!=null })
-                }catch{
-                    opt.onMessage({text:data,isFinish:true})    
-                }
+                 if(data=='[DONE]') opt.onMessage({text:'',isFinish:true})
+                 else {
+                    try{
+                        const obj= JSON.parse(data );
+                        opt.onMessage({text:obj.choices[0].delta?.content??'' ,isFinish:obj.choices[0].finish_reason!=null })
+                    }catch{
+                        opt.onMessage({
+                            text: data,
+                            isFinish: false
+                        });
+                    }
+                 
+                 }
             },
             onError(e ){
                 //console.log('eee>>', e )
@@ -361,9 +416,9 @@ export const openaiSetting= ( q:any )=>{
             gptServerStore.setMyData(  {OPENAI_API_BASE_URL:url, MJ_SERVER:url, OPENAI_API_KEY:key,MJ_API_SECRET:key } )
             blurClean();
             gptServerStore.setMyData( gptServerStore.myData );
-            
+
         } catch (error) {
-            
+
         }
     }
     else if(isObject(q)){
@@ -403,7 +458,7 @@ export const countTokens= async ( dataSources:Chat.Chat[], input:string ,uuid:nu
     const msg= await getHistoryMessage(  dataSources,1 ) ;
     rz.history= msg.length==0?0: encodeChat(msg, model.indexOf('gpt-4')>-1? 'gpt-4':'gpt-3.5-turbo').length
     //
-    rz.remain = unit *max- rz.history- rz.planOuter- rz.input- rz.system; 
+    rz.remain = unit *max- rz.history- rz.planOuter- rz.input- rz.system;
 
     return rz ;
 }
@@ -418,13 +473,17 @@ const getModelMax=( model:string )=>{
         return 32;
     }else if( model.indexOf('64k')>-1  ){
         return 64;
-    }else if( model.indexOf('128k')>-1 
-    || model=='gpt-4-1106-preview' 
-    || model=='gpt-4-0125-preview' 
+    }else if( model.indexOf('128k')>-1
+    || model=='gpt-4-1106-preview'
+    || model=='gpt-4-0125-preview'
     || model=='gpt-4-vision-preview' ){
-        return 128; 
-    }else if( model.indexOf('gpt-4')>-1  ){  
+        return 128;
+    }else if( model.indexOf('gpt-4')>-1  ){
         max=8;
+    }else if( model.toLowerCase().includes('claude-3') ){
+        //options.maxModelTokens = 120*1024;
+        //options.maxResponseTokens = 4096
+        return 120;
     }
 
     return max;

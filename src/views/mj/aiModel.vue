@@ -14,13 +14,13 @@ const chatSet = new chatSetting( uuid==null?1002:uuid);
 const nGptStore = ref(  chatSet.getGptConfig() );
 
 const config = ref({
-model:['gpt-3.5-turbo','gpt-4-0125-preview','gpt-4-all']
+model:[ 'gpt-4-0125-preview','gpt-3.5-turbo','gpt-4-all','claude-3-sonnet-20240229','stable-diffusion','suno-v3']
 ,maxToken:2048
-}); 
+});
 const st= ref({openMore:false });
 const voiceList= computed(()=>{
     let rz=[];
-    for(let o of "alloy,echo,fable,onyx,nova,shimmer".split(/[ ,]+/ig))rz.push({label:o,value:o}) 
+    for(let o of "alloy,echo,fable,onyx,nova,shimmer".split(/[ ,]+/ig))rz.push({label:o,value:o})
     return rz;
 });
 const modellist = computed(() => { //
@@ -60,20 +60,16 @@ const modellist = computed(() => { //
     return uniqueArray ;
 });
 const ms= useMessage();
-const save = ()=>{ 
-    gptConfigStore.setMyData( nGptStore.value );
-    ms.success( t('common.saveSuccess')); //'保存成功'
-    emit('close');
-}
-const saveChat=()=>{
+
+const saveChat=(type:string)=>{
      chatSet.save(  nGptStore.value );
-     homeStore.setMyData({act:'saveChat'});
-     //gptConfigStore.setInit(); //恢复下默认
-     //gptConfigStore.myData.systemMessage= '';
-     ms.success( t('common.saveSuccess'));
+     gptConfigStore.setMyData( nGptStore.value );
+     homeStore.setMyData({act:'saveChat'}); 
+     if(type!='hide')ms.success( t('common.saveSuccess'));
      emit('close');
 }
- 
+
+
 watch(()=>nGptStore.value.model,(n)=>{
     nGptStore.value.gpts=undefined;
     let max=4096;
@@ -81,6 +77,8 @@ watch(()=>nGptStore.value.model,(n)=>{
         max=4096;
     }else if( n.indexOf('gpt-4')>-1 ||  n.indexOf('16k')>-1 ){ //['16k','8k','32k','gpt-4'].indexOf(n)>-1
         max=4096*2;
+    }else if( n.toLowerCase().includes('claude-3') ){
+         max=4096*2;
     }
     config.value.maxToken=max/2;
     if(nGptStore.value.max_tokens> config.value.maxToken ) nGptStore.value.max_tokens= config.value.maxToken;
@@ -104,6 +102,7 @@ onMounted(() => {
      <div ><span class="text-red-500">*</span>  {{ $t('mjset.model') }}</div>
     <n-select v-model:value="nGptStore.model" :options="modellist" size="small"  class="!w-[50%]"   />
 </section>
+
 <section class="mb-4 flex justify-between items-center"  >
     <n-input   :placeholder="$t('mjchat.modlePlaceholder')" v-model:value="nGptStore.userModel">
       <template #prefix>
@@ -111,6 +110,8 @@ onMounted(() => {
       </template>
     </n-input>
  </section>
+
+
  <section class=" flex justify-between items-center"  >
      <div> {{ $t('mjchat.historyCnt') }}
      </div>
@@ -122,7 +123,7 @@ onMounted(() => {
 <div class="mb-4 text-[12px] text-gray-300 dark:text-gray-300/20">{{ $t('mjchat.historyToken') }}</div>
 
  <section class=" flex justify-between items-center"  >
-     <div> {{ $t('mjchat.historyTCnt') }} 
+     <div> {{ $t('mjchat.historyTCnt') }}
      </div>
      <div class=" flex justify-end items-center w-[80%] max-w-[240px]">
         <div class=" w-[200px]"><n-slider v-model:value="nGptStore.max_tokens" :step="1" :max="config.maxToken" :min="1" /></div>
@@ -189,9 +190,10 @@ onMounted(() => {
     <NTag  type="primary" round size="small" :bordered="false" class="!cursor-pointer">More...</NTag>
 </div>
 
- <section class=" text-right flex justify-end space-x-2"  >
+<section class=" text-right flex justify-end space-x-2"  >
     <NButton   @click="reSet()">{{ $t('mj.setBtBack') }}</NButton>
-    <NButton type="primary" @click="saveChat">{{ $t('mj.setBtSaveChat') }}</NButton>
-    <NButton type="primary" @click="save">{{ $t('mj.setBtSaveSys') }}</NButton>
+    <!-- <NButton type="primary" @click="saveChat">{{ $t('mj.setBtSaveChat') }}</NButton>
+    <NButton type="primary" @click="save">{{ $t('mj.setBtSaveSys') }}</NButton> -->
+    <NButton type="primary" @click="saveChat('no')">{{ $t('common.save') }}</NButton>
  </section>
 </template>

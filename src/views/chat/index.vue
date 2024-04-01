@@ -22,6 +22,7 @@ import aiGPT from '../mj/aiGpt.vue'
 import AiSiderInput from '../mj/aiSiderInput.vue'
 import aiGptInput from '../mj/aiGptInput.vue'
 
+
 let controller = new AbortController()
 
 const openLongReply = import.meta.env.VITE_GLOB_OPEN_LONG_REPLY === 'true'
@@ -453,7 +454,7 @@ const goUseGpts= async ( item: gptsType)=>{
     const saveObj= {model:  `${ item.gid }`   ,gpts:item}
     gptConfigStore.setMyData(saveObj); 
     if(chatStore.active){ //保存到对话框
-        const  chatSet = new chatSetting( chatStore.active );
+        const chatSet = new chatSetting( chatStore.active );
         if( chatSet.findIndex()>-1 ) chatSet.save( saveObj )
     }
     ms.success(t('mjchat.success2'));
@@ -538,6 +539,8 @@ const ychat = computed( ()=>{
   }
   return { text, dateTime: t('chat.preview')} as Chat.Chat;
 }) 
+
+
 </script>
 
 <template>
@@ -550,6 +553,14 @@ const ychat = computed( ()=>{
       @handle-clear="handleClear"
     />
     <main class="flex-1 overflow-hidden">
+
+      <template v-if="gptConfigStore.myData.kid">
+        <div class="flex  mt-4  text-neutral-300">
+           <SvgIcon icon="material-symbols:book" class="mr-1 text-2xl" ></SvgIcon>
+           <span>{{ gptConfigStore.myData.kName }}</span>
+        </div>
+      </template>
+
       <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
         <div
           id="image-wrapper"
@@ -557,12 +568,15 @@ const ychat = computed( ()=>{
           :class="[isMobile ? 'p-2' : 'p-4']"
         >
           <template v-if="!dataSources.length">
-            <div v-if="homeStore.myData.session.notify" v-html="homeStore.myData.session.notify" class="text-neutral-300 mt-4"></div>
+            <div v-if="homeStore.myData.session.notify" v-html="homeStore.myData.session.notify" class="text-neutral-300 mt-4">
+            </div>
+
             <div class="flex items-center justify-center mt-4 text-center text-neutral-300" v-else>
               <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
               <span>Aha~</span>
             </div>
           </template>
+      
           <template v-else>
             <div>
               <Message

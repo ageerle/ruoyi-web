@@ -192,9 +192,7 @@ watch(showMeVisible, (newValue, oldValue) => {
 									<SvgIcon icon="icon-park-twotone:correct" />
 								</template>
 							</n-tag>
-							<n-tag type="error" size="large"  :bordered="false">
-							    限时双倍活动 充30送30
-							</n-tag>
+						
 							<!-- <n-tag type="success" :bordered="false">
 								10次退还卡
 								<template #icon>
@@ -262,9 +260,6 @@ watch(showMeVisible, (newValue, oldValue) => {
 								</template>
 							</n-tag>
 
-							<n-tag type="error" size="large"  :bordered="false">
-							    限时双倍活动 充60送60
-							</n-tag>
 							<!-- <n-tag type="success" :bordered="false">
 								30次退还卡
 								<template #icon>
@@ -305,41 +300,41 @@ watch(showMeVisible, (newValue, oldValue) => {
 							<tbody>
 							<tr>
 								<td>gpt-3.5-turbo-1106</td>
-								<td>0.03元/1K tokens</td>
+								<td>0.05元/1K tokens</td>
 								<td>GPT3.5最新模型,用于文本生成、对话系统、内容摘要等</td>
 							</tr>
-							<tr>
-								<td>net-gpt-3.5-turbo</td>
-								<td>0.03元/次</td>
-								<td>使用langchain 实现的联网功能，联网没有上下文</td>
-							</tr>
-							<tr>
-								<td>net-gpt-4</td>
-								<td>0.03元/次</td>
-								<td>使用langchain 实现的联网功能，联网没有上下文</td>
-							</tr>
+				
 							<tr>
 								<td>gpt-4-1106-preview</td>
-								<td>0.3元/1K tokens</td>
+								<td>0.2元/1K tokens</td>
 								<td>最新版GPT-4,相对GPT-3.5更先进、拥有更多的参数和更强大的语言处理能力</td>
-								
 							</tr>
+
 							<tr>
 								<td>gpt-4-1106-vision-preview</td>
-								<td>0.3元/1K tokens</td>
+								<td>0.2元/次</td>
 								<td> GPT-4 的一个包含视觉处理能力的预览版本，结合了视觉信息处理的能力</td>
 							</tr>	
+
 							<tr>
-								<td>gpt4all</td>
-								<td>0.3元/次</td>
+								<td>gpt-4-all</td>
+								<td>0.2元/次</td>
 								<td>同时拥有联网查询，高级数据分析，画图 DALL.E功能,GPT 会自动识别并调取相关能力工具</td>
-								
 							</tr>
+
+				
 							<tr>
 								<td>gpt-4-gizmo</td>
-								<td>0.3元/次</td>
+								<td>0.2元/次</td>
 								<td>gpts商店中的模型,使用方式:gpt-4-gizmo-g-xxx</td>
 							</tr>
+
+							<tr>
+								<td>claude-3</td>
+								<td>0.2元/次</td>
+								<td>Claude模型的最新版本，具有最先进的语言处理技术</td>
+							</tr>
+
 							<tr>
 								<td>dall·e 3</td>
 								<td>0.3元/次</td>
@@ -348,14 +343,21 @@ watch(showMeVisible, (newValue, oldValue) => {
 							</tr>
 							<tr>
 								<td>dall·e 3(1790px)</td>
-								<td>0.6元/次</td>
+								<td>0.5元/次</td>
 								<td>DALL·E 是一个专注于图像生成的模型</td>
 							</tr>
 							<tr>
 								<td>midjourney</td>
 								<td>0.3元/次</td>
-								<td>目前最强的AI绘图模型</td>
+								<td>高级图像生成和处理模型，擅长创建逼真的视觉效果</td>
 							</tr>
+							
+							<tr>
+								<td>stable-diffusion</td>
+								<td>0.1元/次</td>
+								<td>高级图像生成和处理模型，擅长创建逼真的视觉效果</td>
+							</tr>
+			
 							</tbody>
 						</n-table>
 				</div>

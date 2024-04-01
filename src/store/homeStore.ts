@@ -30,6 +30,8 @@ export interface gptConfigType{
     userModel?:string //自定义
     talkCount:number //联系对话
     systemMessage:string //自定义系统提示语
+    kid:string //知识库id
+    kName:string //知识库名称
     gpts?:gptsType
     uuid?:number
     temperature?:number // 随机性 : 值越大，回复越随机
@@ -51,17 +53,19 @@ const getGptInt= ():gptConfigType =>{
 const  getDefault=()=>{
 const amodel = homeStore.myData.session.amodel??'gpt-3.5-turbo'
 let v:gptConfigType={
-        model: amodel,
-        max_tokens:1024,
-        userModel:'',
-        talkCount:10,
-        systemMessage:'',
-        temperature:0.5,
-        top_p:1,
-        presence_penalty:0,
-        frequency_penalty:0,
-        tts_voice:"alloy"
-    }
+    model: amodel,
+    max_tokens: 1024,
+    userModel: '',
+    talkCount: 10,
+    systemMessage: '',
+    temperature: 0.5,
+    top_p: 1,
+    presence_penalty: 0,
+    frequency_penalty: 0,
+    tts_voice: "alloy",
+    kid: '',
+    kName: ''
+}
     return v ;
 }
 export const gptConfigStore= reactive({

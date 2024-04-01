@@ -84,7 +84,7 @@ const handleRegistBtnClick = async (e: MouseEvent) => {
 									<h2 class="text-3xl font-bold tracking-tight text-center text-gray-900">登录</h2>
 									<p class="mt-2 text-sm text-center text-gray-600"> 或者
 										<a @click="handleRegistBtnClick" style="font-size: 18px"
-											class="font-semibold text-teal-500 hover:text-teal-600">注册</a> 并免费体验熊猫助手
+											class="font-semibold text-teal-500 hover:text-teal-600">注册</a> 并免费体验问答助手
 									</p>
 								</div>
 								<div class="sm:mx-auto sm:w-full sm:max-w-sm">

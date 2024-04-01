@@ -1,2 +1,2 @@
-# ruoyi-web
-基于ruoyi-plus实现AI聊天和绘画功能-前端
+# ruoyi-web-pro
+基于ruoyi-plus实现AI聊天和绘画功能

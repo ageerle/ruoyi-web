@@ -108,11 +108,11 @@ watch(
           </NButton>
         </div>
       </main>
-      <Footer />
+      <Footer></Footer>
     </div>
   </NLayoutSider>
   <template v-if="isMobile">
     <div v-show="!collapsed" class="fixed inset-0 z-40 w-full h-full bg-black/40" @click="handleUpdateCollapsed" />
   </template>
-  <PromptStore v-model:visible="show" />
+  <PromptStore v-model:visible="show"></PromptStore>
 </template>

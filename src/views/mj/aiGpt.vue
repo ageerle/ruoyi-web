@@ -46,8 +46,6 @@ watch( ()=>textRz.value, (n)=>{
 const { uuid } = useRoute().params as { uuid: string }
 watch(()=>homeStore.myData.act, async (n)=>{
 
-   
-    
     if(n=='gpt.submit' ||  n=='gpt.whisper'  ){
         
         const dd:any = homeStore.myData.actData;
@@ -114,13 +112,9 @@ watch(()=>homeStore.myData.act, async (n)=>{
             }
             
         }else{
-        
             addChat(  +uuid2, promptMsg );
             homeStore.setMyData({act:'scrollToBottom'});
         }
-       
-
-
        
         let outMsg: Chat.Chat={
             dateTime: new Date().toLocaleString(),
@@ -153,16 +147,27 @@ watch(()=>homeStore.myData.act, async (n)=>{
         //return ;
         let message= [ {  "role": "system", "content": getSystemMessage(  +uuid2) },
                 ...historyMesg ];
+        let imageContent = [];         
         if( dd.fileBase64 && dd.fileBase64.length>0 ){
             if(  model=='gpt-4-vision-preview' ){
                 let obj={
                         "role": "user",
-                        "content": [] as any
+                        "content": ""
                 }
                 // //"Generate code for a web page that looks exactly like this."
-                obj.content.push({ "type": "text",      "text": dd.prompt  });
+                //obj.content.push({,      "text": dd.prompt  });
+                imageContent.push(  {
+                        "type": "text",
+                        "text": dd.prompt,
+                    })
                 dd.fileBase64.forEach((f:any)=>{
-                    obj.content.push({ "type": "image_url",  "image_url": {url:f }   });
+                    //obj.content.push({ "type": "image_url",  "image_url": {url:f }   });
+                    imageContent.push(
+                        {
+                            "type": "image_url",
+                            "image_url": { url: f }
+                        }
+                    )
                 });
                 message.push(obj); 
             }else{
@@ -181,7 +186,8 @@ watch(()=>homeStore.myData.act, async (n)=>{
                 file: dd.file
             }
         }
-        submit(model , message,opt );
+    
+        submit(model,message,imageContent,opt);
  
     }else if(n=='abort'){
        controller.value && controller.value.abort();
@@ -195,9 +201,6 @@ watch(()=>homeStore.myData.act, async (n)=>{
         st.value.uuid =  uuid2 ;
         st.value.index = +dd.index;
         
-         
-        
-
         mlog('gpt.resubmit', dd  ) ;
         let historyMesg= await  getMessage( (+dd.index)-1,1  ); //
         mlog('gpt.resubmit historyMesg', historyMesg );
@@ -219,7 +222,8 @@ watch(()=>homeStore.myData.act, async (n)=>{
         let message= [ {  "role": "system", "content": getSystemMessage(+st.value.uuid ) },
                 ...historyMesg ]; 
         textRz.value=[];
-        submit(model, message );
+      
+        submit(model, message);
 
     }else if(n=='gpt.ttsv2'){ 
         const actData:any = homeStore.myData.actData;
@@ -250,12 +254,10 @@ watch(()=>homeStore.myData.act, async (n)=>{
                 if(e.message!='canceled' && emsg.indexOf('aborted')==-1 ) textRz.value.push("\n"+t('mjchat.failReason')+" \n```\n"+emsg+"\n```\n");
                 //goFinish();
             });
-
     }  
-    
 })
 
-const submit= (model:string, message:any[] ,  opt?:any )=>{
+const submit= (model:string, message:any[],imageContent?:any[],opt?:any)=>{
     mlog('提交Model', model  );
     const chatSet = new chatSetting(   +st.value.uuid  );
     const nGptStore =   chatSet.getGptConfig()  ; 
@@ -304,7 +306,7 @@ const submit= (model:string, message:any[] ,  opt?:any )=>{
 
         }else{
         //controller.signal
-            subModel( {message,model
+            subModel( {message,model,imageContent
             ,uuid:st.value.uuid //当前会话
             ,onMessage:(d)=>{
                 mlog('🐞消息',d);
