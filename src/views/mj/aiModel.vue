@@ -4,19 +4,36 @@ import { ref ,computed,watch, onMounted} from "vue";
 import {gptConfigStore, homeStore,useChatStore} from '@/store'
 import { mlog,chatSetting } from "@/api";
 import { t } from "@/locales";
+import to from "await-to-js";
+import { getmodelList } from '@/api/model'
 
 const emit = defineEmits(['close']);
 const chatStore = useChatStore();
 const uuid = chatStore.active;
-//mlog('uuid', uuid );
+
 const chatSet = new chatSetting( uuid==null?1002:uuid);
 
 const nGptStore = ref(  chatSet.getGptConfig() );
+const message = useMessage()
+onMounted(() => { fetchData() });
 
-const config = ref({
-model:[ 'gpt-4-0125-preview','gpt-3.5-turbo','gpt-4-all','claude-3-sonnet-20240229','stable-diffusion','suno-v3']
-,maxToken:2048
-});
+
+const config = ref([])
+const fetchData = async () => {
+    try {
+       // 发起一个请求
+      const [err, result] = await to(getmodelList());
+    
+      if (err) {
+        message.error(err.message)
+      } else {
+         config.value = result.data;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+};
+
 const st= ref({openMore:false });
 const voiceList= computed(()=>{
     let rz=[];
@@ -25,14 +42,11 @@ const voiceList= computed(()=>{
 });
 const modellist = computed(() => { //
     let rz =[ ];
-    for(let o of config.value.model){
-        rz.push({label:o,value:o})
+    for(let o of config.value){
+        rz.push({label:o.modelDescribe,value:o.modelName})
     }
     if(gptConfigStore.myData.userModel){
         let arr = gptConfigStore.myData.userModel.split(/[ ,]+/ig);
-        //  let uniqueArray  = arr.filter((value, index, self) => {
-        //     return self.indexOf(value) === index;
-        // });
         for(let o of arr ){
              rz.push({label:o,value:o})
         }
@@ -69,6 +83,10 @@ const saveChat=(type:string)=>{
      emit('close');
 }
 
+const onSelectChange = (newValue: any) => {
+    const option = modellist.value.find(optionValue => optionValue.value === newValue);
+    nGptStore.value.modelLabel = option.label;
+};
 
 watch(()=>nGptStore.value.model,(n)=>{
     nGptStore.value.gpts=undefined;
@@ -89,28 +107,20 @@ const reSet=()=>{
     nGptStore.value= gptConfigStore.myData;
 }
 
-onMounted(() => {
-    //gptConfigStore.myData= chatSet.getGptConfig();
-});
-
-
-//
-//const f= ref({model:gptConfigStore.myData.model});
 </script>
 <template>
 <section class="mb-4 flex justify-between items-center"  >
      <div ><span class="text-red-500">*</span>  {{ $t('mjset.model') }}</div>
-    <n-select v-model:value="nGptStore.model" :options="modellist" size="small"  class="!w-[50%]"   />
+    <n-select v-model:value="nGptStore.model" :options="modellist" @update:value="onSelectChange" size="small"  class="!w-[50%]"   />
 </section>
 
 <section class="mb-4 flex justify-between items-center"  >
     <n-input   :placeholder="$t('mjchat.modlePlaceholder')" v-model:value="nGptStore.userModel">
       <template #prefix>
-        {{ $t('mjchat.myModle') }}
+        {{ $t('mjchat.myModle') }} 
       </template>
     </n-input>
  </section>
-
 
  <section class=" flex justify-between items-center"  >
      <div> {{ $t('mjchat.historyCnt') }}

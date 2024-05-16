@@ -76,7 +76,7 @@ export default {
     monthlyUsage: '本月使用量',
   },
   store: {
-    siderButton: '进入市场选购',
+    siderButton: '购买套餐',
     local: '本地',
     online: '在线',
     title: '标题',
@@ -99,7 +99,7 @@ export default {
     server:'服务端'
     ,about:'关于'
     ,model:'模型'
-    ,sysname:'熊猫助手'
+    ,sysname:'AI绘图'
   }
 
   ,mjtab:{
@@ -166,7 +166,7 @@ export default {
     ,img2textinfo:'不知如何写提示词？用图生文试试！<br/>提交图片，出提示词'
     ,traning:'翻译中...'
     ,imgcreate:'生成图片'
-    ,imginfo:'其他参数：  <li>1 --no 忽略 --no car 图中不出现车 </li><li>2 --seed 可先获取种子 --seed 123456 </li> <li>3 --chaos 10 混合(范围：0-100)</li> <li>4 --tile 碎片化 </li>  <li>5 --sref 图片url 生成风格一致的图像 <li>6 --cref 图片url 生成<b>角色</b>一致的图像  </li> '
+    ,imginfo:'其他参数：  <li>1 --no 忽略 --no car 图中不出现车 </li><li>2 --seed 可先获取种子 --seed 123456 </li> <li>3 --chaos 10 混合(范围：0-100)</li> <li>4 --tile 碎片化 </li>  <li>5 --cw 0 只参考五官, 100 参考五官、头发、服装等  </li>'
     ,tStyle:'风格'
     ,tView:'视角'
     ,tShot:'人物镜头'
@@ -183,6 +183,7 @@ export default {
     ,add2more:'请添加两张以上图片'
     ,no1m:'图片大小不能超过{m}M'
     ,imgExt:'图片仅支持jpg,gif,png,jpeg格式'
+    ,setSync:'同步Midjourney、Suno设置'
   },
   mj:{
     setOpen:'OpenAI 相关',
@@ -261,7 +262,7 @@ export default {
     ,findVersion:'发现更新版本'
     ,yesLastVersion:'已是最新版本'
     ,infoStar:'此项目开源于 <a  class="text-blue-600 dark:text-blue-500" href="https://github.com/Dooy/chatgpt-web-midjourney-proxy" target="_blank"> GitHub </a>，免费且基于 MIT 协议，没有任何形式的付费行为！ </p><p>如果你觉得此项目对你有帮助，请在 GitHub 帮我点个 Star，谢谢！'
-    ,setBtSaveChat:'保存至会话'
+    ,setBtSaveChat:'仅保存会话'
     ,setBtSaveSys: '保存至系统'
 
     ,wsrvClose:'关闭 wsrv'
@@ -286,6 +287,8 @@ export default {
     ,micAsr:'即时识别'
     ,micRec:'开始录音,请说话！2秒内无声音将自动关闭'
     ,micRecEnd:'录音已结束'
+
+    
 
   },
 
@@ -376,5 +379,35 @@ export default {
 			landscape: "风景 (3:2)",
 		},
 	}
+
+  ,suno:{
+    description:"描述模式"
+    ,custom:"定制模式"
+    ,style:'歌曲风格'
+    ,stylepls:'歌曲名称比如:流行音乐'
+    ,emputy:'暂无内容'
+    ,noly:'无歌词'
+    ,inputly:'请输入歌曲名称或歌词'
+    ,doingly:"正在执行请稍后."
+    ,doingly2: "正在获取歌词..."
+    ,title:'歌曲名称'
+    ,titlepls:'歌曲名称比如:假期'
+    ,desc:'歌曲描述'
+    ,descpls:'歌曲描述 比如:关于假期的原声流行音乐'
+    ,noneedly:'无需歌词'
+    ,rank:'随机获取'
+    ,ly:'歌词'
+    ,lypls:'歌词:有一定的格式'
+    ,generate:'创作歌曲'
+    ,generately:'生成歌词'
+    ,nodata:'请先创作才有歌曲列表'
+
+    ,menu:'音乐'
+    ,menuinfo:'Suno 音乐创作'
+    ,server:'Suno 接口地址'
+    ,serverabout:'Suno 相关'
+    ,setOpenKeyPlaceholder:'Suno API 的相关KEY；可不填'
+  }
+
 
 }

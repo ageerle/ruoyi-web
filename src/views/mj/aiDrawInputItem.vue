@@ -7,12 +7,14 @@ import { useBasicLayout } from '@/hooks/useBasicLayout'
 const { isMobile } = useBasicLayout()
 import AiMsg from './aiMsg.vue'
 //import aiFace from './aiFace.vue'
-import { mlog, train, upImg ,getMjAll } from '@/api'
+import { mlog, train, upImg ,getMjAll, mjFetch } from '@/api'
 //import {copyText3} from "@/utils/format";
 import { homeStore ,useChatStore} from "@/store";
 const chatStore = useChatStore()
 import {t} from "@/locales"
+import axios from "@/utils/request/axios";
 //import { upImg } from "./mj";
+import { getToken } from '@/store/modules/auth/helper'
 
 const vf=[{s:'width: 100%; height: 100%;',label:'1:1'}
 ,{s:'width: 100%; height: 75%;',label:'4:3'}
@@ -23,7 +25,7 @@ const vf=[{s:'width: 100%; height: 100%;',label:'1:1'}
 
 const f=ref({bili:-1, quality:'',view:'',light:'',shot:'',style:'', styles:'',version:'--v 6.0',sref:'',cref:'',cw:'',});
 const st =ref({text:'',isDisabled:false,isLoad:false
-    ,fileBase64:[],bot:'',showFace:false
+    ,fileBase64:[],bot:'',showFace:false,upType:''
 });
 const farr= [
 { k:'style',v:t('mjchat.tStyle') }
@@ -38,7 +40,7 @@ const farr= [
 const drawlocalized = computed(() => {
 	let localizedConfig = {};
 	Object.keys(config).forEach((key) => {
-		localizedConfig[key] = config[key].map((option) => {
+		localizedConfig[key] = config[key].map((option: { labelKey: any; }) => {
 			// 假设 labelKey 如 "draw.qualityList.general"
 			let path = option.labelKey; // 直接使用 labelKey 作为路径
 			return {
@@ -54,6 +56,7 @@ const drawlocalized = computed(() => {
 const msgRef = ref()
 const fsRef= ref()
 const fsRef2 = ref()
+const fsRef3 = ref()
 const $emit=defineEmits(['drawSent','close']);
 const props = defineProps({buttonDisabled:Boolean});
 
@@ -251,12 +254,78 @@ const clearAll=()=>{
   f.value.sref='';
 }
 
-//const config=
+const uploader=(type:string)=>{
+    st.value.upType= type;
+    fsRef3.value.click();
+}
+const selectFile3=  (input:any)=>{
+    // ms.loading('上传中...');
+    upImg(input.target.files[0]).then( async(d)=>{
+        mlog('selectFile3>> ',d );
+        let data={
+            action:'img2txt',
+            data:{
+                "base64Array":d
+            }
+        }
+        const blob = base64ToBlob(data.data.base64Array);
+        const file = blobToFile(blob, 'image.png'); // 指定文件名和扩展名
+        // 创建FormData
+        const formData = new FormData();
+        formData.append('file', file);
+        console.log("formData========",formData)
+        try{
+            const result = await axios.post('/resource/oss/upload', formData, {
+            headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': 'Bearer ' + getToken(),
+                },
+            });
+            fsRef3.value.value='';
+            if(result.data.code== 200){
+                if( st.value.upType=='cref'){
+                    f.value.cref= result.data.data.url;
+                }else{
+                    f.value.sref= result.data.data.url;
+                }
+                ms.success( t('mj.uploadSuccess'));
+            }else{
+                ms.error( t(result.data.msg));  
+            }
+            mlog('selectFile3>> ',d );
+
+        }catch(e ){
+            msgRef.value.showError(e)
+        }
+
+    })
+    .catch(e=>msgRef.value.showError(e))
+}
+
+// 将base64字符串转换为Blob对象
+function base64ToBlob(base64: string): Blob {
+  const byteString = window.atob(base64.split(',')[1]);
+  const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([ab], { type: mimeString });
+}
+
+// 将Blob对象转换为File对象
+function blobToFile(blob: Blob, fileName: string): File {
+  const file = new File([blob], fileName, { type: blob.type });
+  return file;
+}
+
 </script>
 <template>
 <AiMsg ref="msgRef" />
 <input type="file"  @change="selectFile"  ref="fsRef" style="display: none" accept="image/jpeg, image/jpg, image/png, image/gif"/>
 <input type="file"  @change="selectFile2" ref="fsRef2" style="display: none" accept="image/jpeg, image/jpg, image/png, image/gif"/>
+<input type="file"  @change="selectFile3" ref="fsRef3" style="display: none" accept="image/jpeg, image/jpg, image/png, image/gif"/>
 
 <div class="overflow-y-auto bg-[#fafbfc] px-4 dark:bg-[#18181c] h-full ">
 
@@ -288,21 +357,29 @@ const clearAll=()=>{
         <div>{{ v.v }}</div>
         <n-select v-model:value="f[v.k]" :options="drawlocalized[v.k+'List']" size="small"  class="!w-[60%]" :clearable="true" />
 	</section>
-    <template v-if="!isMobile"> 
+    <!-- <template  >  </template> -->
         <section class="mb-4 flex justify-between items-center"  >
         <div  >cw(0-100)</div>
         <NInputNumber :min="0" :max="100" v-model:value="f.cw" class="!w-[60%]" size="small" clearable placeholder="0-100 角色参考程度" />
         </section >
     
         <section class="mb-4 flex justify-between items-center"  >
-        <div class="w-[60px]">sref</div>
-        <NInput v-model:value="f.sref" size="small" placeholder="图片url 生成风格一致的图像" clearable />
+        <div class="w-[45px]">sref</div>
+            <NInput v-model:value="f.sref" size="small" placeholder="图片url 生成风格一致的图像" clearable >
+                 <template #suffix>
+                    <SvgIcon icon="ri:upload-line"  class="cursor-pointer" @click="uploader('sref')"></SvgIcon>
+                </template>
+            </NInput>
         </section>
         <section class="mb-4 flex justify-between items-center"  >
-        <div class="w-[60px]">cref</div>
-        <NInput  v-model:value="f.cref" size="small" placeholder="图片url 生成角色一致的图像" clearable/>
+        <div class="w-[45px]">cref</div>
+            <NInput  v-model:value="f.cref" size="small" placeholder="图片url 生成角色一致的图像" clearable>
+                <template #suffix>
+                    <SvgIcon icon="ri:upload-line" class="cursor-pointer"  @click="uploader('cref')"></SvgIcon>
+                </template>
+            </NInput>
         </section>
-    </template>
+   
     
     <div class="mb-1">
      <n-input    type="textarea"  v-model:value="st.text"   :placeholder="$t('mjchat.prompt')" round clearable maxlength="2000" show-count

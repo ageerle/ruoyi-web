@@ -4,6 +4,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import { setupPageGuard } from './permission'
 import { ChatLayout } from '@/views/chat/layout'
 import mjlayout from '@/views/mj/layout.vue'
+import sunoLayout from '@/views/suno/layout.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -61,57 +62,15 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/sound',
-    name: 'Sound',
-    component: ChatLayout,
-    redirect: '/sound/t',
+    path: '/music',
+    name: 'music',
+    component: sunoLayout,
+    redirect: '/music/index',
     children: [
       {
-        path: 't',
-        name: 'sound1',
-        component: () => import('@/views/sound/index.vue'),
-      },
-    ],
-  },
-
-  {
-    path: '/knowledge',
-    name: 'Knowledge',
-    component: ChatLayout,
-    redirect: '/knowledge/t',
-    children: [
-      {
-        path: 't',
-        name: 'knowledge1',
-        component: () => import('@/views/knowledge/index.vue'),
-      },
-    ],
-  },
-
-  {
-    path: '/annex',
-    name: 'Annex',
-    component: ChatLayout,
-    redirect: '/annex/t',
-    children: [
-      {
-        path: 't',
-        name: 'annex1',
-        component: () => import('@/views/knowledge/annex.vue'),
-      },
-    ],
-  },
-
-  {
-    path: '/fragment',
-    name: 'Fragment',
-    component: ChatLayout,
-    redirect: '/fragment/t',
-    children: [
-      {
-        path: 't',
-        name: 'fragment1',
-        component: () => import('@/views/knowledge/fragment.vue'),
+        path: '/music/:uuid?',
+        name: 'music',
+        component: () => import('@/views/suno/music.vue'),
       },
     ],
   },

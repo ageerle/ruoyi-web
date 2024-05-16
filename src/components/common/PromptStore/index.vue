@@ -1,10 +1,17 @@
 <script setup lang='ts'>
-import { computed, ref, onUnmounted, watch } from 'vue'
-import { NCard, NTag, NSpace, NModal, NTabs, NButton, NTabPane, NImage, NTable} from 'naive-ui'
+import { computed, ref, onUnmounted, watch, h, onMounted } from 'vue'
+import { NCard, NTag, NSpace, NModal, NTabs, NButton, NTabPane, NImage, NDataTable } from 'naive-ui'
 import { SvgIcon } from '@/components/common'
 import { useMessage } from 'naive-ui'
 import { payUrl, getOrderInfo } from '@/api/pay'
+import { list } from '@/api/model'
+
 import to from "await-to-js";
+
+onMounted(() => {
+	// 查询模型未隐藏信息
+	modeList()
+});
 
 interface Props {
 	visible: boolean,
@@ -83,17 +90,100 @@ watch(showMeVisible, (newValue, oldValue) => {
 	}
 });
 
+const pagination = ref({
+	page: 1,
+	pageSize: 10,
+	showSizePicker: true,
+	pageSizes: [10, 20, 30, 40],
+	onChange: (page: number) => {
+		pagination.value.page = page;
+	},
+	onUpdatePageSize: (pageSize: number) => {
+		pagination.value.pageSize = pageSize;
+		pagination.value.page = 1;
+	}
+});
 
+const createColumns = () => {
+	return [
+		...(false
+			? [{
+				title: '主键',
+				key: 'id',
+				width: 80,
+				ellipsis: true,
+			}]
+			: []),
+		{
+			title: '模型名称',
+			key: 'modelDescribe'
+		},
+		{
+			title: '价格',
+			key: 'modelPrice'
+		},
+		{
+			title: '计费方式',
+			key: 'modelType',
+			render: (row: any) => {
+				let text, type;
+				switch (row.modelType) {
+					case "1":
+						text = 'token计费';
+						type = 'success'; // 绿色标签
+						break;
+					case "2":
+						text = '次数计费';
+						type = 'info'; // 蓝色标签
+						break;
+					default:
+						text = '未知计费方式';
+						type = 'default'; // 默认灰色标签
+				}
+				// 直接使用导入的 NTag 组件，设置相应的属性
+				return h(NTag, {
+					type: type,
+					size: 'medium',
+					round: true
+				}, {
+					default: () => text
+				});
+			}
+		},
+		{
+			title: '备注',
+			key: 'remark'
+		},
+
+	]
+}
+const columns = ref(createColumns());
+
+const tableData = ref([]);
+
+const modeList = async () => {
+	try {
+		// 发起一个请求
+		const [err, result] = await to(list());
+
+		if (err) {
+			message.error(err.message)
+		} else {
+			tableData.value = result.rows
+		}
+	} catch (error) {
+		console.error('Error fetching data:', error);
+	}
+};
 </script>
+
+
 
 <template>
 	<NModal v-model:show="show" :auto-focus="false" preset="card" style="max-width: 1100px;">
 		<n-tabs type="line" size="large" :tabs-padding="20" pane-style="padding: 20px;">
 			<n-tab-pane name=" 订阅计划">
-				<div style=" display: flex; overflow: auto;
-					justifyContent: center;
-					alignItems: center;">
-
+				<div style=" display: flex; overflow: auto;">
 					<n-card title="初级套餐" hoverable :bordered="false" :segmented="{
 						content: true,
 						footer: 'soft'
@@ -192,19 +282,7 @@ watch(showMeVisible, (newValue, oldValue) => {
 									<SvgIcon icon="icon-park-twotone:correct" />
 								</template>
 							</n-tag>
-						
-							<!-- <n-tag type="success" :bordered="false">
-								10次退还卡
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								50次免费mj绘图
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag> -->
+					
 						</n-space>
 
 						<template #footer>
@@ -260,18 +338,6 @@ watch(showMeVisible, (newValue, oldValue) => {
 								</template>
 							</n-tag>
 
-							<!-- <n-tag type="success" :bordered="false">
-								30次退还卡
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								200次免费mj绘图
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag> -->
 						</n-space>
 					
 						<template #footer>
@@ -285,81 +351,11 @@ watch(showMeVisible, (newValue, oldValue) => {
 				</div>
 			</n-tab-pane>
 			<n-tab-pane name="收费标准">
-				<div style=" display: flex; overflow: auto;
-					justifyContent: center;
-					alignItems: center;">
-						<n-table :bordered="false" :single-line="false">
-							
-							<thead>
-							<tr>
-								<th>模型名称(通常1000个Token约等于750个英文单词或者400~500个汉字)</th>
-								<th>价格</th>
-								<th>说明</th>
-							</tr>
-							</thead>
-							<tbody>
-							<tr>
-								<td>gpt-3.5-turbo-1106</td>
-								<td>0.05元/1K tokens</td>
-								<td>GPT3.5最新模型,用于文本生成、对话系统、内容摘要等</td>
-							</tr>
-				
-							<tr>
-								<td>gpt-4-1106-preview</td>
-								<td>0.2元/1K tokens</td>
-								<td>最新版GPT-4,相对GPT-3.5更先进、拥有更多的参数和更强大的语言处理能力</td>
-							</tr>
-
-							<tr>
-								<td>gpt-4-1106-vision-preview</td>
-								<td>0.2元/次</td>
-								<td> GPT-4 的一个包含视觉处理能力的预览版本，结合了视觉信息处理的能力</td>
-							</tr>	
-
-							<tr>
-								<td>gpt-4-all</td>
-								<td>0.2元/次</td>
-								<td>同时拥有联网查询，高级数据分析，画图 DALL.E功能,GPT 会自动识别并调取相关能力工具</td>
-							</tr>
-
-				
-							<tr>
-								<td>gpt-4-gizmo</td>
-								<td>0.2元/次</td>
-								<td>gpts商店中的模型,使用方式:gpt-4-gizmo-g-xxx</td>
-							</tr>
-
-							<tr>
-								<td>claude-3</td>
-								<td>0.2元/次</td>
-								<td>Claude模型的最新版本，具有最先进的语言处理技术</td>
-							</tr>
-
-							<tr>
-								<td>dall·e 3</td>
-								<td>0.3元/次</td>
-								<td>DALL·E 是一个专注于图像生成的模型</td>
-
-							</tr>
-							<tr>
-								<td>dall·e 3(1790px)</td>
-								<td>0.5元/次</td>
-								<td>DALL·E 是一个专注于图像生成的模型</td>
-							</tr>
-							<tr>
-								<td>midjourney</td>
-								<td>0.3元/次</td>
-								<td>高级图像生成和处理模型，擅长创建逼真的视觉效果</td>
-							</tr>
-							
-							<tr>
-								<td>stable-diffusion</td>
-								<td>0.1元/次</td>
-								<td>高级图像生成和处理模型，擅长创建逼真的视觉效果</td>
-							</tr>
-			
-							</tbody>
-						</n-table>
+				<span style="color: red;">1000个Token大约相当于750个英文单词或400至500个汉字。在按Token计费的模型中，每使用1000个Token将进行一次扣费。</span>
+				<div class="flex h-full">
+					<main class="flex-1 overflow-hidden h-full">
+						<n-data-table :columns="columns" :data="tableData" :pagination="pagination" />
+					</main>
 				</div>
 			</n-tab-pane>
 		</n-tabs>

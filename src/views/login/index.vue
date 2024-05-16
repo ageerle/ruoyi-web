@@ -129,32 +129,50 @@ const handleRegistBtnClick = async (e: MouseEvent) => {
 			</main>
 		</div>
 	</div>
-	<div 
-			style="position:absolute;top:100%;text-align:center;bottom:0;margin:0 auto;width:100%;color: #999999"
-		>
+
+	<div class="footer">
+		<a target="_blank" style="color: #999999; font-size: 14px; display: inline-block; vertical-align: middle;"
+			href="https://beian.miit.gov.cn/">
 			<img src='http://cdn.beiruijk.com/0be25a8d779aee40433aaca76c5f6ce.jpg'
-					style="display: inline-block; vertical-align: middle;"/>
-			<a
-				target="_blank"
-				style="color: #999999;font-size: 14px; display: inline-block; vertical-align: middle;"
-				href="https://beian.miit.gov.cn/"
-			> &nbsp;鄂ICP备2023007672号-1</a>
-			<span style="color: #999999;font-size: 14px">&nbsp; @2023 熊猫助手</span>
+				style="display: inline-block; vertical-align: middle;" />
+			&nbsp;Copyright © 本网站由：熊猫智能科技有限公司运营 粤ICP备202410086号
+		</a>
 	</div>
+
 </div>
 
 </template>
 
 <style scoped>
-	#app {
-		background-image: url('@/assets/background.jpg');
-		background-size: cover;
-		background-repeat: no-repeat;
-	}
-	.forgot {
-		top: 1px;
-		right: 6px;
-		font-size: 12px;
-		color: var(--font-gray);
-	}
+#app {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+	/* 确保至少为视口的高度 */
+	background-image: url('@/assets/background.jpg');
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+
+
+.footer {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	/* 垂直居中 */
+	align-items: center;
+	/* 水平居中 */
+	text-align: center;
+	color: #999999;
+	width: 100%;
+	margin-top: auto;
+	/* 自动将页脚推到底部 */
+}
+
+.forgot {
+	top: 1px;
+	right: 6px;
+	font-size: 12px;
+	color: var(--font-gray);
+}
 </style>

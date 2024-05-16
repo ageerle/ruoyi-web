@@ -122,7 +122,7 @@ export default {
   "pan_up": "Up",
   "pan_down": "Down",
   "up2": "HD 2x",
-  "up4": "HD 4x" , 
+  "up4": "HD 4x" ,
 
   "thinking": "Thinking...",
   "noReUpload": "Cannot re-upload",
@@ -144,7 +144,7 @@ export default {
     "noSuppertModel": "Refresh, this model is not currently supported!",
     "failOcr": "Recognition failed",
     "remain": "Remain:",
-  
+
   "totalUsage": "Total subscription amount",
   "disableGpt4": "GPT4 disabled",
   "setTextInfo": "OpenAI API Key error, click here to retry",
@@ -279,7 +279,128 @@ export default {
     "add2more": "Please add two or more images",
     "no1m": "Image size cannot exceed 1M",
     "imgExt": "Images support only jpg, gif, png, jpeg formats"
+    ,"setSync": "Synchronize Midjourney and Suno"
+  },
+
+	draw: {
+		qualityList: {
+			general: "General",
+			clear: "Clear",
+			hd: "HD",
+			ultraHd: "Ultra HD",
+		},
+		styleList: {
+			cyberpunk: "Cyberpunk",
+			star: "Star",
+			anime: "Anime",
+			japaneseComicsManga: "Japanese Comics/Manga",
+			inkWashPaintingStyle: "Ink Wash Painting Style",
+			original: "Original",
+			landscape: "Landscape",
+			illustration: "Illustration",
+			manga: "Manga",
+			modernOrganic: "Modern Organic",
+			genesis: "Genesis",
+			posterstyle: "Poster Style",
+			surrealism: "Surrealism",
+			sketch: "Sketch",
+			realism: "Realism",
+			watercolorPainting: "Watercolor Painting",
+			cubism: "Cubism",
+			blackAndWhite: "Black and White",
+			fmPhotography: "Film Photography Style",
+			cinematic: "Cinematic",
+			clearFacialFeatures: "Clear Facial Features",
+		},
+		viewList: {
+			wideView: "Wide View",
+			birdView: "Bird's Eye View",
+			topView: "Top View",
+			upview: "Upview",
+			frontView: "Front View",
+			headshot: "Headshot",
+			ultrawideshot: "Ultrawide Shot",
+			mediumShot: "Medium Shot (MS)",
+			longShot: "Long Shot (LS)",
+			depthOfField: "Depth of Field (DOF)",
+		},
+		shotList: {
+			faceShot: "Face Shot (VCU)",
+			bigCloseUp: "Big Close-Up (BCU)",
+			closeUp: "Close-Up (CU)",
+			waistShot: "Waist Shot (WS)",
+			kneeShot: "Knee Shot (KS)",
+			fullLengthShot: "Full Length Shot (FLS)",
+			extraLongShot: "Extra Long Shot (ELS)",
+		},
+		stylesList: {
+			styleLow: "Style Low",
+			styleMed: "Style Medium",
+			styleHigh: "Style High",
+			styleVeryHigh: "Style Very High",
+		},
+		lightList: {
+			coldLight: "Cold Light",
+			warmLight: "Warm Light",
+			hardLighting: "Hard Lighting",
+			dramaticLight: "Dramatic Light",
+			reflectionLight: "Reflection Light",
+			mistyFoggy: "Misty/Foggy",
+			naturalLight: "Natural Light",
+			sunLight: "Sun Light",
+			moody: "Moody",
+		},
+		versionList: {
+			mjV6: "MJ V6",
+			mjV52: "MJ V5.2",
+			mjV51: "MJ V5.1",
+			nijiV6: "Niji V6",
+			nijiV5: "Niji V5",
+			nijiV4: "Niji V4",
+			nijiJourney: "Niji Journey",
+		},
+		botList: {
+			midjourneyBot: "Midjourney Bot",
+			nijiJourney: "Niji Journey",
+		},
+		dimensionsList: {
+			square: "Square (1:1)",
+			portrait: "Portrait (2:3)",
+			landscape: "Landscape (3:2)",
+		},
+	}
+
+  ,suno:{
+    "description": "Description",
+    "custom": "Custom",
+    "style": "Song Style",
+    "stylepls": "Song Name, e.g., Pop Music",
+    "emputy": "No content available",
+    "noly": "No lyrics available",
+    "inputly": "Please enter the song name or lyrics",
+    "doingly": "In progress, please wait.",
+    "doingly2": "Fetching lyrics...",
+    "title": "Song Name",
+    "titlepls": "Song Name, e.g., Vacation",
+    "desc": "Song Description",
+    "descpls": "Song description, e.g., Original pop music about vacation",
+    "noneedly": "No lyrics needed",
+    "rank": "Random selection",
+    "ly": "Lyrics",
+    "lypls": "Lyrics: with a certain format",
+    "generate": "Compose Song",
+    "generately": "Generate Lyrics",
+    "nodata": "Please compose first to have a list of songs",
+
+    "menu": "Music",
+    "menuinfo": "Suno Music Creation",
+    "server": "Suno API Endpoint",
+    "serverabout": "Suno Related",
+    "setOpenKeyPlaceholder": "Related KEY for Suno API; optional"
   }
+
+
+
 
 
 
