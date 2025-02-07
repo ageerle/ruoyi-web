@@ -45,7 +45,7 @@ function drawSent(e:any){
     </n-drawer-content>
   </n-drawer>
 </div>
-<section class="h-full overflow-auto w-[300px]"  @update-collapsed="handleUpdateCollapsed" v-else>
+<section class="h-full overflow-auto w-[350px]"  @update-collapsed="handleUpdateCollapsed" v-else>
    <!-- <div class="h-full w-full">
      <aiDrawInput class="p-4"/>
    </div> -->

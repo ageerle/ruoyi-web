@@ -4,14 +4,13 @@ import { computed, ref, watch } from 'vue'
 import { NButton, NLayoutSider, useDialog } from 'naive-ui'
 import List from './List.vue'
 import Footer from './Footer.vue'
-import { useAppStore, useChatStore } from '@/store'
+import { useAppStore, useChatStore, homeStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { PromptStore, SvgIcon } from '@/components/common'
+import { IconSvg, PromptStore, SvgIcon } from '@/components/common'
 import { t } from '@/locales'
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
-
 const dialog = useDialog()
 
 const { isMobile } = useBasicLayout()
@@ -48,10 +47,26 @@ const getMobileClass = computed<CSSProperties>(() => {
     return {
       position: 'fixed',
       zIndex: 50,
-      height: '100%',
+      height: '100%'
     }
   }
-  return {}
+  if(appStore.theme == 'dark') {
+    return {
+        height: 'calc(100% - 48px)',
+        marginTop: '24px',
+        borderTopLeftRadius: '20px',
+        borderBottomLeftRadius: '20px',
+        backgroundColor: '#232627'
+    }
+  }else{
+    return {
+      height: 'calc(100% - 48px)',
+      marginTop: '24px',
+      borderTopLeftRadius: '20px',
+      borderBottomLeftRadius: '20px',
+      backgroundColor: '#fff'
+    }
+  }
 })
 
 const mobileSafeArea = computed(() => {
@@ -79,25 +94,26 @@ watch(
   <NLayoutSider
     :collapsed="collapsed"
     :collapsed-width="0"
-    :width="260"
+    :width="348"
     :show-trigger="isMobile ? false : 'arrow-circle'"
     collapse-mode="transform"
-    
     bordered
+    v-if="homeStore.myData.local == 'Chat'"
     :style="getMobileClass"
     @update-collapsed="handleUpdateCollapsed"
   >
-    <div class="flex flex-col h-full" :style="mobileSafeArea">
+    <div class="flex flex-col h-full char-sider" :style="mobileSafeArea">
       <main class="flex flex-col flex-1 min-h-0">
-        <div class="p-4">
-          <NButton dashed block @click="handleAdd">
+        <div class="p-4 top-new-button">
+          <NButton block @click="handleAdd">
+            <IconSvg icon="add"></IconSvg>&nbsp;&nbsp;
             {{ $t('chat.newChatButton') }}
           </NButton>
         </div>
         <div class="flex-1 min-h-0 pb-4 overflow-hidden">
           <List />
         </div>
-        <div class="flex items-center p-4 space-x-4">
+        <div class="flex items-center p-4 space-x-4" v-if="isMobile">
           <div class="flex-1">
             <NButton block @click="show = true">
               {{ $t('store.siderButton') }}
@@ -108,7 +124,7 @@ watch(
           </NButton>
         </div>
       </main>
-      <Footer></Footer>
+      <Footer v-if="isMobile"></Footer>
     </div>
   </NLayoutSider>
   <template v-if="isMobile">

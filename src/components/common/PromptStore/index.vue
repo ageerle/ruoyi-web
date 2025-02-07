@@ -1,16 +1,17 @@
 <script setup lang='ts'>
-import { computed, ref, onUnmounted, watch, h, onMounted } from 'vue'
-import { NCard, NTag, NSpace, NModal, NTabs, NButton, NTabPane, NImage, NDataTable } from 'naive-ui'
-import { SvgIcon } from '@/components/common'
+import { computed, ref, onUnmounted, watch, onMounted, h } from 'vue'
+import { NCard, NTag, NSpace, NModal, NTabs, NButton, NTabPane, NImage, NDataTable, NInput, NSwitch } from 'naive-ui'
 import { useMessage } from 'naive-ui'
-import { payUrl, getOrderInfo } from '@/api/pay'
-import { list } from '@/api/model'
-
+import { payUrl, getSPayUrl, getOrderInfo, redeemKey, listPlan } from '@/api/pay'
 import to from "await-to-js";
+import { modelList } from '@/api/model'
+import { t } from '@/locales';
+import { useBasicLayout } from '@/hooks/useBasicLayout'
 
 onMounted(() => {
-	// 查询模型未隐藏信息
-	modeList()
+	fetchData1()
+	// 查询套餐信息
+	fetchPackages()
 });
 
 interface Props {
@@ -21,8 +22,9 @@ interface Props {
 interface Emit {
 	(e: 'update:visible', visible: boolean): void
 }
-const props = defineProps<Props>()
 
+const props = defineProps<Props>()
+const { isMobile } = useBasicLayout()
 const emit = defineEmits<Emit>()
 
 const show = computed({
@@ -36,12 +38,36 @@ const show = computed({
 
 const message = useMessage()
 
+// 卡密信息
+const redeem = ref("")
+// 兑换卡密
+async function handleRedeemKey(money: string, name: string) {
+
+	const [err, result] = await to(redeemKey({
+		code: redeem.value,
+		id: '',
+		userId: '',
+		amount: 0,
+		status: '',
+		balanceBefore: 0,
+		balanceAfter: 0,
+		remark: ''
+	}));
+	if (err) {
+		message.error(err.message)
+	} else {
+		message.success("兑换成功!")
+	}
+	console.log("result===", result)
+}
+
 const showMeVisible = ref(false)
 const imageUrl = ref("")
 const orderMoney = ref("9.9")
 const orderName = ref("初级套餐")
 const orderNo = ref("")
 let intervalId: string | number | NodeJS.Timer | undefined;
+
 // 获取支付二维码
 async function getPayUrl(money: string, name: string) {
 	showMeVisible.value = true;
@@ -51,6 +77,26 @@ async function getPayUrl(money: string, name: string) {
 	orderName.value = name
 	orderNo.value = response.data.orderNo
 	intervalId = setInterval(fetchData, POLLING_INTERVAL);
+}
+
+// 跳转到支付地址
+async function getPayUrl1(money: string, name: string) {
+	if(loading.value) {
+		return
+	}
+	loading.value = true
+	const [err, result] = await to(getSPayUrl({ money: money, name: name }));
+	if (err) {
+		message.error(err.message)
+		loading.value = false
+		return
+	}
+
+	// window.location.href = response;
+	window.open(result, '_blank', 'noopener,noreferrer');
+	setTimeout(() => {
+		loading.value = false
+	}, 3000)
 }
 
 // 获取订单信息
@@ -89,7 +135,6 @@ watch(showMeVisible, (newValue, oldValue) => {
 		clearInterval(intervalId);
 	}
 });
-
 const pagination = ref({
 	page: 1,
 	pageSize: 10,
@@ -115,29 +160,32 @@ const createColumns = () => {
 			}]
 			: []),
 		{
-			title: '模型名称',
-			key: 'modelDescribe'
+			title: t('model.name'),
+			key: 'modelDescribe',
+			width: 60,
 		},
 		{
-			title: '价格',
-			key: 'modelPrice'
+			title: t('model.price'),
+			key: 'modelPrice',
+			width: 60,
 		},
 		{
-			title: '计费方式',
+			title: t('model.type'),
 			key: 'modelType',
+			width: 20,
 			render: (row: any) => {
 				let text, type;
 				switch (row.modelType) {
 					case "1":
-						text = 'token计费';
+						text = 'Token billing';
 						type = 'success'; // 绿色标签
 						break;
 					case "2":
-						text = '次数计费';
+						text = 'Frequency billing';
 						type = 'info'; // 蓝色标签
 						break;
 					default:
-						text = '未知计费方式';
+						text = 'Unknown billing';
 						type = 'default'; // 默认灰色标签
 				}
 				// 直接使用导入的 NTag 组件，设置相应的属性
@@ -151,211 +199,91 @@ const createColumns = () => {
 			}
 		},
 		{
-			title: '备注',
-			key: 'remark'
+			title: t('model.remark'),
+			key: 'remark',
+			width: 200,
 		},
 
 	]
 }
-const columns = ref(createColumns());
 
 const tableData = ref([]);
 
-const modeList = async () => {
+const fetchData1 = async () => {
 	try {
 		// 发起一个请求
-		const [err, result] = await to(list());
+		const [err, result] = await to(modelList());
 
 		if (err) {
 			message.error(err.message)
 		} else {
-			tableData.value = result.rows
+			tableData.value = result.data;
 		}
 	} catch (error) {
 		console.error('Error fetching data:', error);
 	}
 };
+
+const columns = ref(createColumns());
+const subscriptionPlans = ref([]);
+const subscriptionPlansYear = ref([]);
+async function fetchPackages() {
+	// 发起一个请求
+	const [err, result] = await to(listPlan());
+	if (err) {
+		message.error(err.message)
+	} else {
+		subscriptionPlans.value = result.data.filter(e=>e.duration < 32);
+		subscriptionPlansYear.value = result.data.filter(e=>e.duration > 32);
+		console.log("subscriptionPlans.value==",subscriptionPlans.value)
+	}
+}
+const active = ref(false)
+const loading = ref<boolean>(false)
 </script>
 
-
-
 <template>
-	<NModal v-model:show="show" :auto-focus="false" preset="card" style="max-width: 1100px;">
-		<n-tabs type="line" size="large" :tabs-padding="20" pane-style="padding: 20px;">
-			<n-tab-pane name=" 订阅计划">
-				<div style=" display: flex; overflow: auto;">
-					<n-card title="初级套餐" hoverable :bordered="false" :segmented="{
-						content: true,
-						footer: 'soft'
-					}">
-						<template #header-extra>
-							<span style="font-size: 20px;font-weight: bold;">9.9元</span>
-						</template>
-
-						<n-space vertical>
-							<n-tag type="success" :bordered="false">
-								解锁全部模型
-							</n-tag>
-
-							<n-tag type="success" :bordered="false">
-								dall·e 3
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-
-							<n-tag type="success" :bordered="false">
-								midjourney
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								gpt-3.5-turbo-1106
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								gpt-4-1106-preview
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								gpt-4-1106-vision-preview
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-
-						</n-space>
-						<template #footer>
-							<div @click="getPayUrl('9.9', '初级套餐')" class="outer-container">
-									<NButton>
-										立即充值
-									</NButton>
-							</div>
-						</template>
-					</n-card>
-
-					<n-card title="中级套餐" hoverable :bordered="false" :segmented="{
-						content: true,
-						footer: 'soft'
-					}">
-						<template #header-extra>
-							<span style="font-size: 20px;font-weight: bold;">30元</span>
-						</template>
-						<n-space vertical>
-							<n-tag type="success" :bordered="false">
-								解锁全部模型
-							</n-tag>
-
-							<n-tag type="success" :bordered="false">
-								dall·e 3
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-
-							<n-tag type="success" :bordered="false">
-								midjourney
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								gpt-3.5-turbo-1106
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								gpt-4-1106-preview
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								gpt-4-1106-vision-preview
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-					
-						</n-space>
-
-						<template #footer>
-							<div @click="getPayUrl('30', '中级套餐')"  class="outer-container">
-									<NButton>
-										立即充值
-									</NButton>
+	<NModal v-model:show="show" :auto-focus="false" preset="card" :style="{maxWidth: '1100px', position: 'fixed', left: '50%', top: isMobile ? '2vh' : '10vh', transform: 'translate(-50%, 0%)'}" :class="[isMobile ? 'plan-draw mobile-plan-draw' : 'plan-draw']">
+		<n-tabs type="line" size="large" :tabs-padding="20" pane-style="padding: 20px;" class="plan-tabs">
+			<n-tab-pane :name="$t('setting.plan')">
+				<!-- <div class="change-combo">
+					<span :class="[active ? '' : 'active-span']">Monthly</span>
+					<n-switch style="zoom: 1.5" v-model:value="active"  size="large"/>
+					<span :class="[active ? 'active-span' : '']">Annually</span>
+				</div> -->
+				<div style="display: flex; overflow: auto;" class="plan-content" v-if="active ? subscriptionPlansYear.length : subscriptionPlans.length">
+					<div class="plan-item" v-for="(plan, index) in active ? subscriptionPlansYear.slice(0, 3) : subscriptionPlans.slice(0, 3)" :key="index">
+						<div class="header">
+							<span class="title">{{ plan.name }}</span>
+							<p style="float: right">
+							<span class="price">{{$t('store.unit')}}{{ plan.price }}</span>
+							<span class="date"></span></p>
+						</div>
+						<div class="content">
+							<div class="option-item" v-for="(feature, fIndex) in plan.planDetail.split(',')" :key="fIndex">
+								<div class="quanquan">
+									<IconSvg icon="gou"></IconSvg>
 								</div>
-						</template>
-					</n-card>
-
-					<n-card title="高级套餐" hoverable :bordered="false" :segmented="{
-						content: true,
-						footer: 'soft'
-					}">
-						<template #header-extra>
-							<span style="font-size: 20px;font-weight: bold;">60元</span>
-						</template>
-						<n-space vertical>
-							<n-tag type="success" :bordered="false">
-								解锁全部模型
-							</n-tag>
-
-							<n-tag type="success" :bordered="false">
-								dall·e 3
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-
-							<n-tag type="success" :bordered="false">
-								midjourney
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								gpt-3.5-turbo-1106
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								gpt-4-1106-preview
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-							<n-tag type="success" :bordered="false">
-								gpt-4-1106-vision-preview
-								<template #icon>
-									<SvgIcon icon="icon-park-twotone:correct" />
-								</template>
-							</n-tag>
-
-						</n-space>
-					
-						<template #footer>
-							<div @click="getPayUrl('60', '高级套餐')" class="outer-container">
-									<NButton>
-										立即充值
-									</NButton>
+								<p>{{ feature }}</p>
 							</div>
-						</template>
-					</n-card>
+						</div>
+						<n-button class="footer" :loading="loading" @click="getPayUrl1(plan.price, plan.name)"><IconSvg icon="add"></IconSvg>{{  $t('setting.recharge') }}</n-button>
+					</div>
+
 				</div>
 			</n-tab-pane>
-			<n-tab-pane name="收费标准">
-				<span style="color: red;">1000个Token大约相当于750个英文单词或400至500个汉字。在按Token计费的模型中，每使用1000个Token将进行一次扣费。</span>
-				<div class="flex h-full">
-					<main class="flex-1 overflow-hidden h-full">
-						<n-data-table :columns="columns" :data="tableData" :pagination="pagination" />
+			<n-tab-pane :name="$t('setting.charge')">
+				<span style="color: #D84C10; font-size: 14px;">{{  $t('store.token') }}</span>
+				<div class="flex h-full draw-table-box" style="margin-top: 15px;max-width: 90vw; overflow: auto;">
+					<main class="flex-1 h-full">
+						<n-data-table style="min-width: 700px" :bordered="false" :columns="columns" :data="tableData" :pagination="pagination" />
 					</main>
+				</div>
+			</n-tab-pane>
+			<n-tab-pane :name="$t('setting.exchange')">
+				<div class="input-button-container">
+					<n-input v-model:value="redeem" type="text" :placeholder="$t('store.input')" style="width: 70%" />
+					<n-button :bordered="false" type="success" @click="handleRedeemKey">{{  $t('store.redeemKey') }}</n-button>
 				</div>
 			</n-tab-pane>
 		</n-tabs>
@@ -363,27 +291,20 @@ const modeList = async () => {
 
 	<NModal v-model:show="showMeVisible" :title="orderName" :auto-focus="false" preset="card"
 		style="width: 95%; max-width: 266px;">
-    <n-image
-      width="220"
-      :src="imageUrl"
-    />
+		<n-image width="220" :src="imageUrl" />
 		<span v-if="orderMoney">请使用微信扫码支付{{ orderMoney }}元</span>
 	</NModal>
 </template>
 <style scoped>
-.n-card {
-	max-width: 280px;
-	height: 500PX;
-	margin-left: 30px;
-	margin-right: 30px;
-}
 
 .n-gradient-text {
 	font-size: 18px;
 }
 
 .outer-container {
-    display: flex; /* 设置外部容器为 Flexbox */
-    justify-content: center; /* 水平居中对齐子项目 */
+	display: flex;
+	/* 设置外部容器为 Flexbox */
+	justify-content: center;
+	/* 水平居中对齐子项目 */
 }
 </style>

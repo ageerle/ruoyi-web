@@ -1,6 +1,7 @@
 export interface LoginFrom {
 	username: string // 用户名
 	password: string // 用户密码
+	type: string // 登录类型
 }
 
 export interface LoginUserInfo {

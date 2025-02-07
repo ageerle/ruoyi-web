@@ -6,7 +6,8 @@ export interface UserInfo {
   avatar: string
   name: string
   userBalance: number
-  userGrade: string
+  userGrade: string,
+  userName: string
 }
 
 export interface UserState {

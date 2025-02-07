@@ -1,10 +1,10 @@
 import path from 'path'
-import type { PluginOption } from 'vite'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
+import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 
-function setupPlugins(env: ImportMetaEnv): PluginOption[] {
+function setupPlugins(env) {
   return [
     vue(),
     env.VITE_GLOB_APP_PWA === 'true' && VitePWA({
@@ -18,11 +18,17 @@ function setupPlugins(env: ImportMetaEnv): PluginOption[] {
         ],
       },
     }),
-  ]
+    createSvgIconsPlugin({
+      // 指定需要缓存的图标文件夹
+      iconDirs: [path.resolve(process.cwd(), 'src/assets/icons')],
+      // 指定 symbolId 格式
+      symbolId: 'icon-[name]',
+    }),
+  ].filter(Boolean); // 过滤掉 falsy 值
 }
 
-export default defineConfig((env) => {
-  const viteEnv = loadEnv(env.mode, process.cwd()) as unknown as ImportMetaEnv
+export default defineConfig(({ mode }) => {
+  const viteEnv = loadEnv(mode, process.cwd())
 
   return {
     resolve: {
@@ -41,18 +47,16 @@ export default defineConfig((env) => {
           changeOrigin: true, // 允许跨域
           rewrite: path => path.replace('/api/', '/'),
         },
-     
-         '/uploads': {
+        '/uploads': {
           target: viteEnv.VITE_APP_API_BASE_URL,
           changeOrigin: true, // 允许跨域
           //rewrite: path => path.replace('/api/', '/'),
-        }, 
+        },
         '/openapi': {
           target: viteEnv.VITE_APP_API_BASE_URL,
           changeOrigin: true, // 允许跨域
           //rewrite: path => path.replace('/api/', '/'),
         },
-        
       },
     },
     build: {

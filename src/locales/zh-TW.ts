@@ -167,7 +167,7 @@ export default {
     "findVersion": "發現更新版本",
     "yesLastVersion": "已是最新版本",
     "infoStar": "此專案在 <a class=\"text-blue-600 dark:text-blue-500\" href=\"https://github.com/Dooy/chatgpt-web-midjourney-proxy\" target=\"_blank\">GitHub</a> 上以 MIT 協議開源，免費且沒有任何付費行為！ </p><p>如果你覺得這個專案對你有幫助，請在 GitHub 上給它一顆星，謝謝！",
-    "setBtSaveChat": "僅保存對話",
+    "setBtSaveChat": "保存對話",
     "setBtSaveSys": "保存至系統",
     "wsrvClose": "關閉 wsrv",
     "wsrvOpen": "開啟 wsrv",
@@ -272,8 +272,7 @@ export default {
     "no2add": "請勿重複添加圖片",
     "add2more": "請添加兩張以上圖片",
     "no1m": "圖片大小不能超過1M",
-    "imgExt": "圖片僅支持jpg,gif,png,jpeg格式",
-    "setSync": "同步Midjourney和Suno",
+    "imgExt": "圖片僅支持jpg,gif,png,jpeg格式"
   },
 	draw: {
 		qualityList: {
@@ -363,32 +362,54 @@ export default {
 		},
 	}
   ,suno:{
-    "description": "描述模式",
-    "custom": "專業模式",
-    "style": "歌曲風格",
-    "stylepls": "歌曲名稱，例如：流行音樂",
-    "emputy": "暫無內容",
-    "noly": "無歌詞",
-    "inputly": "請輸入歌曲名稱或歌詞",
-    "doingly": "正在進行中，請稍候。",
-    "doingly2": "正在獲取歌詞...",
-    "title": "歌曲名稱",
-    "titlepls": "歌曲名稱，例如：假期",
-    "desc": "歌曲描述",
-    "descpls": "歌曲描述，例如：關於假期的原聲流行音樂",
-    "noneedly": "無需歌詞",
-    "rank": "隨機獲取",
-    "ly": "歌詞",
-    "lypls": "歌詞：有一定的格式",
-    "generate": "創作歌曲",
-    "generately": "生成歌詞",
-    "nodata": "請先創作才有歌曲列表",
+    description:"描述模式"
+    ,custom:"定制模式"
+    ,style:'歌曲风格'
+    ,stylepls:'歌曲名称比如:流行音乐'
+    ,emputy:'暂无内容'
+    ,noly:'无歌词'
+    ,inputly:'请输入歌曲名称或歌词'
+    ,doingly:"正在执行请稍后."
+    ,doingly2: "正在获取歌词..."
+    ,title:'歌曲名称'
+    ,titlepls:'歌曲名称比如:假期'
+    ,desc:'歌曲描述'
+    ,descpls:'歌曲描述 比如:关于假期的原声流行音乐'
+    ,noneedly:'无需歌词'
+    ,rank:'随机获取'
+    ,ly:'歌词'
+    ,lypls:'歌词:有一定的格式'
+    ,generate:'创作歌曲'
+    ,generately:'生成歌词'
+    ,nodata:'请先创作才有歌曲列表'
 
-    "menu": "音樂",
-    "menuinfo": "Suno 音樂創作",
-    "server": "Suno API 端點",
-    "serverabout": "Suno 相關",
-    "setOpenKeyPlaceholder": "Suno API 的相關KEY；可不填"
+    ,menu:'音乐'
+    ,menuinfo:'Suno 音乐创作'
+    ,server:'Suno 接口地址'
+    ,serverabout:'Suno 相关'
+    ,setOpenKeyPlaceholder:'Suno API 的相关KEY；可不填'
 
-   }
+    ,upMps:'上传音频'
+    ,extend:'延伸'
+    ,extendFrom:'延伸于'
+    ,extendAt:'延伸开始于'
+    ,fail:'失败'
+    ,info:'说明:<br>上传音频时长必须在6s-60s内'
+  }
+  ,video:{
+    menu:"视频",
+    menuinfo:'Luam等 视频创作',
+    descpls:'视频创作描述',
+    lumaabout:"Luma 相关",
+    lumaserver:"Luma 接口地址",
+    setOpenKeyPlaceholder:'Luma API 的key, 可不填',
+    generate:'生成视频',
+    nodata:'暂无可用视频，请先生成！',
+    selectimg:'参考图片',
+    clear:'清除',
+    plsInput:'请输入内容！',
+    submitSuccess:'已提交成功！',
+    process:'视频生成中...',
+    repeat:'重新获取',
+  }
 }

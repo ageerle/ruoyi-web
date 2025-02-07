@@ -125,8 +125,8 @@ onUnmounted(() => {
         <mjText v-if="chat.mjID" class="whitespace-pre-wrap" :chat="chat" :mdi="mdi"></mjText>
         <ttsText v-else-if="chat.model && isTTS(chat.model) && chat.text=='ok'" :chat="chat"/>
         <template v-else>
-          <div v-if="!asRawText" class="markdown-body" :class="{ 'markdown-body-generate': loading }" v-html="text" />
-          <div v-else class="whitespace-pre-wrap" v-text="text" />
+          <div v-if="!asRawText" class="markdown-body " :class="{ 'markdown-body-generate': loading }" v-html="text" />
+          <div style="font-size: 17px; font-family: 'Karla';" v-else class="whitespace-pre-wrap" v-text="text" />
         </template>
       </div>
       <whisperText v-else-if="text=='whisper' && chat.opt?.lkey "  :chat="chat" />

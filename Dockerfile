@@ -1,11 +1,56 @@
-# 使用alpine版本的nginx作为基础镜像
-FROM nginx:alpine
+# build front-end
+FROM node:lts-alpine AS frontend
 
-# 将dist文件中的内容复制到nginx的html目录下的web目录中
-COPY dist/ /usr/share/nginx/html/web/
+RUN npm install pnpm -g
 
-# 用本地的nginx.conf配置来替换nginx镜像里的默认配置
-COPY nginx.conf /etc/nginx/nginx.conf
+WORKDIR /app
 
-# 暴露8081端口
-EXPOSE 8081
+COPY ./package.json /app
+
+COPY ./pnpm-lock.yaml /app
+
+RUN pnpm install
+
+COPY . /app
+
+RUN pnpm run build
+
+# build backend
+FROM node:lts-alpine as backend
+
+RUN npm install pnpm -g
+
+WORKDIR /app
+
+COPY /service/package.json /app
+
+COPY /service/pnpm-lock.yaml /app
+
+RUN pnpm install
+
+COPY /service /app
+
+RUN pnpm build
+
+# service
+FROM node:lts-alpine
+
+RUN npm install pnpm -g
+
+WORKDIR /app
+
+COPY /service/package.json /app
+
+COPY /service/pnpm-lock.yaml /app
+
+RUN pnpm install --production && rm -rf /root/.npm /root/.pnpm-store /usr/local/share/.cache /tmp/*
+
+COPY /service /app
+
+COPY --from=frontend /app/dist /app/public
+
+COPY --from=backend /app/build /app/build
+
+EXPOSE 3002
+
+CMD ["pnpm", "run", "prod"]

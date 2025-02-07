@@ -64,10 +64,10 @@ async function getLoginUserInfo() {
           {{ userInfo.name ?? '熊猫助手' }}
         </n-ellipsis>
         <NButton  size="small" type="tertiary" @click="handleReset">
-            退出
+          {{$t('mjset.logout')}}
         </NButton>
         <p class="overflow-hidden text-xs text-gray-500 text-ellipsis whitespace-nowrap">
-          <span style="font-size: 10rpx;">余额:{{ userInfo.userBalance }}元</span>
+          <span style="font-size: 10rpx;">{{$t('mjset.balance')}}:{{ userInfo.userBalance }}</span>
         </p>
       </div>
   </div>

@@ -4,7 +4,10 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import { setupPageGuard } from './permission'
 import { ChatLayout } from '@/views/chat/layout'
 import mjlayout from '@/views/mj/layout.vue'
+import soundLayout from '@/views/sound/layout.vue'
 import sunoLayout from '@/views/suno/layout.vue'
+import lumaLayout from '@/views/luma/layout.vue'
+import knowLayout from '@/views/knowledge/layout.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -33,6 +36,7 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
+
    {
     path: '/m',
     name: 'm',
@@ -62,18 +66,115 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/music',
-    name: 'music',
-    component: sunoLayout,
-    redirect: '/music/index',
+    path: '/sound',
+    name: 'Sound',
+    component: soundLayout,
+    redirect: '/sound/t',
     children: [
       {
-        path: '/music/:uuid?',
-        name: 'music',
-        component: () => import('@/views/suno/music.vue'),
+        path: 't',
+        name: 'sound1',
+        component: () => import('@/views/sound/index.vue'),
       },
     ],
   },
+  
+  {
+    path: '/roleList',
+    name: 'RoleList',
+    component: ChatLayout,
+    redirect: '/roleList/t',
+    children: [
+      {
+        path: 't',
+        name: 'roleList1',
+        component: () => import('@/views/sound/roleList.vue'),
+      },
+    ],
+  },
+
+  {
+    path: '/wxbot',
+    name: 'Wxbot',
+    component: ChatLayout,
+    redirect: '/wxbot/t',
+    children: [
+      {
+        path: 't',
+        name: 'wxbot1',
+        component: () => import('@/views/wxbot/bot.vue'),
+      },
+    ],
+  },
+  {
+    path: '/knowledge',
+    name: 'Knowledge',
+    component: knowLayout,
+    redirect: '/knowledge/t',
+    children: [
+      {
+        path: 't',
+        name: 'knowledge1',
+        component: () => import('@/views/knowledge/index.vue'),
+      },
+    ],
+  },
+
+  {
+    path: '/annex',
+    name: 'Annex',
+    component: knowLayout,
+    redirect: '/annex/t',
+    children: [
+      {
+        path: 't',
+        name: 'annex1',
+        component: () => import('@/views/knowledge/annex.vue'),
+      },
+    ],
+  },
+
+  {
+    path: '/fragment',
+    name: 'Fragment',
+    component: knowLayout,
+    redirect: '/fragment/t',
+    children: [
+      {
+        path: 't',
+        name: 'fragment1',
+        component: () => import('@/views/knowledge/fragment.vue'),
+      },
+    ],
+  },
+
+  // {
+  //   path: '/music',
+  //   name: 'music',
+  //   component: sunoLayout,
+  //   redirect: '/music/index',
+  //   children: [
+  //     {
+  //       path: '/music/:uuid?',
+  //       name: 'music',
+  //       component: () => import('@/views/suno/music.vue'),
+  //     },
+  //   ],
+  // },
+
+  // {
+  //   path: '/video',
+  //   name: 'video',
+  //   component: lumaLayout,
+  //   redirect: '/video/index',
+  //   children: [
+  //     {
+  //       path: '/video/:uuid?',
+  //       name: 'video',
+  //       component: () => import('@/views/luma/video.vue'),
+  //     },
+  //   ],
+  // },
 
   {
     path: '/404',

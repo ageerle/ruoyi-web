@@ -327,7 +327,7 @@ function blobToFile(blob: Blob, fileName: string): File {
 <input type="file"  @change="selectFile2" ref="fsRef2" style="display: none" accept="image/jpeg, image/jpg, image/png, image/gif"/>
 <input type="file"  @change="selectFile3" ref="fsRef3" style="display: none" accept="image/jpeg, image/jpg, image/png, image/gif"/>
 
-<div class="overflow-y-auto bg-[#fafbfc] px-4 dark:bg-[#18181c] h-full ">
+<div class="overflow-y-auto bg-[#fafbfc] px-4 dark:bg-[#18181c] h-full draw-form">
 
     <section class="mb-4">
         <div class="mr-1  mb-2 flex justify-between items-center">
@@ -360,12 +360,14 @@ function blobToFile(blob: Blob, fileName: string): File {
     <!-- <template  >  </template> -->
         <section class="mb-4 flex justify-between items-center"  >
         <div  >cw(0-100)</div>
-        <NInputNumber :min="0" :max="100" v-model:value="f.cw" class="!w-[60%]" size="small" clearable placeholder="0-100 角色参考程度" />
+        <!-- 0-100 角色参考程度 -->
+        <NInputNumber :min="0" :max="100" v-model:value="f.cw" class="!w-[60%]" size="small" clearable placeholder="" />
         </section >
     
         <section class="mb-4 flex justify-between items-center"  >
         <div class="w-[45px]">sref</div>
-            <NInput v-model:value="f.sref" size="small" placeholder="图片url 生成风格一致的图像" clearable >
+        <!-- 图片url 生成风格一致的图像 -->
+            <NInput v-model:value="f.sref" size="small" placeholder="" clearable > 
                  <template #suffix>
                     <SvgIcon icon="ri:upload-line"  class="cursor-pointer" @click="uploader('sref')"></SvgIcon>
                 </template>
@@ -373,7 +375,8 @@ function blobToFile(blob: Blob, fileName: string): File {
         </section>
         <section class="mb-4 flex justify-between items-center"  >
         <div class="w-[45px]">cref</div>
-            <NInput  v-model:value="f.cref" size="small" placeholder="图片url 生成角色一致的图像" clearable>
+         <!--图片url 生成角色一致的图像 -->
+            <NInput  v-model:value="f.cref" size="small" placeholder="" clearable>
                 <template #suffix>
                     <SvgIcon icon="ri:upload-line" class="cursor-pointer"  @click="uploader('cref')"></SvgIcon>
                 </template>
@@ -393,7 +396,7 @@ function blobToFile(blob: Blob, fileName: string): File {
                 <n-tag type="error" round size="small" style="cursor: pointer; " :bordered="false" @click="fsRef.click()"   v-if="st.fileBase64.length">
                 <div style="display: flex;">  <SvgIcon icon="mdi:file-chart-check-outline" /> {{ $t('mjchat.imgCYes') }} </div>
                 </n-tag>
-                <n-tag type="warning" round size="small" style="cursor: pointer; " :bordered="false" @click="fsRef.click()"   v-else="st.fileBase64">
+                <n-tag type="error" round size="small" style="cursor: pointer; " :bordered="false" @click="fsRef.click()"   v-else="st.fileBase64">
                 <div style="display: flex;">  <SvgIcon icon="mdi:file-document-plus-outline" />  {{ $t('mjchat.imgCUpload') }} </div>
                 </n-tag>
                 </template>
@@ -416,7 +419,7 @@ function blobToFile(blob: Blob, fileName: string): File {
              <div class="pr-1 pt-1">
                <NPopover trigger="hover">
                     <template #trigger>
-                        <n-tag type="warning" round size="small" style="cursor: pointer; " :bordered="false" @click="fsRef2.click()"    >
+                        <n-tag type="error" round size="small" style="cursor: pointer; " :bordered="false" @click="fsRef2.click()"    >
                             <div style="display: flex;">  <SvgIcon icon="fluent:image-edit-16-regular" />  {{$t('mjchat.img2text')}} </div>
                         </n-tag>
                     </template>
@@ -425,7 +428,7 @@ function blobToFile(blob: Blob, fileName: string): File {
                 </NPopover>
             </div>
             <div class="pt-1" >
-                <n-tag type="success" round size="small" style="cursor: pointer; " :bordered="false" @click="shorten()"   >
+                <n-tag type="info" round size="small" style="cursor: pointer; " :bordered="false" @click="shorten()"   >
                      <div style="display: flex;">  <SvgIcon icon="game-icons:bouncing-spring" /> Shorten </div>
                 </n-tag>
             </div>
@@ -449,7 +452,7 @@ function blobToFile(blob: Blob, fileName: string): File {
 
 
         <div class="flex">
-            <n-button type="primary" :block="true" :disabled="isDisabled"  @click="create()">
+            <n-button type="success" style="border-radius: 12px; height: 48px; line-height: 48px; font-size: 17px;" :bordered="false" class="genner-button" :block="true" :disabled="isDisabled"  @click="create()">
             <SvgIcon icon="mingcute:send-plane-fill" />
 
             <template v-if="st.isLoad">{{$t('mjchat.traning')}} </template>
@@ -459,7 +462,7 @@ function blobToFile(blob: Blob, fileName: string): File {
         <div class="flex justify-start items-center py-1">
 
             <div >
-                <n-tag type="success" round size="small" style="cursor: pointer; " :bordered="false" @click="clearAll()"   >
+                <n-tag type="info" round size="small" style="cursor: pointer; " :bordered="false" @click="clearAll()"   >
                      <div style="display: flex;">  <SvgIcon icon="ant-design:clear-outlined" />{{   $t('mj.clearAll')  }}  </div>
                 </n-tag>
             </div>
@@ -476,7 +479,7 @@ function blobToFile(blob: Blob, fileName: string): File {
         <div @click="copy2()"  >复制2</div>
     </div> -->
 
-   <ul class="pt-4"  v-if="!isMobile" v-html="$t('mjchat.imginfo')"></ul>
+   <ul class="pt-4" style="font-size: 12px;" v-if="!isMobile" v-html="$t('mjchat.imginfo')"></ul>
 
 
 </div>

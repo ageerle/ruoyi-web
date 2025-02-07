@@ -1,4 +1,5 @@
 import request from '@/utils/request/req';
+
 export interface KnowledgeReq {
 	id:string; // 知识库id
 	kid:string; // 附件id
@@ -6,6 +7,17 @@ export interface KnowledgeReq {
 	kname:string; // 知识库名称
 	description:string;// 知识库描述 
 }
+
+export interface KnowledgeDelReq {
+	kid:string; // 附件id
+}
+
+export interface KnowledgeDetailDelReq {
+	kid:string; // 附件id
+	docId:string; // 文档id
+}
+
+
 
 export interface SimpleGenerate {
 	model: string,
@@ -29,12 +41,27 @@ export function getKnowledge() {
 		method: 'get',
 	})
 }
+export function delKnowledge(params:KnowledgeDelReq) {
+	return request({
+		url: '/knowledge/remove',
+		method: 'post',
+		data: params,
+	})
+}
 
 
 export function getKnowledgeDetail(kid: string) {
 	return request({
 		url: '/knowledge/detail/'+kid,
 		method: 'get',
+	})
+}
+
+export function delKnowledgeDetail(params:KnowledgeDetailDelReq) {
+	return request({
+		url: 'knowledge/attach/remove',
+		method: 'post',
+		data: params,
 	})
 }
 

@@ -27,6 +27,7 @@ export default {
     verify: 'Verify',
     unauthorizedTips: 'Unauthorized, please verify first.',
     stopResponding: 'Stop Responding',
+    history: 'History'
   },
   chat: {
     newChatButton: 'New Chat',
@@ -51,13 +52,164 @@ export default {
     clearHistoryConfirm: 'Are you sure to clear chat history?',
     preview: 'Preview',
     showRawText: 'Show as raw text',
+    annouce: 'Notice: ',
+    annouceContent: 'This website is for lesite shall be borne by the user.;This website is for learning purposes only. Any issues arising from using this website shall be borne by the user.',
+    helpTitle: 'How can I help today ?',
+    helpcontent: 'As your intelligent partner, i can not only write copy and come up with ideas, but also chat and answer questions with youWant to know what else l can do? Click here to get started quickly! You can bookmark the website address inyour browser, making it more efficient for future use.;you can also ask me this like :',
+    used: 'using',
+    refresh: 'Refresh'
   },
+
+  voice: {
+    play: 'Play',
+    generate: 'Generate Voice',
+    delete: 'Delete',
+    addRole: 'Add Role',
+    roleName: 'Role Name',
+    roleNameDescribe: 'Please enter the role name',
+    roleDescribe: 'Role Description',
+    roleExplain: 'Please enter the role description',
+    avatar: 'Role Avatar',
+    upload: 'Click to Upload',
+    audioSamples: 'Audio Samples',
+    prompt1: 'Please upload an audio file within 5MB',
+    prompt2: '*Audio samples should be longer than 2 seconds. Quality is more important than length. Overly long samples may result in less than expected outcomes. Typically, controlling the sample length to a representative segment of 5-8 seconds is advisable.',
+    add: 'Add',
+    generateInfo: 'Controls the diversity of voice generation. The higher the value, the higher the expressiveness and range of randomness; should be an integer from 0 to 100, recommended not less than 95',
+    stability: 'Stability Filter (0-100, default 100)',
+    stabilityInfo: 'Limits the generation process to only select the top n best paths. The smaller the value, the more bland and stable the generated voice usually is, but it may also lead to decreased effects or anomalies when expressing certain content or timbres; should be an integer from 1 to 100, with 0 disabling the limit, recommended not less than 40',
+    start: 'Start Generating',
+    diversity: "Diversity",
+    proposal: "It is recommended to fill in a single sentence with no more than 50 characters to ensure the best effect (costs 1 yuan/1000 characters)",
+    createRole: 'Create Role',
+    soundMarket: 'Sound Market',
+    playSound: 'Play',
+    collection: 'Collection',
+    return: 'Return',
+    collectionSuccessful: 'Collection Successful',
+    uploudSuccessful: 'Uploud Successful',
+    operationSuccessful: 'Operation Successful',
+  },
+
+  annex: {
+    docId: "Doc Id",
+    docName: "Doc Name",
+    docType: "Doc Type",
+    action: "Action",
+    uploadAttachment: "Upload Attachment",
+    deleteAttachment: "Delete Attachment",
+    knowledgeFragment: "Knowledge Fragment",
+    fileUploadSuccess: "File uploaded successfully!",
+    deletionFailed: "Deletion failed!",
+    attachmentDeletedSuccess: "Attachment deleted successfully!",
+    pleaseUploadFile: "Please upload a file within 10MB",
+    supportedFormats: "Supported file formats: md, pdf, docx, txt, csv, etc.",
+    friendlyReminder: "Friendly Reminder:",
+    largeFileWarning: "1. If the file is large, the upload time may be long. Please be patient.",
+    utf8Warning: "2. For txt files, please use UTF8 format to avoid garbled text.",
+    uploadCharacterLimit: "3. It is recommended to upload less than 50,000 characters at a time. Parsing 10,000 characters takes about 10 seconds."
+  },
+
+  login: {
+    accountFormatError: "Incorrect account format!",
+    loginSuccess: "Login successful!",
+    loginFailed: "Login failed!",
+    usernameOrPasswordEmpty: "Username or password cannot be empty!",
+    emailOrPhone: "Email or Phone",
+    enterEmailOrPhone: "Enter email or phone",
+    password: "Password",
+    enterPassword: "Enter password",
+    forgotPassword: "Forgot password?",
+    login: "Login",
+    register: "Register",
+    andExperience: "and experience the Q&A assistant for free",
+    scanQrCodeLogin: "Please use your phone to scan the QR code to log in",
+    activateSystem: "wechat code",
+    activationFailed: "Activation failed, please check the authorization code!",
+    activationSuccess: "Activation successful!",
+    enterAuthCode: "Please enter the authorization code to activate the system",
+    systemNotActivated: "System not activated",
+    activationCode: "Activation Code",
+    activate: "Activate",
+    or: 'Or'
+  },
+
+  register: {
+    create_account: "Create an account",
+    invalid_account: "Invalid account format",
+    empty_verification_code: "Verification code cannot be empty",
+    registration_success: "Registration successful",
+    get_verification_code: "Send Code",
+    seconds_retry: " seconds retry",
+    register: "Register",
+    or: "or",
+    login: "Login",
+    if_account: " if you already have an account",
+    email: "Email",
+    enterEmail: "Please enter your email",
+    verification_code: "Verification Code",
+    enter_verification_code: "Please enter the verification code",
+    password: "Password",
+    enter_password: "Please enter your password"
+  },
+
+  reset: {
+    reset: "Reset Password",
+    invalid_account: "Invalid account format",
+    empty_verification_code: "Verification code cannot be empty",
+    reset_success: "reset successful",
+    get_verification_code: "Send Code",
+    seconds_retry: " seconds retry",
+    register: "Register",
+    or: "or",
+    login: "Login",
+    if_account: " if you already have an account",
+    email: "Email",
+    enter_email: "Please enter your email",
+    verification_code: "Verification Code",
+    enter_verification_code: "Please enter the verification code",
+    password: "Password",
+    enter_password: "Please enter your password"
+  },
+
+  knowledge: {
+    createKnowledgeBase: "Create Knowledge Base",
+    createYourKnowledgeBase: "Create your knowledge base",
+    knowledgeName: "Knowledge Name",
+    knowledgeDescription: "Knowledge Description",
+    enterKnowledgeName: "Enter knowledge name",
+    enterKnowledgeDescription: "Enter knowledge description",
+    add: "Add",
+    delete: "Delete",
+    attachment: "Attachment",
+    id: "ID",
+    number: "Number",
+    name: "Name",
+    description: "Description",
+    actions: "Actions",
+    return: "Return",
+    no: "No",
+    content: "Content",
+  },
+
   setting: {
     setting: 'Setting',
     general: 'General',
     advanced: 'Advanced',
     config: 'Config',
-    avatarLink: 'Avatar Link',
+    avatarLink: 'Avatar',
+    balance: 'Balance',
+    grade: 'Grade',
+    senior: 'Senior',
+    lowlevel: "Low level",
+    personal: "Personal",
+    model: "Model Info",
+    message: "Message Info",
+    about: "about",
+    plan: "Subscription Plan",
+    charge: "Fee standards",
+    exchange: "Exchange Secret",
+    recharge: "Top up",
     name: 'Name',
     description: 'Description',
     role: 'Role',
@@ -72,11 +224,16 @@ export default {
     timeout: 'Timeout',
     socks: 'Socks',
     httpsProxy: 'HTTPS Proxy',
-    balance: 'API Balance',
     monthlyUsage: 'Monthly Usage',
   },
+
   store: {
-    siderButton: 'Prompt Store',
+    unit: '$',
+    day: 'days',
+    redeemKey: "Redeem Now",
+    token: "1000 tokens are equivalent to approximately 750 English words or 400 to 500 Chinese characters. In the per-token billing model, fees will be charged for every 1,000 tokens used.",
+    input: "Please enter the card password",
+    siderButton: 'Upgrade Package',
     local: 'Local',
     online: 'Online',
     title: 'Title',
@@ -92,6 +249,7 @@ export default {
     importRepeatContent: 'Content is repeatedly skipped: {msg}',
     onlineImportWarning: 'Note: Please check the JSON file source!',
     downloadError: 'Please check the network status and JSON file validity',
+    login: 'Sign in now'
   },
 
 
@@ -192,19 +350,44 @@ export default {
   "micRec": "Start recording, please speak! It will automatically stop if there is no sound for 2 seconds.",
   "micRecEnd": "Recording has ended"
   },
+
   "mjset": {
     "server": "Server",
     "about": "About",
     "model": "Model",
-    "sysname": "AI Drawing"
+    "sysname": "AI Drawing",
+    "logout": "Logout",
+    "balance": "balance"
   },
+
   "mjtab": {
     "chat": "Chat",
+    "store": "GPTs",
+    "voice": "Voice",
+    "voiceinfo": "Create your own voice",
+    "knowledge": "Knowledge",
+    "knowledgeinfo": "Create a private knowledge base",
+    "bot": "Robot",
+    "botinfo": "Wechat bot",
     "draw": "Drawing",
     "drawinfo": "AI Drawing with Midjourney Engine",
     "gallery": "Gallery",
     "galleryInfo": "My Gallery"
   },
+
+  "model": {
+    "name": "Name",
+    "price": "Price",
+    "type": "Charging method",
+    "remark": "Remark",
+    "content": "content",
+    "modelName": "ModelName",
+    "totalTokens": "TotalTokens",
+    "deductCost": "DeductCost",
+    "msgtime": "CreateTime",
+    "msgremark": "Remark",
+  },
+
   "mjchat": {
     "loading": "Loading Image",
     "openurl": "Open Link Directly",
@@ -225,6 +408,8 @@ export default {
     "successTitle": "Success",
     "modlePlaceholder": "Custom models, separated by spaces (optional)",
     "myModle": "Custom Models",
+    "customer":'CUSTOMER SERVICE',
+    "knowledgeBase": "knowledge base",
     "historyCnt": "Context Count",
     "historyToken": "More context improves accuracy but consumes more credits",
     "historyTCnt": "Reply Count",
@@ -279,10 +464,9 @@ export default {
     "add2more": "Please add two or more images",
     "no1m": "Image size cannot exceed 1M",
     "imgExt": "Images support only jpg, gif, png, jpeg formats"
-    ,"setSync": "Synchronize Midjourney and Suno"
   },
 
-	draw: {
+  draw: {
 		qualityList: {
 			general: "General",
 			clear: "Clear",
@@ -369,7 +553,6 @@ export default {
 			landscape: "Landscape (3:2)",
 		},
 	}
-
   ,suno:{
     "description": "Description",
     "custom": "Custom",
@@ -397,11 +580,29 @@ export default {
     "server": "Suno API Endpoint",
     "serverabout": "Suno Related",
     "setOpenKeyPlaceholder": "Related KEY for Suno API; optional"
+
+    ,upMps:'Upload'
+    ,extend:'Extend'
+    ,extendFrom:'Extend From'
+    ,extendAt:'Extend at'
+    ,fail:'Fail'
+    ,info:'Note: <br> Uploaded audio must be between 6 seconds and 60 seconds in duration.'
   }
-
-
-
-
-
+   ,video: {
+    menu: "Videos",
+    menuinfo: "Luam and other video generate",
+    descpls: "Video generate description",
+    lumaabout: "About Luma",
+    lumaserver: "Luma API endpoint",
+    setOpenKeyPlaceholder: "Key for Luma API, optional",
+    generate: "Generate video",
+    nodata: "No available videos, please generate first!",
+    selectimg: "Select image",
+    clear: "Clear",
+    plsInput: "Please input content!",
+    submitSuccess: "Submitted successfully!",
+    process: "Video generating...",
+    repeat: "Get again"
+  }
 
 }

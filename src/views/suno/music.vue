@@ -7,11 +7,11 @@ import mcplayer from './mcplayer.vue';
 
 <template>
 
-<div class="flex w-full h-full   ">
+<div class="flex w-full h-full   music-content">
     <div class="w-[300px] h-full  overflow-y-auto ">
         <McInput />
     </div>
-    <div class=" flex-1  h-full bg-[#fafbfc] pt-2 dark:bg-[#18181c] overflow-y-auto " >
+    <div class=" flex-1  h-full bg-[#fafbfc] pt-2 dark:bg-[#18181c] overflow-y-auto music-list" >
         <mcList/>
     </div>
     <div class="w-[300px]  h-full overflow-y-auto ">

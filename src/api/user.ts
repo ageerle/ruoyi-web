@@ -78,3 +78,36 @@ export function loginOut() {
 		method: 'post',
 	})
 }
+
+// 根据参数键名查询参数值
+export function getConfigKey(configKey: string){
+	return request({
+	  url: '/chat/config/configKey/' + configKey,
+	  method: 'get'
+	});
+}
+
+// 根据授权编码激活系统
+export function authSystem(code: string){
+	return request({
+	  url: '/chat/config/authSystem/' + code,
+	  method: 'post'
+	});
+}
+
+// 获取登录二维码
+export function getMpQrCode(){
+	return request({
+	  url: '/user/qrcode',
+	  method: 'get'
+	});
+}
+
+// 查询登陆状态
+export function getLoginType(ticket:string){
+	const encodedTicket = encodeURIComponent(ticket);
+    return request({
+        url: `/user/login/qrcode?ticket=${encodedTicket}`,
+        method: 'get'
+    });
+}

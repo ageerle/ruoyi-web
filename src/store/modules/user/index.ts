@@ -28,6 +28,10 @@ export const useUserStore = defineStore('user-store', {
       }
       return Promise.reject(err);
     },
+    // 二维码登录的方法
+    async userQrLogin(token: string){
+      setToken(token);
+    },
 
     logout: async (): Promise<void> => {
       await loginOut();

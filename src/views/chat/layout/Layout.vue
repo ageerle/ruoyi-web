@@ -63,7 +63,7 @@ const getContainerClass = computed(() => {
 </script>
 
 <template>
-  <div class="  dark:bg-[#24272e] transition-all p-0"  :class="[isMobile ? 'h55' : 'h-full' ]">
+  <div class="  dark:bg-[#24272e] transition-all p-0 111"  :class="[isMobile ? 'h55' : 'h-full' ]">
     <div class="h-full overflow-hidden" :class="getMobileClass">
       <NLayout class="z-40 transition" :class="getContainerClass" has-sider>
         <aiSider v-if="!isMobile"/>

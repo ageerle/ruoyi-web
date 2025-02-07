@@ -9,7 +9,7 @@ const $emit=defineEmits(['drawSent','close']);
 const drawSent=(d:any )=> $emit('drawSent',d);
 </script>
 <template>
-<div class="overflow-y-auto bg-[#fafbfc] pt-2 dark:bg-[#18181c] h-full ">
+<div class="overflow-y-auto bg-[#fafbfc] pt-2 dark:bg-[#18181c] h-full draw-tabs">
  
 <n-tabs type="line" animated default-value="draw">
     <n-tab-pane name="start" tab=""> 

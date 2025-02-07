@@ -16,7 +16,8 @@ export interface HttpOption {
 export interface Response<T = any> {
   data: T
   msg: string | undefined
-  code: number
+  code: number,
+  rows: []
 }
 
 function http<T = any>(

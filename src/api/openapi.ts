@@ -10,20 +10,6 @@ import { ChatMessage } from "gpt-tokenizer/esm/GptEncoding";
 import { chatSetting } from "./chat";
 import { getToken } from '@/store/modules/auth/helper'
 
-//import {encode,  encodeChat}  from "gpt-tokenizer"
-//import {encode,  encodeChat} from "gpt-tokenizer/cjs/encoding/cl100k_base.js";
-//import { get_encoding } from '@dqbd/tiktoken'
-//import FormData from 'form-data';
-
-
-export const KnowledgeCutOffDate: Record<string, string> = {
-  default: "2021-09",
-  "gpt-4-1106-preview": "2023-04",
-  "gpt-4-0125-preview": "2023-04",
-  "gpt-4-vision-preview": "2023-04",
-  "claude-3-opus-20240229": "2023-08",
-  "claude-3-sonnet-20240229": "2023-08",
-};
 
 const getUrl=(url:string)=>{
     if(url.indexOf('http')==0) return url;
@@ -227,21 +213,20 @@ export const getSystemMessage = (uuid?:number )=>{
         sysTem= chatS.getGptConfig().systemMessage ;
     }
     if(  sysTem ) return sysTem;
-    let model= gptConfigStore.myData.model?gptConfigStore.myData.model: "gpt-3.5-turbo";
+    let model= gptConfigStore.myData.model;
     let producer= 'You are ChatGPT, a large language model trained by OpenAI.'
     if(model.includes('claude-3')) producer=  'You are Claude, a large language model trained by Anthropic.';
       const DEFAULT_SYSTEM_TEMPLATE = `${producer}
-Knowledge cutoff: ${KnowledgeCutOffDate[model]}
-Current model: ${model}
-Current time: ${ new Date().toLocaleString()}
-Latex inline: $x^2$
-Latex block: $$e=mc^2$$`;
-return DEFAULT_SYSTEM_TEMPLATE;
+    Current model: ${model}
+    Current time: ${ new Date().toLocaleString()}
+    Latex inline: $x^2$
+    Latex block: $$e=mc^2$$`;
+    return DEFAULT_SYSTEM_TEMPLATE;
 
 }
 export const subModel= async (opt: subModelType)=>{
     //
-    const model= opt.model?? ( gptConfigStore.myData.model?gptConfigStore.myData.model: "gpt-3.5-turbo");
+    const model= opt.model?? ( gptConfigStore.myData.model);
     let max_tokens= gptConfigStore.myData.max_tokens;
     let temperature= 0.5;
     let top_p= 1;
@@ -274,11 +259,7 @@ export const subModel= async (opt: subModelType)=>{
                         'Accept': 'text/event-stream '}
         headers={...headers,...getHeaderAuthorization()}
         try {
-            let url = "/chat"
-            // 如果选择了数据库 切换地址
-            if(gptConfigStore.myData.kid){
-                url = "/knowledge/chat"
-            }
+            let url = "/chat/send"
          await fetchSSE( gptGetUrl(url),{
             method: 'POST',
             headers: headers,
@@ -296,7 +277,7 @@ export const subModel= async (opt: subModelType)=>{
                             isFinish: false
                         });
                     }
-                 
+
                  }
             },
             onError(e ){

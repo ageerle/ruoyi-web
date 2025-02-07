@@ -2,6 +2,7 @@ import type { GlobalThemeOverrides } from 'naive-ui'
 import { computed, watch } from 'vue'
 import { darkTheme, useOsTheme } from 'naive-ui'
 import { useAppStore } from '@/store'
+import { useBasicLayout } from '@/hooks/useBasicLayout'
 
 export function useTheme() {
   const appStore = useAppStore()
@@ -27,7 +28,7 @@ export function useTheme() {
     }
     return {}
   })
-
+  const { isMobile } = useBasicLayout()
   watch(
     () => isDark.value,
     (dark) => {
@@ -35,6 +36,16 @@ export function useTheme() {
         document.documentElement.classList.add('dark')
       else
         document.documentElement.classList.remove('dark')
+    },
+    { immediate: true },
+  )
+  watch(
+    () => isMobile.value,
+    (dark) => {
+      if (dark)
+        document.documentElement.classList.add('is-mobile')
+      else
+        document.documentElement.classList.remove('is-mobile')
     },
     { immediate: true },
   )

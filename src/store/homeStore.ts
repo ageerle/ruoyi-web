@@ -5,15 +5,10 @@ import { ss } from '@/utils/storage'
 export const homeStore = reactive({
     myData:{
         act:'',//动作
-        act2:'',//动作
         actData:{} //动作类别 
         ,local:'' //当前所处的版本
         ,session:{} as any
         ,isLoader:false
-        ,vtoken:'' //turnstile token
-        ,ctoken:'' //cookie
-        ,isClient: typeof window !== 'undefined' && window.__TAURI__
-        ,ms:{} as any
        
     }
     
@@ -25,22 +20,19 @@ export const homeStore = reactive({
                 this.myData.actData=''
             }, 2000 );
         }
-        if( Object.keys(v).indexOf('act2')>-1){ 
-            setTimeout(()=> {
-                this.myData.act2=''
-                this.myData.actData=''
-            }, 500 );
-        }
     }
  
 })
 
 export interface gptConfigType{
     model:string
+    modelLabel:string
     max_tokens:number
     userModel?:string //自定义
     talkCount:number //联系对话
     systemMessage:string //自定义系统提示语
+    kid:string //知识库id
+    kName:string //知识库名称
     gpts?:gptsType
     uuid?:number
     temperature?:number // 随机性 : 值越大，回复越随机
@@ -60,19 +52,22 @@ const getGptInt= ():gptConfigType =>{
 }
 
 const  getDefault=()=>{
-const amodel = homeStore.myData.session.amodel??'gpt-3.5-turbo'
+const amodel = homeStore.myData.session.amodel??'o1-mini-2024-09-12'
 let v:gptConfigType={
-        model: amodel,
-        max_tokens:1024,
-        userModel:'',
-        talkCount:10,
-        systemMessage:'',
-        temperature:0.5,
-        top_p:1,
-        presence_penalty:0,
-        frequency_penalty:0,
-        tts_voice:"alloy"
-    }
+    model: amodel,
+    modelLabel: '',
+    max_tokens: 1024,
+    userModel: '',
+    talkCount: 10,
+    systemMessage: '',
+    temperature: 0.5,
+    top_p: 1,
+    presence_penalty: 0,
+    frequency_penalty: 0,
+    tts_voice: "alloy",
+    kid: '',
+    kName: ''
+}
     return v ;
 }
 export const gptConfigStore= reactive({
@@ -98,9 +93,6 @@ export interface gptServerType{
     MJ_API_SECRET:string
     UPLOADER_URL:string
     MJ_CDN_WSRV?:boolean //wsrv.nl
-    SUNO_SERVER:string
-    SUNO_KEY:string
-    IS_SET_SYNC?:boolean
 
 }
 
@@ -111,10 +103,7 @@ let v:gptServerType={
         MJ_SERVER:'',
         UPLOADER_URL:'',
         MJ_API_SECRET:'',
-        SUNO_KEY:'',
-        SUNO_SERVER:'',
         MJ_CDN_WSRV:false
-        ,IS_SET_SYNC:true
     }
     return v ;
 }

@@ -14,7 +14,6 @@ const appStore = useAppStore()
 const chatStore = useChatStore()
 
 const dataSources = computed(() => chatStore.history)
-
 async function handleSelect({ uuid }: Chat.History) {
   if (isActive(uuid))
     return
@@ -70,8 +69,9 @@ watch(()=>gptConfigStore.myData , toMyuid , {deep:true})
 </script>
 
 <template>
-  <NScrollbar class="px-4">
+  <NScrollbar class="px-4 chat-history">
     <div class="flex flex-col gap-2 text-sm">
+      <p class="history-title">{{ $t('common.history')}}</p>
       <template v-if="!dataSources.length">
         <div class="flex flex-col items-center mt-4 text-center text-neutral-300">
           <SvgIcon icon="ri:inbox-line" class="mb-2 text-3xl" />
@@ -81,15 +81,16 @@ watch(()=>gptConfigStore.myData , toMyuid , {deep:true})
       <template v-else>
         <div v-for="(item, index) of dataSources" :key="index">
           <a
-            class="relative flex items-center gap-3 px-3 py-3 break-all border rounded-md cursor-pointer hover:bg-neutral-100 group dark:border-neutral-800 dark:hover:bg-[#24272e]"
-            :class="isActive(item.uuid) && ['border-[#4b9e5f]', 'bg-neutral-100', 'text-[#4b9e5f]', 'dark:bg-[#24272e]', 'dark:border-[#4b9e5f]', 'pr-14']"
+            class="relative flex items-center gap-3 px-3 py-3 break-all border rounded-md cursor-pointer hover:bg-neutral-100 group dark:border-neutral-800 dark:hover:bg-[#24272e] chat-item"
+            :class="isActive(item.uuid) && ['check-chat-item']"
             @click="handleSelect(item)"
           >
              
-             <AiListText   :myObj="isInObjs(item.uuid)" :myItem="item">
+             <AiListText   :myObj="isInObjs(item.uuid)" :myItem="item" :index="index">
                <NInput
+               style="width: 226px"
                 v-if="item.isEdit"
-                v-model:value="item.title" size="tiny"
+                v-model:value="item.title" size="small"
                 @keypress="handleEnter(item, false, $event)"
               />
              </AiListText>

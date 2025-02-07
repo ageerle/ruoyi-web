@@ -1,35 +1,38 @@
 import { gptServerStore,homeStore,useAuthStore } from "@/store";
 import { mlog } from "./mjapi";
 import { sunoStore,SunoMedia } from "./sunoStore";  
-
+import { getToken } from "@/store/modules/auth/helper";
 const getUrl=(url:string)=>{
     if(url.indexOf('http')==0) return url;
     if(gptServerStore.myData.SUNO_SERVER){
-        return `${ gptServerStore.myData.SUNO_SERVER}${url}`;
+        if( gptServerStore.myData.SUNO_SERVER.indexOf('suno')>0 ) return `${ gptServerStore.myData.SUNO_SERVER}${url}`;
+
+        return `${ gptServerStore.myData.SUNO_SERVER}/suno${url}`;
     }
-    return `/sunoapi${url}`;
+    return `/api/sunoapi${url}`;
 }
 function getHeaderAuthorization(){
     let headers={}
-    if( homeStore.myData.vtoken ){
-        const  vtokenh={ 'x-vtoken':  homeStore.myData.vtoken ,'x-ctoken':  homeStore.myData.ctoken};
-        headers= {...headers, ...vtokenh}
-    }
-    if(!gptServerStore.myData.SUNO_KEY){
-        const authStore = useAuthStore()
-        if( authStore.token ) {
-            const bmi= { 'x-ptoken':  authStore.token };
-            headers= {...headers, ...bmi }
-            return headers;
-        }
-        return headers
-    }
-    const bmi={
-        'Authorization': 'Bearer ' +gptServerStore.myData.SUNO_KEY
-    }
+    // if( homeStore.myData.vtoken ){
+    //     const  vtokenh={ 'x-vtoken':  homeStore.myData.vtoken ,'x-ctoken':  homeStore.myData.ctoken};
+    //     headers= {...headers, ...vtokenh}
+    // }
+    let bmi = {'Authorization': 'Bearer ' + getToken() };
     headers= {...headers, ...bmi }
+    console.log("headers======",headers)
+    // if(!gptServerStore.myData.SUNO_KEY){
+    //     const authStore = useAuthStore()
+    //     if( authStore.token ) {
+    //         const bmi= { 'x-ptoken':  authStore.token };
+    //         headers= {...headers, ...bmi }
+    //         return headers;
+    //     }
+    //     return headers
+    // }
     return headers
 }
+
+
 export function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
@@ -39,7 +42,8 @@ export const lyricsFetch= async ( lid:string)=>{
         mlog("ddd",dt )
         let time= (i+1)
         if(time>20) time=20;
-        if(dt.status=='complete') return dt ;
+        if(dt.data.progress == '100%') return dt ;
+        // if(dt.status=='complete') return dt ;
         await sleep( time*1000 )
         
     }
@@ -65,9 +69,11 @@ export const FeedTask= async (ids:string[])=>{
     
     let d:any[] = await sunoFetch('/feed/'+ ids.join(','));
     mlog('FeedTask',d )
+
+    console.log('FeedTask',d)
     d.forEach( (item:SunoMedia) =>{
          sunoS.save( item)
-        if(item.status== "complete"){
+        if(item.status== "complete" || item.status== "error" ){
             ids= ids.filter(v=>v!=item.id )
         }
     });

@@ -5,23 +5,24 @@ import type { Ref } from 'vue'
 import { computed, onMounted, onUnmounted, ref,watch,h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { NAutoComplete, NButton, NInput, useDialog, useMessage,NAvatar } from 'naive-ui'
+import { NAutoComplete, NButton, NInput, useDialog, useMessage,NAvatar,NModal,NCard,NImage } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
 import { useChat } from './hooks/useChat'
 import { useUsingContext } from './hooks/useUsingContext'
-import HeaderComponent from './components/Header/index.vue'
+import { getGpts } from '@/api/chatmsg';
 import {  SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { gptConfigStore, gptsUlistStore, homeStore, useChatStore, usePromptStore } from '@/store'
-import { chatSetting, fetchChatAPIProcess, gptsType, mlog, myFetch } from '@/api'
+import { chatSetting, fetchChatAPIProcess, gptsType, mlog, myFetch, my2Fetch } from '@/api'
 import { t } from '@/locales'
 import drawListVue from '../mj/drawList.vue'
 import aiGPT from '../mj/aiGpt.vue'
 import AiSiderInput from '../mj/aiSiderInput.vue'
 import aiGptInput from '../mj/aiGptInput.vue'
-
+import { getNotice,readNotice, getInform } from '@/api/notice'
+import to from "await-to-js";
 
 let controller = new AbortController()
 
@@ -32,7 +33,9 @@ const dialog = useDialog()
 const ms = useMessage()
 const router = useRouter()
 const chatStore = useChatStore()
+// const href = window.location.href.split('#')[0]
 
+const href = window.location.hostname;
 const { isMobile } = useBasicLayout()
 const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
@@ -423,6 +426,9 @@ function handleStop() {
   }
 }
 
+
+
+
 // 可优化部分
 // 搜索选项计算，这里使用value作为索引项，所以当出现重复value时渲染异常(多项同时出现选中效果)
 // 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
@@ -452,15 +458,15 @@ const searchOptions = computed(() => {
 
 const goUseGpts= async ( item: gptsType)=>{
     const saveObj= {model:  `${ item.gid }`   ,gpts:item}
-    gptConfigStore.setMyData(saveObj); 
+    gptConfigStore.setMyData(saveObj);
     if(chatStore.active){ //保存到对话框
         const chatSet = new chatSetting( chatStore.active );
         if( chatSet.findIndex()>-1 ) chatSet.save( saveObj )
     }
     ms.success(t('mjchat.success2'));
-    const gptUrl= `https://gpts.ddaiai.com/open/gptsapi/use`; 
-    myFetch(gptUrl,item );
-     
+    // const gptUrl= `https://gpts.ddaiai.com/open/gptsapi/use`;
+    // myFetch(gptUrl,item );
+
     mlog('go local ', homeStore.myData.local );
     if(homeStore.myData.local!=='Chat') router.replace({name:'Chat',params:{uuid:chatStore.active}});
 
@@ -473,14 +479,14 @@ const renderOption = (option: { label: string,gpts?:gptsType }) => {
   if( prompt.value=='@'){
     //return [ h( NAvatar,{src:'https://cos.aitutu.cc/gpts/gpt4all.jpg',size:"small",round:true}),option.label ]
     return [h("div",{class:'flex justify-start items-center'
-    , onclick:()=>{  
+    , onclick:()=>{
       if(option.gpts)   goUseGpts(option.gpts) ;
       prompt.value='';
       setTimeout(() =>  prompt.value='', 80);
     }}
     ,[h(NAvatar,{src:option.gpts?.logo, "fallback-src" : 'https://cos.aitutu.cc/gpts/3.5net.png',size:"small",round:true, class:"w-8 h-8"})
-    , h('span', { class: 'pl-1' }, option.gpts?.name  ) 
-    , h('span', { class: 'line-clamp-1 flex-1 pl-1 opacity-50' }, option.label  ) 
+    , h('span', { class: 'pl-1' }, option.gpts?.name  )
+    , h('span', { class: 'line-clamp-1 flex-1 pl-1 opacity-50' }, option.label  )
     ])]
   }
   for (const i of promptTemplate.value) {
@@ -511,11 +517,15 @@ onMounted(() => {
   scrollToBottom()
   if (inputRef.value && !isMobile.value)
     inputRef.value?.focus()
+  // 查询公告信息
+  selectNotice()
+  // 查询通知信息
+  selectInform()
 })
 
 onUnmounted(() => {
 
-  if (loading.value)   controller.abort() 
+  if (loading.value)   controller.abort()
   homeStore.setMyData({isLoader:false});
 })
 
@@ -538,30 +548,114 @@ const ychat = computed( ()=>{
     scrollToBottomIfAtBottom();
   }
   return { text, dateTime: t('chat.preview')} as Chat.Chat;
-}) 
+})
 
+const showModal = ref(false);
+const modalContent = ref('<h2>暂无内容</h2>');
+const informContent = ref([]);
+const noticeId = ref('');
+async function selectNotice() {
+  const [err, result] = await to(getNotice());
+  console.log("result?.data",result?.data)
+  if (result?.data) {
+    showModal.value = true
+    noticeId.value = result.data.noticeId
+    modalContent.value = result.data.noticeContent
+  }
+}
+async function selectInform() {
+  const [err, result] = await to(getInform());
+  if (result?.rows) {
+    informContent.value = result.rows.length ? result.rows : []
+  }
+}
+
+async function handleClose(){
+  await to(readNotice(noticeId.value));
+}
+const gptsList = ref<gptsType[]>([]);
+const gptsFilterList = ref<gptsType[]>([]);
+const getRandowNum = (Min:number, Max: number):number =>{
+  const Range = Max - Min + 1
+  const Rand = Math.random()
+  return Min + Math.floor(Rand * Range)
+}
+const load= async ()=>{
+
+    // const gptUrl= homeStore.myData.session.gptUrl?  homeStore.myData.session.gptUrl :'';
+    // mlog('load',gptUrl );
+    //  let d;
+    // if( homeStore.myData.session.gptUrl ){
+    //    d = await my2Fetch( homeStore.myData.session.gptUrl  );
+    // }else {
+
+    //     d = await myFetch('https://gpts.ddaiai.com/open/gpts');
+    // }
+
+    const params = { pageNum: 1, pageSize: 20 };
+        const [err, result] = await to(getGpts(params));
+        if(err){
+            console.log("err===",err)
+        }else{
+            gptsList.value = result.rows as unknown as gptsType[];
+        }
+
+
+     // gptsList.value = d.gpts as gptsType[];
+    if(gptsList.value.length && gptsList.value.length > 3) {
+      gptsFilterList.value = gptsList.value.slice(0, 4)
+    }
+}
+const refresh = () => {
+  gptsFilterList.value = []
+  let num = gptsList.value[getRandowNum(0, gptsList.value.length - 1)]
+  let num1 = gptsList.value[getRandowNum(0, gptsList.value.length - 1)]
+  let num2 = gptsList.value[getRandowNum(0, gptsList.value.length - 1)]
+  let num3 = gptsList.value[getRandowNum(0, gptsList.value.length - 1)]
+  let arr = [num, num1, num2, num3]
+  if(Array.from(new Set(arr)).length != 4) {
+    refresh()
+    return
+  }
+  gptsFilterList.value = [num, num1, num2, num3]
+}
+load()
 
 </script>
 
 <template>
-  <div class="flex flex-col w-full h-full">
+  <NModal
+  v-model:show="showModal"
+   closable @on-after-leave=""
+   :mask-closable="false"
+    preset="dialog"
+    title="公告详情"
+    positive-text="我已知晓"
+    @positive-click="handleClose"
+   >
+   <div v-html="modalContent"></div>
+  </NModal>
+
+  <div class="flex flex-col w-full h-full chat-content" :class="[isMobile? '' : 'chat-content-noMobile']">
    <!-- v-if="isMobile" -->
-    <HeaderComponent
-     
+    <!-- <HeaderComponent
+      :haveData="!!dataSources.length"
       :using-context="usingContext"
       @export="handleExport"
       @handle-clear="handleClear"
-    />
+    /> -->
+
     <main class="flex-1 overflow-hidden">
 
       <template v-if="gptConfigStore.myData.kid">
-        <div class="flex  mt-4  text-neutral-300">
+        <div class="flex  mt-4  text-neutral-300 chat-header">
            <SvgIcon icon="material-symbols:book" class="mr-1 text-2xl" ></SvgIcon>
            <span>{{ gptConfigStore.myData.kName }}</span>
         </div>
       </template>
 
       <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
+
         <div
           id="image-wrapper"
           class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
@@ -569,14 +663,60 @@ const ychat = computed( ()=>{
         >
           <template v-if="!dataSources.length">
             <div v-if="homeStore.myData.session.notify" v-html="homeStore.myData.session.notify" class="text-neutral-300 mt-4">
-            </div>
 
-            <div class="flex items-center justify-center mt-4 text-center text-neutral-300" v-else>
+            </div>
+            <div class="gpts-box" v-else>
+              <h1>{{ href }}</h1>
+              <div class="annou" v-if="informContent.length" :style="{'margin-bottom': isMobile ? '15px' : '30px'}">
+                <div class="ai-icon">
+                  <IconSvg icon="chatGPT" :width="isMobile ? '32px' : '64px'" :height="isMobile ? '32px' : '64px'"></IconSvg>
+                </div>
+                <div class="text" :style="{padding: isMobile? '22px 10px' : '22px 68px'}">
+                  <p class="title">{{ t('chat.annouce') }}</p>
+                  <!-- <p v-for="(item,index) in t('chat.annouceContent').split(';')" :key="index">{{ item }}</p> -->
+                  <div v-for="(item, index) in informContent.slice(0, 1)" :key="index" >
+                    <!-- <p style="margin-top: 10px; font-size: 18px">{{ item.noticeTitle }}</p> -->
+                    <div v-html="item.noticeContent"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="help" v-if="gptsFilterList && gptsFilterList.length">
+                <div class="ai-icon">
+                  <IconSvg icon="chatGPT" :width="isMobile ? '32px' : '64px'" :height="isMobile ? '32px' : '64px'"></IconSvg>
+                </div>
+                <div class="text" :style="{padding: isMobile? '22px 10px' : '22px 68px', 'font-size': isMobile? '14px' : '16px', 'line-height': isMobile? '20px' : '28px'}">
+                  <p class="title">
+                    {{ t('chat.helpTitle') }}
+                  </p>
+                  <p v-for="(item,index) in t('chat.helpcontent').split(';')" :key="index">{{ item }}</p>
+                  <div class="gpts-list">
+                    <div class="refresh" @click="refresh">
+                      <IconSvg icon="refresh"></IconSvg>&nbsp;{{ t('chat.refresh') }}
+                    </div>
+                    <div v-for="v in gptsFilterList" :key="v.name" class="gpts-item" :style="{width: isMobile ? '100%' : 'calc(50% - 20px)', marginRight: '20px', padding: isMobile ? '5px 8px' : '14px 10px', 'margin-bottom': isMobile ? '8px' : '20px'}">
+                      <NImage :src="v.logo" :preview-disabled="true" lazy
+                      class="group-hover:scale-[130%] duration-300 shrink-0 overflow-hidden bg-base object-cover rounded-full bc-avatar w-[80px] h-[80px]" :style="{width: isMobile ? '23px' : '46px', height: isMobile ? '23px' : '46px'}">
+                          <template #placeholder>
+                            <div class="w-full h-full justify-center items-center flex"  >
+                            <SvgIcon icon="line-md:downloading-loop" class="text-[60px] text-green-300"   ></SvgIcon>
+                            </div>
+                          </template>
+                      </NImage>
+                      <div :style="{width: `calc(100% - ${isMobile ? '43px' : '66px'})`, float: 'left', marginLeft: '10px'}">
+                        <p class="info" :title="v.info"> {{ v.info }}</p>
+                        <p @click="goUseGpts(v)" class="name"> {{ t('chat.used') }} {{ v.name }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- <div class="flex items-center justify-center mt-4 text-center text-neutral-300" v-else>
               <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
               <span>Aha~</span>
-            </div>
+            </div> -->
           </template>
-      
+
           <template v-else>
             <div>
               <Message
@@ -612,14 +752,14 @@ const ychat = computed( ()=>{
         </div>
       </div>
     </main>
-    <footer :class="footerClass" v-if="local!=='draw'">
+    <footer :class="footerClass" class="footer-content" v-if="local!=='draw'">
       <div class="w-full max-w-screen-xl m-auto">
-        <aiGptInput v-if="['gpt-4-vision-preview','gpt-3.5-turbo-16k'].indexOf(gptConfigStore.myData.model)>-1 || st.inputme "
-         v-model:modelValue="prompt" :disabled="buttonDisabled" 
+        <aiGptInput @handle-clear="handleClear" @export="handleExport" v-if="['gpt-4-vision-preview','gpt-3.5-turbo-16k'].indexOf(gptConfigStore.myData.model)>-1 || st.inputme "
+         v-model:modelValue="prompt" :disabled="buttonDisabled"
          :searchOptions="searchOptions"  :renderOption="renderOption"
           />
         <div class="flex items-center justify-between space-x-2" v-else>
-          <!-- 
+          <!--
           <HoverButton v-if="!isMobile" @click="handleClear">
             <span class="text-xl text-[#4f555e] dark:text-white">
               <SvgIcon icon="ri:delete-bin-line" />
@@ -665,7 +805,8 @@ const ychat = computed( ()=>{
     </footer>
   </div>
 
-  <drawListVue /> 
-  <aiGPT @finished="loading = false" /> 
-  <AiSiderInput v-if="isMobile"  :button-disabled="false" /> 
+  <drawListVue />
+  <aiGPT @finished="loading = false" />
+  <AiSiderInput v-if="isMobile"  :button-disabled="false" />
+
 </template>
