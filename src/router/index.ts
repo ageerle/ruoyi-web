@@ -4,10 +4,6 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import { setupPageGuard } from './permission'
 import { ChatLayout } from '@/views/chat/layout'
 import mjlayout from '@/views/mj/layout.vue'
-import soundLayout from '@/views/sound/layout.vue'
-import sunoLayout from '@/views/suno/layout.vue'
-import lumaLayout from '@/views/luma/layout.vue'
-import knowLayout from '@/views/knowledge/layout.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -54,7 +50,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/draw',
     name: 'Rootdraw',
-    component: mjlayout,
+    component: ChatLayout,
     redirect: '/draw/index',
     children: [
       {
@@ -66,29 +62,71 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-    path: '/sound',
-    name: 'Sound',
-    component: soundLayout,
-    redirect: '/sound/t',
+		path: "/fanyi",
+		name: "Fanyi",
+		component: ChatLayout,
+		redirect: "/fanyi/index",
+		children: [
+			{
+				path: "index",
+				name: "fanyi",
+				component: () => import("@/views/fanyi/index.vue"),
+			},
+		],
+	},
+
+  {
+		path: "/ppt",
+		name: "Ppt",
+		component: ChatLayout,
+		redirect: "/ppt/index",
+		children: [
+			{
+				path: "index",
+				name: "ppt",
+				component: () => import("@/views/ppt/index.vue"),
+			},
+		],
+	},
+
+  {
+    path: '/video',
+    name: 'Video',
+    component: ChatLayout,
+    redirect: '/video/index',
     children: [
       {
-        path: 't',
-        name: 'sound1',
-        component: () => import('@/views/sound/index.vue'),
+        path: '/video/:uuid?',
+        name: 'video',
+        component: () => import('@/views/luma/video.vue'),
       },
     ],
   },
-  
+
+	{
+		path: "/music",
+		name: "Music",
+		component: ChatLayout,
+		redirect: "/music/index",
+		children: [
+			{
+				path: "/music/:uuid?",
+				name: "music",
+				component: () => import("@/views/suno/music.vue"),
+			},
+		],
+	},
+
   {
-    path: '/roleList',
-    name: 'RoleList',
+    path: '/store',
+    name: 'Store',
     component: ChatLayout,
-    redirect: '/roleList/t',
+    redirect: '/store/t',
     children: [
       {
         path: 't',
-        name: 'roleList1',
-        component: () => import('@/views/sound/roleList.vue'),
+        name: 'store',
+        component: () => import('@/views/store/appList.vue'),
       },
     ],
   },
@@ -109,7 +147,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/knowledge',
     name: 'Knowledge',
-    component: knowLayout,
+    component: ChatLayout,
     redirect: '/knowledge/t',
     children: [
       {
@@ -123,7 +161,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/annex',
     name: 'Annex',
-    component: knowLayout,
+    component: ChatLayout,
     redirect: '/annex/t',
     children: [
       {
@@ -137,7 +175,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/fragment',
     name: 'Fragment',
-    component: knowLayout,
+    component: ChatLayout,
     redirect: '/fragment/t',
     children: [
       {
@@ -147,34 +185,6 @@ const routes: RouteRecordRaw[] = [
       },
     ],
   },
-
-  // {
-  //   path: '/music',
-  //   name: 'music',
-  //   component: sunoLayout,
-  //   redirect: '/music/index',
-  //   children: [
-  //     {
-  //       path: '/music/:uuid?',
-  //       name: 'music',
-  //       component: () => import('@/views/suno/music.vue'),
-  //     },
-  //   ],
-  // },
-
-  // {
-  //   path: '/video',
-  //   name: 'video',
-  //   component: lumaLayout,
-  //   redirect: '/video/index',
-  //   children: [
-  //     {
-  //       path: '/video/:uuid?',
-  //       name: 'video',
-  //       component: () => import('@/views/luma/video.vue'),
-  //     },
-  //   ],
-  // },
 
   {
     path: '/404',
@@ -187,6 +197,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Login',
     component: () => import('@/views/login/index.vue'),
   },
+
   {
     path: '/regist',
     name: 'regist',

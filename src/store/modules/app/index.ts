@@ -10,6 +10,10 @@ export const useAppStore = defineStore('app-store', {
       this.siderCollapsed = collapsed
       this.recordState()
     },
+    setIsChat(chat: boolean) {
+      this.isChat = chat
+      this.recordState()
+    },
 
     setTheme(theme: Theme) {
       this.theme = theme

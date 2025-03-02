@@ -333,7 +333,7 @@ function handleClear() {
             <template v-else>
               <SvgIcon icon="heroicons:sparkles" />
               <span>{{
-                nGptStore.modelLabel ? nGptStore.modelLabel : "o1-mini-2024-09-12"
+                nGptStore.modelLabel ? nGptStore.modelLabel : "gpt-4o-mini"
               }}</span>
             </template>
             <SvgIcon icon="icon-park-outline:right" />

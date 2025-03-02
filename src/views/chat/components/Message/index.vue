@@ -156,6 +156,7 @@ function handleRegenerate2() {
           :as-raw-text="asRawText"
           :chat="chat"
         />
+
         <div class="flex flex-col" v-if="!chat.mjID && chat.model!='dall-e-3' && chat.model!='dall-e-2' ">
           <!-- <button
             v-if="!inversion "

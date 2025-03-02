@@ -29,7 +29,7 @@ async function submitForm() {
   if (err) {
     message.error(err.message);
   } else {
-    message.success(t('knowledge.createKnowledgeBaseSuccess'));
+    message.success("添加成功");
     // 重新获取数据，更新表格
     await fetchData();
   }
@@ -42,9 +42,9 @@ async function delKnowledgeForm(kid: string) {
   };
   const [err] = await to(delKnowledge(req));
   if (err) {
-    message.error(t('knowledge.deleteFailed'));
+    message.error("操作失败!");
   } else {
-    message.success(t('knowledge.deleteSuccess'));
+    message.success("删除成功!");
   }
   // 重新获取数据，更新表格
   await fetchData();
@@ -125,7 +125,7 @@ const fetchData = async () => {
     if (err) {
       message.error(err.message);
     } else {
-      tableData.value = result;
+      tableData.value = result.rows;
     }
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -136,15 +136,13 @@ const columns = ref(createColumns());
 </script>
 
 <template>
-<br>
-<div style="display: flex; justify-content: flex-start; margin:10px;" class="know-header">
-    <n-button @click="activate('right')" type="primary" :bordered="false" class="success-button">
-       {{ $t('knowledge.createKnowledgeBase') }}
-    </n-button>
-</div>
-
 <div class="flex h-full table-box" style="border-bottom-left-radius: 20px;"> 
     <main class="flex-1 overflow-hidden h-full">
+      <div style="display: flex; justify-content: flex-start; " class="know-header">
+        <n-button @click="activate('right')" type="primary" :bordered="false" class="success-button">
+          {{ $t('knowledge.createKnowledgeBase') }}
+        </n-button>
+      </div>
       <n-data-table striped :bordered="false" :columns="columns" :data="tableData" />
     </main>
 </div>

@@ -72,11 +72,11 @@ const fetchData = async () => {
     try {
         // 发起一个请求
         const [err, result] = await to(getfragmentList(docId.value));
-        console.log("result===", result)
+        console.log("fragmenresult===", result)
         if (err) {
             message.error(err.message)
         } else {
-            tableData.value = result;
+            tableData.value = result.rows;
         }
     } catch (error) {
         console.error('Error fetching data:', error);
@@ -88,14 +88,16 @@ const columns = ref(createColumns());
 
 </script>
 <template>
-    <br>
-    <div style="display: flex; justify-content: flex-start; margin:10px;border-top-left-radius: 20px;" class="know-header">
+  
+
+    <div class="flex h-full table-box" style="border-bottom-left-radius: 20px;"> 
+    <main class="flex-1 overflow-hidden h-full annex-main">
+      <div style="display: flex; justify-content: flex-start; margin:10px;border-top-left-radius: 20px;" class="know-header">
         <n-button @click="goBack" type="primary" :bordered="false" class="success-button">
             {{ $t('knowledge.return') }}
         </n-button>
-    </div>
-    <div class="flex h-full table-box" style="border-bottom-left-radius: 20px;"> 
-    <main class="flex-1 overflow-hidden h-full annex-main">
+      </div> 
+
       <n-data-table 
         :columns="columns"
         :data="tableData"

@@ -90,7 +90,7 @@ export default {
     loginSuccess: "登录成功!",
     loginFailed: "登录失败!",
     usernameOrPasswordEmpty: "用户名或者密码不能为空!",
-    emailOrPhone: "邮箱或者电话号码",
+    emailOrPhone: "账号登录",
     enterEmailOrPhone: "请输入邮箱或者电话号码",
     password: "密码",
     enterPassword: "请输入密码",
@@ -241,7 +241,7 @@ export default {
     token: "1000个Token大约相当于750个英文单词或400至500个汉字。在按Token计费的模型中，每使用1000个Token将进行一次扣费。",
     input: "请输入卡密",
     day: '天',
-    siderButton: '购买套餐',
+    siderButton: '应用市场',
     local: '本地',
     online: '在线',
     title: '标题',
@@ -344,7 +344,7 @@ export default {
     ,img2textinfo:'不知如何写提示词？用图生文试试！<br/>提交图片，出提示词'
     ,traning:'翻译中...'
     ,imgcreate:'生成图片'
-    ,imginfo:'其他参数：  <li>1 --no 忽略 --no car 图中不出现车 </li><li>2 --seed 可先获取种子 --seed 123456 </li> <li>3 --chaos 10 混合(范围：0-100)</li> <li>4 --tile 碎片化 </li>  <li>5 --sref 图片url 生成风格一致的图像 <li>6 --cref 图片url 生成<b>角色</b>一致的图像  </li> '
+    ,imginfo:''
     ,tStyle:'风格'
     ,tView:'视角'
     ,tShot:'人物镜头'
