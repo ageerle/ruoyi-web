@@ -3,7 +3,7 @@ import { h, onMounted, ref } from 'vue';
 import {
 	NButton, NDataTable, DrawerPlacement, NDrawer,
 	NDrawerContent, NForm, NFormItem, NInput, NDivider,
-	NSpace, useMessage, NGrid, NGi,NSwitch,NInputNumber,NSelect,NSlider 
+	NSpace, useMessage, NGrid, NGi,NSwitch,NInputNumber,NSelect,NSlider
 } from 'naive-ui';
 import { createKnowledgeReq, getKnowledge, delKnowledge } from '@/api/knowledge';
 import to from 'await-to-js';
@@ -175,7 +175,7 @@ const columns = ref(createColumns());
 								<n-input v-model:value="formValue.kname" placeholder="请输入知识库名称" />
 							</n-form-item>
 						</n-gi>
-				
+
 						<n-gi>
 							<n-form-item label="分隔符" >
 								<n-input  placeholder="请输入知识分隔符" />
@@ -184,7 +184,7 @@ const columns = ref(createColumns());
 
 						<n-gi >
 							<n-form-item label="知识库中检索的条数" >
-								<n-input-number 
+								<n-input-number
 									placeholder="请输入检索条数" />
 							</n-form-item>
 						</n-gi>
@@ -192,7 +192,7 @@ const columns = ref(createColumns());
 						<n-gi >
 							<n-form-item label="文本块大小" path="phone">
 								<n-input-number  placeholder="请输入文本块大小"/>
-					
+
 							</n-form-item>
 						</n-gi>
 
@@ -211,7 +211,7 @@ const columns = ref(createColumns());
 							</n-form-item>
 						</n-gi>
 
-				
+
 						<n-gi :span="24">
 							<n-form-item :label="$t('knowledge.knowledgeDescription')" path="formValue.description">
 								<n-input maxlength="1000" type="textarea" v-model:value="formValue.description"
@@ -232,7 +232,7 @@ const columns = ref(createColumns());
 								<n-input placeholder="请输入提问分割符"/>
 							</n-form-item>
 						</n-gi>
-			
+
 						<n-gi  :span="24">
 							<div style="display: flex; justify-content: flex-end">
 								<n-button @click="submitForm" :bordered="false" type="primary" class="draw-button">
