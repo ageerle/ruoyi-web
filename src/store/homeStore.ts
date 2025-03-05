@@ -52,7 +52,7 @@ const getGptInt= ():gptConfigType =>{
 }
 
 const  getDefault=()=>{
-const amodel = homeStore.myData.session.amodel??'o1-mini-2024-09-12'
+const amodel = homeStore.myData.session.amodel??'gpt-4o-mini'
 let v:gptConfigType={
     model: amodel,
     modelLabel: '',

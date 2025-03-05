@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { useChat } from '../chat/hooks/useChat'
 import {  homeStore, useChatStore } from '@/store'
 import { getInitChat, mlog, subModel,getSystemMessage , localSaveAny, canVisionModel
-    ,isTTS, subTTS, file2blob, whisperUpload, getHistoryMessage, checkDisableGpt4, chatSetting } from '@/api'
+    ,isTTS, subTTS, file2blob, whisperUpload, getHistoryMessage, checkDisableGpt4, chatSetting, isCanBase64Model, } from '@/api'
 //import { isNumber } from '@/utils/is'
 import { useMessage  } from "naive-ui";
 import { t } from "@/locales";
@@ -64,7 +64,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
 
         let promptMsg = getInitChat(dd.prompt );
         if( dd.fileBase64 && dd.fileBase64.length>0 ){
-            if( !canVisionModel(model)  ) model='gpt-4-vision-preview';
+            if( !canVisionModel(model)  ) model='gpt-4o-mini';
 
             try{
                     let images= await localSaveAny( JSON.stringify( dd.fileBase64)  ) ;
@@ -147,29 +147,17 @@ watch(()=>homeStore.myData.act, async (n)=>{
         //return ;
         let message= [ {  "role": "system", "content": getSystemMessage(  +uuid2) },
                 ...historyMesg ];
-        let imageContent = [];
         if( dd.fileBase64 && dd.fileBase64.length>0 ){
-            if(  model=='gpt-4-vision-preview' ){
+            if(isCanBase64Model(model)){ 
                 let obj={
                         "role": "user",
-                        "content": ""
+                       "content": [] as any
                 }
-                // //"Generate code for a web page that looks exactly like this."
-                //obj.content.push({,      "text": dd.prompt  });
-                imageContent.push(  {
-                        "type": "text",
-                        "text": dd.prompt,
-                    })
+                obj.content.push({ "type": "text",      "text": dd.prompt  });
                 dd.fileBase64.forEach((f:any)=>{
-                    //obj.content.push({ "type": "image_url",  "image_url": {url:f }   });
-                    imageContent.push(
-                        {
-                            "type": "image_url",
-                            "image_url": { url: f }
-                        }
-                    )
+                    obj.content.push({ "type": "image_url",  "image_url": {url:f }   });
                 });
-                message.push(obj);
+                message.push(obj); 
             }else{
                 let cc= dd.prompt;
                 //附件需要时远程的图片链接 或者文件 链接
@@ -187,7 +175,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
             }
         }
 
-        submit(model,message,imageContent,opt);
+        submit(model,message,opt);
 
     }else if(n=='abort'){
        controller.value && controller.value.abort();
@@ -257,7 +245,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
     }
 })
 
-const submit= (model:string, message:any[],imageContent?:any[],opt?:any)=>{
+const submit= (model:string, message:any[],opt?:any)=>{
     mlog('提交Model', model  );
     const chatSet = new chatSetting(   +st.value.uuid  );
     const nGptStore =   chatSet.getGptConfig()  ;
@@ -305,22 +293,21 @@ const submit= (model:string, message:any[],imageContent?:any[],opt?:any)=>{
             });
 
         }else{
-        //controller.signal
-            subModel( {message,model,imageContent
-            ,uuid:st.value.uuid //当前会话
-            ,onMessage:(d)=>{
-                mlog('🐞消息',d);
-                textRz.value.push(d.text);
-            }
-            ,onError:(e:any)=>{
-                mlog('onError',e)
-                let  emsg =   (JSON.stringify(  e.reason? JSON.parse( e.reason ):e,null,2));
-                //if(emsg=='{}' ) emsg= JSON.stringify(e );
-
-                if(e.message!='canceled' && emsg.indexOf('aborted')==-1 ) textRz.value.push("\n"+t('mjchat.failReason')+"\n```\n"+emsg+"\n```\n");
-                goFinish();
-            }
-            ,signal:controller.value.signal,
+            subModel( {message, model,
+                uuid: st.value.uuid //当前会话
+                ,onMessage: (d) => {
+                    mlog('🐞消息', d)
+                    textRz.value.push(d.text)
+                },
+                onError: (e: any) => {
+                    mlog('onError', e)
+                    let emsg = (JSON.stringify(e.reason ? JSON.parse(e.reason) : e, null, 2))
+                    //if(emsg=='{}' ) emsg= JSON.stringify(e );
+                    if (e.message != 'canceled' && emsg.indexOf('aborted') == -1) textRz.value.push("\n" + t('mjchat.failReason') + "\n```\n" + emsg + "\n```\n")
+                    goFinish()
+                },
+                signal: controller.value.signal,
+                kid: ''
             }).then(()=>goFinish() ).catch(e=>{
                 if(e.message!='canceled')  textRz.value.push("\n"+t('mj.fail')+":\n```\n"+(e.reason??JSON.stringify(e,null,2)) +"\n```\n")
                 goFinish();

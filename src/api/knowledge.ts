@@ -17,14 +17,19 @@ export interface KnowledgeDetailDelReq {
 	docId:string; // 文档id
 }
 
-
-
 export interface SimpleGenerate {
 	model: string,
 	randomness: number,
 	stability_boost: number,
 	voiceId: string,
 	text: string
+}
+
+export function getKnowledge() {
+	return request({
+		url: '/knowledge/list',
+		method: 'get',
+	})
 }
 
 export function createKnowledgeReq(params:KnowledgeReq) {
@@ -35,17 +40,10 @@ export function createKnowledgeReq(params:KnowledgeReq) {
 	})
 }
 
-export function getKnowledge() {
-	return request({
-		url: '/knowledge/list',
-		method: 'get',
-	})
-}
 export function delKnowledge(params:KnowledgeDelReq) {
 	return request({
-		url: '/knowledge/remove',
+		url: '/knowledge/remove/'+params.kid,
 		method: 'post',
-		data: params,
 	})
 }
 
@@ -59,12 +57,10 @@ export function getKnowledgeDetail(kid: string) {
 
 export function delKnowledgeDetail(params:KnowledgeDetailDelReq) {
 	return request({
-		url: 'knowledge/attach/remove',
+		url: 'knowledge/attach/remove/'+params.kid,
 		method: 'post',
-		data: params,
 	})
 }
-
 
 export function getfragmentList(docId: string) {
 	return request({

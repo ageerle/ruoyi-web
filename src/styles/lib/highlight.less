@@ -122,7 +122,7 @@ html.dark {
 			background-color: #232627;
 			.user-free{
 				color: #000;
-			}	
+			}
 			.top{
 				.avatar{
 					.circle{
@@ -218,16 +218,25 @@ html.dark {
 			background-color: #232627;
 		}
 		.message-reply{
-			background-color: #000;
+			background-color: #232728;
 		}
 		.message-request{
-			background-color: #0084FF;
+			background-color: #A1DC95;
+
 		}
-		.message-reply,
+
 		.message-request{
 			.markdown-body{
 				p{
-					color: #fff;
+					font-size: 15px;
+					color: #000;
+				}
+			}
+		}
+		.message-reply{
+			.markdown-body{
+				p{
+					color: #FFFFFF;
 				}
 			}
 		}
@@ -292,7 +301,7 @@ html.dark {
 			&:hover{
 				color: #0084ff !important;
 			}
-				
+
 		}
 	}
 	.draw-tabs .n-tabs-bar{
@@ -301,7 +310,7 @@ html.dark {
 	.n-slider-rail{
 		.n-slider-rail__fill{
 			background-color: #0084ff;
-				
+
 		}
 	}
 	.voice-drawer{
@@ -336,7 +345,7 @@ html.dark {
 					&:nth-child(2) {
 						border-left: none;
 						border-right: none;
-	
+
 					}
 					&:nth-child(3) {
 						border-left: none;
@@ -434,8 +443,8 @@ html.dark {
 		background-color: #232627;
 		.card-container{
 			.card-item{
-				background-color: #2b2f30;
-				border: 1px solid #505050;
+				background-color: #232627;
+				border: 1px solid #232627;
 				.ellipsis{
 					color: #aaacac;
 				}
@@ -680,7 +689,7 @@ html {
 
 .n-layout-scroll-container{
 	background-color: #e8eaf1;
-	padding-right: 12px;
+	padding-right: 0px;
 }
 .is-mobile{.n-layout-scroll-container{
 	padding-right: 0;
@@ -759,21 +768,24 @@ position: relative;
 		background-color: #3fdd78;
 		}
 	}
-	.user-name{
+	.user-name {
 		font-family: 'Inter';
 		font-style: normal;
 		font-size: 14px;
-		// color: #FEFEFE;
 		float: left;
-		min-width: 100px;
-	}
+		min-width: 130px; /* 设置最大宽度 */
+		max-width: 160px; /* 设置最大宽度 */
+		overflow: hidden; /* 隐藏超出部分 */
+		white-space: nowrap; /* 防止文本换行 */
+		text-overflow: ellipsis; /* 显示省略号 */
+	  }
 	.user-free{
-		float: right;
-		height: 24px;
-		line-height: 24px;
+		float: left;
+		height: 20px;
+		line-height: 20px;
+		margin-top: 2px;
 		padding: 0 12px;
 		background-color: #3fdd78;
-
 		border-radius: 6px;
 		font-size: 12px;
 		font-weight: 600;
@@ -961,6 +973,7 @@ position: relative;
 		.card-item{
 			height: 152px;
 			border: 1px solid #e5e7eb;
+			box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);  /* 添加阴影效果 */
 			h3{
 				font-size: 17px;
 				font-weight: 700;
@@ -979,11 +992,11 @@ position: relative;
 			.button-list{
 				justify-content: flex-end;
 				button{
-					height: 24px;
-					line-height: 24px;
+					height: 28px;
+					line-height: 28px;
 					text-align: center;
 					padding: 0 15px;
-					font-size: 12px;
+					font-size: 13px;
 					margin-left: 10px;
 				}
 			}
@@ -1276,7 +1289,7 @@ position: relative;
 			}
 		}
 	}
-	
+
 	.n-tabs-nav-scroll-content{
 		border: 0 !important;
 		margin-bottom: 20px;
@@ -1309,9 +1322,9 @@ position: relative;
 }
 .table-box{
 	background-color: #fff;
-	padding: 20px 46px 20px 20px;
-	height: calc(100% - 164px);
-	border-bottom-right-radius: 20px;
+	//padding: 20px 46px 20px 20px;
+	height: calc(100%);
+	border-bottom-right-radius: 0px;
 }
 .draw-table-box{
 	.n-data-table-wrapper{
@@ -1321,8 +1334,8 @@ position: relative;
 }
 
 .chat-content {
-	height: calc(100vh - 48px);
-	margin-top: 24px;
+	height: calc(100vh);
+	margin-top: 0px;
 	main{
 		border-top-right-radius: 20px;
 	}
@@ -1583,13 +1596,35 @@ position: relative;
 				box-shadow: none;
 			}
 		}
+		// .hander-login{
+		// 	display: flex; /* 使用 flex 布局 */
+		// 	justify-content: space-between; /* 水平分布，两端对齐 */
+		// 	align-items: center; /* 垂直居中 */
+		// 	margin-top: 8px;
+		// 	margin-left: 80px;
+		// 	width: 60%;
+		// 	button{
+		// 		height: 42px;
+		// 		line-height: 42px;
+		// 		border-radius: 8px;
+		// 		// background-color: #0084FF;
+		// 		background-color: #232627;
+				
+		// 		color: #fff;
+		// 		font-size: 18px;
+		// 		padding: 0;
+		// 		margin-left: 10px;
+		// 		width: 100%;
+		// 		// box-shadow: none;
+		// 	}
+		// }
 	}
 }
 .music-content{
 	background-color: #fff;
-	height: calc(100% - 48px);
-	margin-top: 24px;
-	border-radius: 20px;
+	height: calc(100%);
+	margin-top: 0px;
+	border-radius: 0px;
 	.music-list{
 		background-color: #fff;
 		padding: 15px;
@@ -1601,9 +1636,9 @@ position: relative;
 }
 .video-content{
 	background-color: #fff;
-	height: calc(100% - 48px);
-	margin-top: 24px;
-	border-radius: 20px;
+	height: calc(100%);
+	margin-top: 0px;
+	border-radius: 0px;
 	.p-2{
 		padding: 15px;
 		.upload-video{

@@ -267,9 +267,8 @@ const loading = ref<boolean>(false)
 								<p>{{ feature }}</p>
 							</div>
 						</div>
-						<n-button class="footer" :loading="loading" @click="getPayUrl1(plan.price, plan.name)"><IconSvg icon="add"></IconSvg>{{  $t('setting.recharge') }}</n-button>
+						<n-button class="footer" :loading="loading" @click="getPayUrl(plan.price, plan.name)"><IconSvg icon="add"></IconSvg>{{  $t('setting.recharge') }}</n-button>
 					</div>
-
 				</div>
 			</n-tab-pane>
 			<n-tab-pane :name="$t('setting.charge')">

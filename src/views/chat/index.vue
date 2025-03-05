@@ -14,7 +14,7 @@ import { useUsingContext } from './hooks/useUsingContext'
 import { getGpts } from '@/api/chatmsg';
 import {  SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { gptConfigStore, gptsUlistStore, homeStore, useChatStore, usePromptStore } from '@/store'
+import { gptConfigStore, gptsUlistStore, homeStore, useChatStore, usePromptStore,useAppStore } from '@/store'
 import { chatSetting, fetchChatAPIProcess, gptsType, mlog, myFetch, my2Fetch } from '@/api'
 import { t } from '@/locales'
 import drawListVue from '../mj/drawList.vue'
@@ -55,6 +55,9 @@ const promptStore = usePromptStore()
 
 // 使用storeToRefs，保证store修改后，联想部分能够重新渲染
 const { promptList: promptTemplate } = storeToRefs<any>(promptStore)
+
+const appStore = useAppStore()
+const isChat = computed(() => appStore.isChat)
 
 // 未知原因刷新页面，loading 状态不会重置，手动重置
 dataSources.value.forEach((item, index) => {
@@ -513,6 +516,7 @@ const footerClass = computed(() => {
   return classes
 })
 
+
 onMounted(() => {
   scrollToBottom()
   if (inputRef.value && !isMobile.value)
@@ -752,9 +756,10 @@ load()
         </div>
       </div>
     </main>
+    
     <footer :class="footerClass" class="footer-content" v-if="local!=='draw'">
       <div class="w-full max-w-screen-xl m-auto">
-        <aiGptInput @handle-clear="handleClear" @export="handleExport" v-if="['gpt-4-vision-preview','gpt-3.5-turbo-16k'].indexOf(gptConfigStore.myData.model)>-1 || st.inputme "
+        <aiGptInput @handle-clear="handleClear" @export="handleExport" v-if="['gpt-4o-mini','gpt-3.5-turbo-16k'].indexOf(gptConfigStore.myData.model)>-1 || st.inputme "
          v-model:modelValue="prompt" :disabled="buttonDisabled"
          :searchOptions="searchOptions"  :renderOption="renderOption"
           />

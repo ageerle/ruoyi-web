@@ -17,7 +17,7 @@ const chatSet = new chatSetting( uuid==null?1002:uuid);
 
 const nGptStore = ref(  chatSet.getGptConfig() );
 const message = useMessage()
-onMounted(() => { fetchData()});
+onMounted(() => { fetchData(),fetchDataGetKnowledge() });
 
 
 const config = ref([])
@@ -36,6 +36,29 @@ const fetchData = async () => {
       console.error('Error fetching data:', error);
     }
 };
+
+const fetchDataGetKnowledge = async () => {
+    if(getToken()){
+        try {
+       // 发起一个请求
+      const [err, result] = await to(getKnowledge());
+      console.log("result===", result.rows)
+      if (err) {
+        ms.error(err.message)
+      } else {
+        options.value = result.rows.map((item: any) => ({
+            label: item.kname, // 假设后台返回的数据有 'name' 字段
+            value: item.id     // 假设每个数据项都有一个唯一的 'id' 字段
+        }));
+
+        // 请求成功
+        options.value.push({ label: 'please select', value: '' });
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    }
+  };
 
 const st= ref({openMore:false });
 const voiceList= computed(()=>{
@@ -134,10 +157,10 @@ const reSet=()=>{
     </n-input>
  </section>
 
- <!-- <section class="mb-5 justify-between items-center"  >
+ <section class="mb-5 justify-between items-center"  >
      <div  style="margin-bottom: 8px;">{{ $t('mjchat.knowledgeBase') }} </div>
     <n-select class="change-select" v-model:value="nGptStore.kid" :options="options" @update:value="onSelectChange" size="small"   />
-</section> -->
+</section>
 
  <section class=" flex justify-between items-center"  >
      <div style="margin-bottom: 8px;"> {{ $t('mjchat.historyCnt') }}

@@ -149,7 +149,7 @@ export const GptUploader =   ( _url :string, FormData:FormData )=>{
 }
 
 export const whisperUpload = ( FormData:FormData )=>{
-    const url = gptGetUrl('/audio');
+    const url = gptGetUrl('/chat/audio');
     let headers=   {'Content-Type': 'multipart/form-data','Authorization':'Bearer ' + getToken()}
     headers={...headers,...getHeaderAuthorization()}
     return new Promise<any>((resolve, reject) => {
@@ -187,7 +187,6 @@ export const subGPT= async (data:any, chat:Chat.Chat )=>{
 interface subModelType{
     kid: string;
     message:any[]
-    imageContent:any[]
     onMessage:(d:{text:string,isFinish:boolean})=>void
     onError?:(d?:any)=>void
     signal?:AbortSignal
@@ -214,18 +213,15 @@ export const getSystemMessage = (uuid?:number )=>{
     }
     if(  sysTem ) return sysTem;
     let model= gptConfigStore.myData.model;
-    let producer= 'You are ChatGPT, a large language model trained by OpenAI.'
-    if(model.includes('claude-3')) producer=  'You are Claude, a large language model trained by Anthropic.';
-      const DEFAULT_SYSTEM_TEMPLATE = `${producer}
+    let producer= 'Please respond in concise and clear language, prioritizing Chinese.'
+    const DEFAULT_SYSTEM_TEMPLATE = `${producer}
     Current model: ${model}
-    Current time: ${ new Date().toLocaleString()}
-    Latex inline: $x^2$
-    Latex block: $$e=mc^2$$`;
+    Current time: ${ new Date().toLocaleString()}`
     return DEFAULT_SYSTEM_TEMPLATE;
 
 }
 export const subModel= async (opt: subModelType)=>{
-    //
+
     const model= opt.model?? ( gptConfigStore.myData.model);
     let max_tokens= gptConfigStore.myData.max_tokens;
     let temperature= 0.5;
@@ -240,16 +236,14 @@ export const subModel= async (opt: subModelType)=>{
         frequency_penalty = gStore.frequency_penalty??frequency_penalty;
         max_tokens= gStore.max_tokens;
     }
-    if(model=='gpt-4-vision-preview' && max_tokens>2048) max_tokens=2048;
-
+   
     let body ={
             max_tokens ,
             model ,
             temperature,
             top_p,
             presence_penalty ,frequency_penalty,
-            "messages": opt.message,
-            "imageContent": opt.imageContent
+            "messages": opt.message
            ,stream:true
            ,kid:gptConfigStore.myData.kid
         }
@@ -260,6 +254,10 @@ export const subModel= async (opt: subModelType)=>{
         headers={...headers,...getHeaderAuthorization()}
         try {
             let url = "/chat/send"
+            if(gptConfigStore.myData.kid){
+                url = "/knowledge/send"
+            }
+        
          await fetchSSE( gptGetUrl(url),{
             method: 'POST',
             headers: headers,
@@ -428,7 +426,6 @@ export const countTokens= async ( dataSources:Chat.Chat[], input:string ,uuid:nu
     const model =myStore.model;
     const max= getModelMax(model );
     let unit= 1024;
-    if(  model=='gpt-4-1106-preview' || model=='gpt-4-vision-preview' ) unit=1000;
     rz.modelTokens= `${max}k`
     //cl100k_base.encode(input)
 
@@ -456,8 +453,7 @@ const getModelMax=( model:string )=>{
         return 64;
     }else if( model.indexOf('128k')>-1
     || model=='gpt-4-1106-preview'
-    || model=='gpt-4-0125-preview'
-    || model=='gpt-4-vision-preview' ){
+    || model=='gpt-4-0125-preview'){
         return 128;
     }else if( model.indexOf('gpt-4')>-1  ){
         max=8;
