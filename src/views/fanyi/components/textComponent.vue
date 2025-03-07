@@ -1,29 +1,76 @@
 <template>
 	<div class="name-textBox">
 		<div class="name-textBox-left">
+			<n-input
+				v-model:value="prompt"
+				type="textarea"
+				rows="15"
+				placeholder="请输入文本"
+			/>
 			<div class="name-selectBox">
-				<div>
-					<n-space vertical>
-						<n-select v-model:value="sourceLanguage" :options="options" />
-					</n-space>
+				<div
+					style="
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+					"
+				>
+					<span style="width: 100px; font-size: 15px; font-weight: bold"
+						>语音录入：</span
+					>
+					<div>
+						<IconSvg
+							icon="voice"
+							width="22px"
+							height="22px"
+							@click="goASR"
+						></IconSvg>
+					</div>
 				</div>
-				<div>
-					<n-space vertical>
+				<div
+					style="
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+					"
+				>
+					<span style="width: 100px; font-size: 15px; font-weight: bold"
+						>目标语言：</span
+					>
+					<n-space vertical style="width: 100%">
 						<n-select v-model:value="targetLanguage" :options="options1" />
 					</n-space>
 				</div>
 
-				<div style="display: flex; align-items: center;">
-					<n-space vertical>
-						<n-select v-model:value="model" :options="modelListData" value-field="modelDescribe"
-							label-field="modelName" />
+				<div
+					style="
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+					"
+				>
+					<span style="width: 100px; font-size: 15px; font-weight: bold"
+						>模型：</span
+					>
+					<n-space vertical style="width: 100%">
+						<n-select
+							v-model:value="model"
+							:options="modelListData"
+							value-field="modelDescribe"
+							label-field="modelName"
+						/>
 					</n-space>
 				</div>
 
-				<n-button @click="handleTranslation" type="primary">翻译</n-button>
+				<div>
+					<n-button
+						style="width: 100%"
+						@click="handleTranslation"
+						type="primary"
+						>翻译</n-button
+					>
+				</div>
 			</div>
-			<n-input v-model:value="prompt" type="textarea" placeholder="请输入文本" :resizable="false" />
-
 		</div>
 		<div class="name-textBox-right">
 			<div class="name-textBox-right-content">
@@ -34,37 +81,63 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { NInput, NSelect, NButton } from 'naive-ui'
-import { modelList } from '@/api/model'
-import { translation } from '@/api/fanyi'
-const modelListData = ref([])
+import { t } from "@/locales";
+import { SvgIcon, PromptStore } from "@/components/common";
+import { ref, onMounted } from "vue";
+import { NInput, NSelect, NButton, useMessage, NDropdown } from "naive-ui";
+import { Recognition } from "@/api";
+import { modelList } from "@/api/model";
+import { translation } from "@/api/fanyi";
+const modelListData = ref([]);
+import { useIconRender } from "@/hooks/useIconRender";
+const { iconRender } = useIconRender();
+const st = ref({
+	fileBase64: [],
+	isLoad: 0,
+	isShow: false,
+	showMic: false,
+	micStart: false,
+});
+const drOption = [
+	{
+		label: t("mj.micWhisper"),
+		key: "whisper",
+		icon: iconRender({ icon: "ri:openai-fill" }),
+	},
+	{
+		label: t("mj.micAsr"),
+		icon: iconRender({ icon: "ri:chrome-line" }),
+		key: "asr",
+	},
+];
 
+const handleSelectASR = (value) => {
+	console.log(value);
+};
 
-
-const prompt = ref('')
-const sourceLanguage = ref('英文')
-const targetLanguage = ref('中文')
-const translationResult = ref('')
-const model = ref('')
+const prompt = ref("");
+// const sourceLanguage = ref("英文");
+const targetLanguage = ref("中文");
+const translationResult = ref("");
+const model = ref("");
 const options = ref([
 	// { label: '自动设别', value: '' },
-	{ label: '中文', value: '中文' },
-	{ label: '英文', value: '英文' },
-])
+	{ label: "中文", value: "中文" },
+	{ label: "英文", value: "英文" },
+]);
 const options1 = ref([
-	{ label: '中文', value: '中文' },
-	{ label: '英文', value: '英文' },
-])
+	{ label: "中文", value: "中文" },
+	{ label: "英文", value: "英文" },
+]);
 
 onMounted(() => {
-	getModelList()
-})
+	getModelList();
+});
 
 async function getModelList() {
-	const res = await modelList()
-	modelListData.value = res.data
-	model.value = modelListData.value[0].modelDescribe
+	const res = await modelList();
+	modelListData.value = res.data;
+	model.value = modelListData.value[0].modelDescribe;
 }
 
 async function handleTranslation() {
@@ -73,72 +146,90 @@ async function handleTranslation() {
 	}
 	const res = await translation({
 		prompt: prompt.value,
-		sourceLanguage: sourceLanguage.value,
+		// sourceLanguage: sourceLanguage.value,
 		targetLanguage: targetLanguage.value,
 		model: model.value,
-	})
-	translationResult.value = res
+	});
+	translationResult.value = res;
 }
+
+//语音识别ASR
+// let mvalue = ref("");
+const ms = useMessage();
+const goASR = () => {
+	console.log("触发语音识别");
+
+	const olod = prompt.value;
+	const rec = new Recognition();
+	let rz = "";
+	rec
+		.setListener((r) => {
+			//mlog('result ', r  );
+			rz = r;
+			prompt.value = r;
+			console.log("识别结果222", prompt.value);
+
+			st.value.micStart = true;
+		})
+		.setOnEnd(() => {
+			//mlog('rec end');
+			prompt.value = olod + rz;
+			console.log("识别结果1111", prompt.value);
+			ms.info(t("mj.micRecEnd"));
+			st.value.micStart = false;
+		})
+		.setOpt({
+			timeOut: 2000,
+			onStart: () => {
+				ms.info(t("mj.micRec"));
+				st.value.micStart = true;
+			},
+		})
+		.start();
+};
 </script>
 
 <style scoped lang="less">
 .name-textBox {
 	display: flex;
-
-	:deep(.n-input) {
-
-		.n-input__border,
-		.n-input__state-border {
-			border: none !important;
-		}
-
-		textarea {
-			min-height: 500px !important;
-		}
-	}
+	justify-content: center;
 
 	.name-textBox-left {
-		flex: 1;
-		height: calc(100vh - 100px);
+		width: 49%;
+		height: calc(100vh - 50px);
+		overflow: hidden;
+		overflow-y: scroll;
 		border-radius: 10px;
-
+		border: 2px solid #f0f0f0;
 		padding: 10px;
+		margin-right: 20px;
 
 		.name-selectBox {
-			display: flex;
-			justify-content: space-between;
-			margin-bottom: 10px;
+			// display: flex;
+			// justify-content: space-between;
+			// margin-bottom: 10px;
 
 			div {
 				flex: 1;
+				margin-top: 10px;
 			}
 		}
 	}
 
 	.name-textBox-right {
-		flex: 1;
-		min-height: 500px;
+		width: 49%;
+		height: calc(100vh - 50px);
 		border-radius: 10px;
-		padding: 10px;
-
 
 		.name-selectBox {
 			margin-bottom: 10px;
 		}
 
 		.name-textBox-right-content {
-			min-height: 500px;
-			border: 1px solid #ccc;
+			height: calc(100vh - 50px);
+			border: 2px solid #f0f0f0;
 			border-radius: 10px;
-			padding: 10px;
-			margin-top: 40px;
 		}
-	}
-
-
-
-	div {
-		margin-right: 20px;
 	}
 }
 </style>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { h, onMounted, ref } from 'vue';
+import { h, onMounted, reactive, ref } from 'vue';
 import {
 	NButton, NDataTable, DrawerPlacement, NDrawer,
 	NDrawerContent, NForm, NFormItem, NInput, NDivider,
-	NSpace, useMessage, NGrid, NGi,NSwitch,NInputNumber,NSelect,NSlider
+	NSpace, useMessage, NGrid, NGi,NSwitch,NInputNumber,NSelect,NSlider 
 } from 'naive-ui';
 import { createKnowledgeReq, getKnowledge, delKnowledge } from '@/api/knowledge';
 import to from 'await-to-js';
@@ -23,6 +23,13 @@ const formValue = ref({
 	kname: '', // 知识库名称
 	share: '0', // 是否分享
 	description: '', // 知识库描述
+	knowledgeSeparator: '', // 知识分隔符
+	questionSeparator: '', // 提问分隔符
+	overlapChar: 50, // 重叠字符数
+	retrieveLimit: 3, // 知识库中检索的条数
+	textBlockSize: 500, // 文本块大小
+	vector: '', //  向量库
+	vectorModel: '', //  向量模型
 });
 
 async function submitForm() {
@@ -75,6 +82,15 @@ const activate = (place: DrawerPlacement) => {
 // 使用 ref 来创建响应式变量
 const active = ref(false);
 const placement = ref<DrawerPlacement>('right');
+
+const getVector = reactive([
+      { label: 'weaviate', value: 'weaviate' },
+      { label: 'milvus', value: 'milvus' }
+]);
+
+const getVectorModel = reactive([
+      { label: 'text-embedding-3-small', value: 'text-embedding-3-small' }
+]);
 
 const createColumns = () => {
 	return [
@@ -175,64 +191,75 @@ const columns = ref(createColumns());
 								<n-input v-model:value="formValue.kname" placeholder="请输入知识库名称" />
 							</n-form-item>
 						</n-gi>
-
+				
 						<n-gi>
 							<n-form-item label="分隔符" >
-								<n-input  placeholder="请输入知识分隔符" />
+								<n-input v-model:value="formValue.knowledgeSeparator" placeholder="请输入知识分隔符" />
 							</n-form-item>
 						</n-gi>
 
 						<n-gi >
 							<n-form-item label="知识库中检索的条数" >
-								<n-input-number
+								<n-input-number  v-model:value="formValue.retrieveLimit"
 									placeholder="请输入检索条数" />
 							</n-form-item>
 						</n-gi>
 
 						<n-gi >
 							<n-form-item label="文本块大小" path="phone">
-								<n-input-number  placeholder="请输入文本块大小"/>
-
+								<n-input-number v-model:value="formValue.textBlockSize"  placeholder="请输入文本块大小"/>
+					
 							</n-form-item>
 						</n-gi>
 
 
-						<n-gi >
-							<n-form-item label="是否公开">
-								<n-switch size="large" checked-value="1" unchecked-value="0"
-									@update:value="handleUpdateValue" />
-							</n-form-item>
-						</n-gi>
 
 						<n-gi>
-							<n-form-item label="重叠字符" path="formValue.kname">
-								<n-input-number
+							<n-form-item label="重叠字符" >
+								<n-input-number  v-model:value="formValue.overlapChar"  
 									placeholder="请输入重叠字符数" />
 							</n-form-item>
 						</n-gi>
 
-
-						<n-gi :span="24">
-							<n-form-item :label="$t('knowledge.knowledgeDescription')" path="formValue.description">
-								<n-input maxlength="1000" type="textarea" v-model:value="formValue.description"
-									:placeholder="$t('knowledge.enterKnowledgeDescription')" />
-							</n-form-item>
-						</n-gi>
-
 						<n-gi>
-							<n-form-item label="向量模型" path="formValue.description">
-							<n-select
-								placeholder="请选择向量模型"
+							<n-form-item label="向量库" >
+							<n-select :options="getVector" v-model:value="formValue.vector"  
+								placeholder="请选择向量库" 
 							></n-select>
 						    </n-form-item>
 						</n-gi>
 
+					
 						<n-gi >
 							<n-form-item label="提问分割符" path="phone">
 								<n-input placeholder="请输入提问分割符"/>
 							</n-form-item>
 						</n-gi>
 
+						<n-gi>
+							<n-form-item label="向量模型" path="formValue.description">
+							<n-select :options="getVectorModel" v-model:value="formValue.vectorModel"  
+								placeholder="请选择向量模型"
+							></n-select>
+						    </n-form-item>
+						</n-gi>
+
+						
+						<n-gi :span="24">
+							<n-form-item :label="$t('knowledge.knowledgeDescription')" >
+								<n-input maxlength="1000" type="textarea" v-model:value="formValue.description"
+									:placeholder="$t('knowledge.enterKnowledgeDescription')" />
+							</n-form-item>
+						</n-gi>
+
+						
+						<n-gi :span="24">
+							<n-form-item label="是否公开">
+								<n-switch size="large" checked-value="1" unchecked-value="0"
+									@update:value="handleUpdateValue" />
+							</n-form-item>
+						</n-gi>
+			
 						<n-gi  :span="24">
 							<div style="display: flex; justify-content: flex-end">
 								<n-button @click="submitForm" :bordered="false" type="primary" class="draw-button">
