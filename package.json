@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@traptitech/markdown-it-katex": "^3.6.0",
+    "@vicons/ionicons5": "^0.13.0",
     "@vue-office/pdf": "^2.0.10",
     "@vueuse/core": "^9.13.0",
     "await-to-js": "^3.0.0",

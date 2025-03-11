@@ -4,6 +4,13 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import { setupPageGuard } from './permission'
 import { ChatLayout } from '@/views/chat/layout'
 import mjlayout from '@/views/mj/layout.vue'
+import lumalayout from '@/views/luma/layout.vue'
+import storelayout from '@/views/store/layout.vue'
+import fanyilayout from '@/views/fanyi/layout.vue'
+import pptlayout from '@/views/ppt/layout.vue'
+import musiclayout from '@/views/suno/layout.vue'
+import knowledgelayout from '@/views/knowledge/layout.vue'
+
 
 const routes: RouteRecordRaw[] = [
   {
@@ -50,7 +57,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/draw',
     name: 'Rootdraw',
-    component: ChatLayout,
+    component: mjlayout,
     redirect: '/draw/index',
     children: [
       {
@@ -64,7 +71,7 @@ const routes: RouteRecordRaw[] = [
   {
 		path: "/fanyi",
 		name: "Fanyi",
-		component: ChatLayout,
+		component: fanyilayout,
 		redirect: "/fanyi/index",
 		children: [
 			{
@@ -78,7 +85,7 @@ const routes: RouteRecordRaw[] = [
   {
 		path: "/ppt",
 		name: "Ppt",
-		component: ChatLayout,
+		component: pptlayout,
 		redirect: "/ppt/index",
 		children: [
 			{
@@ -92,7 +99,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/video',
     name: 'Video',
-    component: ChatLayout,
+    component: lumalayout,
     redirect: '/video/index',
     children: [
       {
@@ -106,7 +113,7 @@ const routes: RouteRecordRaw[] = [
 	{
 		path: "/music",
 		name: "Music",
-		component: ChatLayout,
+		component: musiclayout,
 		redirect: "/music/index",
 		children: [
 			{
@@ -120,7 +127,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/store',
     name: 'Store',
-    component: ChatLayout,
+    component: storelayout,
     redirect: '/store/t',
     children: [
       {
@@ -134,7 +141,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/wxbot',
     name: 'Wxbot',
-    component: ChatLayout,
+    component: mjlayout,
     redirect: '/wxbot/t',
     children: [
       {
@@ -147,7 +154,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/knowledge',
     name: 'Knowledge',
-    component: ChatLayout,
+    component: knowledgelayout,
     redirect: '/knowledge/t',
     children: [
       {
@@ -161,7 +168,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/annex',
     name: 'Annex',
-    component: ChatLayout,
+    component: knowledgelayout,
     redirect: '/annex/t',
     children: [
       {
@@ -175,7 +182,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/fragment',
     name: 'Fragment',
-    component: ChatLayout,
+    component: knowledgelayout,
     redirect: '/fragment/t',
     children: [
       {

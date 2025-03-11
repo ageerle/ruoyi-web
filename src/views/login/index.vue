@@ -26,10 +26,10 @@ let loginLoading = ref(false);
 async function handleValidateButtonClick(e: MouseEvent) {
 	e.preventDefault();
 	const { username, password } = user.value;
-	if (!validateAccount(username)) {
-		message.error(t("login.accountFormatError"));
-		return;
-	}
+	// if (!validateAccount(username)) {
+	// 	message.error(t("login.accountFormatError"));
+	// 	return;
+	// }
 	if (username && password) {
 		loginLoading.value = true;
 		const [err] = await to(userStore.userLogin(user.value));

@@ -13,8 +13,8 @@ const appStore = useAppStore()
 const chatStore = useChatStore()
 const authStore = useAuthStore()
 
-router.replace({ name: 'Sound', params: { uuid: chatStore.active } })
-homeStore.setMyData({local:'sound'});
+router.replace({ name: 'store', params: { uuid: chatStore.active } })
+homeStore.setMyData({local:'store'});
 const { isMobile } = useBasicLayout()
 
 const collapsed = computed(() => appStore.siderCollapsed)
