@@ -5,7 +5,7 @@ import type { Ref } from 'vue'
 import { computed, onMounted, onUnmounted, ref,watch,h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { NAutoComplete, NButton, NInput, useDialog, useMessage,NAvatar,NModal,NCard,NImage } from 'naive-ui'
+import { NAutoComplete, NButton, NInput, useDialog, useMessage,NAvatar,NModal,NCard,NImage,NTag,NSpace } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -23,6 +23,7 @@ import AiSiderInput from '../mj/aiSiderInput.vue'
 import aiGptInput from '../mj/aiGptInput.vue'
 import { getNotice,readNotice, getInform } from '@/api/notice'
 import to from "await-to-js";
+import { truncate } from 'fs'
 
 let controller = new AbortController()
 
@@ -641,14 +642,6 @@ load()
   </NModal>
 
   <div class="flex flex-col w-full h-full chat-content" :class="[isMobile? '' : 'chat-content-noMobile']">
-   <!-- v-if="isMobile" -->
-    <!-- <HeaderComponent
-      :haveData="!!dataSources.length"
-      :using-context="usingContext"
-      @export="handleExport"
-      @handle-clear="handleClear"
-    /> -->
-
     <main class="flex-1 overflow-hidden">
 
       <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
@@ -663,24 +656,10 @@ load()
 
             </div>
             <div class="gpts-box" v-else>
-              <h1>{{ href }}</h1>
-              <div class="annou" v-if="informContent.length" :style="{'margin-bottom': isMobile ? '15px' : '30px'}">
-                <div class="ai-icon">
-                  <IconSvg icon="chatGPT" :width="isMobile ? '32px' : '64px'" :height="isMobile ? '32px' : '64px'"></IconSvg>
-                </div>
-                <div class="text" :style="{padding: isMobile? '22px 10px' : '22px 68px'}">
-                  <p class="title">{{ t('chat.annouce') }}</p>
-                  <!-- <p v-for="(item,index) in t('chat.annouceContent').split(';')" :key="index">{{ item }}</p> -->
-                  <div v-for="(item, index) in informContent.slice(0, 1)" :key="index" >
-                    <!-- <p style="margin-top: 10px; font-size: 18px">{{ item.noticeTitle }}</p> -->
-                    <div v-html="item.noticeContent"></div>
-                  </div>
-                </div>
-              </div>
               <div class="help" v-if="gptsFilterList && gptsFilterList.length">
-                <div class="ai-icon">
+                <!-- <div class="ai-icon">
                   <IconSvg icon="chatGPT" :width="isMobile ? '32px' : '64px'" :height="isMobile ? '32px' : '64px'"></IconSvg>
-                </div>
+                </div> -->
                 <div class="text" :style="{padding: isMobile? '22px 10px' : '22px 68px', 'font-size': isMobile? '14px' : '16px', 'line-height': isMobile? '20px' : '28px'}">
                   <p class="title">
                     {{ t('chat.helpTitle') }}
@@ -705,13 +684,29 @@ load()
                       </div>
                     </div>
                   </div>
+
+                  <div>
+                   <p>常见问题：</p> 
+                  <n-space >
+                      <n-tag :bordered="false" :round="true" size="large">
+                        它支持插件系统吗？
+                      </n-tag>
+                      <n-tag :bordered="false" :round="true" size="large">
+                        是否支持多个 AI 服务提供商？
+                      </n-tag>
+                      <n-tag :bordered="false" :round="true" size="large">
+                        它是否支持本地语言模型？
+                      </n-tag>
+                      <n-tag :bordered="false" :round="true" size="large">
+                        部署文档在哪?
+                      </n-tag>
+                  </n-space>
+
+                  </div>
                 </div>
               </div>
             </div>
-            <!-- <div class="flex items-center justify-center mt-4 text-center text-neutral-300" v-else>
-              <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
-              <span>Aha~</span>
-            </div> -->
+
           </template>
 
           <template v-else>
@@ -757,24 +752,6 @@ load()
          :searchOptions="searchOptions"  :renderOption="renderOption"
           />
         <div class="flex items-center justify-between space-x-2" v-else>
-          <!--
-          <HoverButton v-if="!isMobile" @click="handleClear">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:delete-bin-line" />
-            </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" @click="handleExport">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:download-2-line" />
-            </span>
-          </HoverButton>
-          <HoverButton @click="toggleUsingContext">
-            <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
-              <SvgIcon icon="ri:chat-history-line" />
-            </span>
-          </HoverButton>
-          -->
-
           <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
             <template #default="{ handleInput, handleBlur, handleFocus }">
               <NInput
