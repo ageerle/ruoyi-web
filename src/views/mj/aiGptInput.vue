@@ -83,6 +83,8 @@ watch(
 	{ deep: true }
 );
 const handleSubmit = () => {
+ 
+
 	if (mvalue.value == "") return;
 	if (checkDisableGpt4(gptConfigStore.myData.model)) {
 		ms.error(t("mj.disableGpt4"));
@@ -418,9 +420,7 @@ function handleClear() {
 					width="28px"
 					height="22px"
 				></IconSvg>
-				<!-- <div @click="show = true">
-            {{ $t('store.siderButton') }}
-        </div> -->
+
 			</div>
 			<input
 				type="file"
@@ -559,24 +559,8 @@ function handleClear() {
 			</NAutoComplete>
 			<div class="send" @click="handleSubmit" v-if="!isMobile">
 				<IconSvg icon="send" width="16px" height="15px"></IconSvg>
-				|
-				<IconSvg icon="money" width="14px" height="24px"></IconSvg>
-				<NPopover trigger="hover">
-					<template #trigger>
-						{{ myToken.modelTokens }}
-					</template>
-					<div class="w-[300px]">
-						{{ $t("mj.tokenInfo1") }}
-						<p class="py-1" v-text="$t('mj.tokenInfo2')"></p>
-						<p class="text-right">
-							<NButton @click="st.isShow = true" type="info" size="small">{{
-								$t("setting.setting")
-							}}</NButton>
-						</p>
-					</div>
-				</NPopover>
 			</div>
-			<!-- translate-y-[-8px]       -->
+	
 		</div>
 	</div>
 

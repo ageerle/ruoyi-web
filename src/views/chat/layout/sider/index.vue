@@ -187,7 +187,7 @@ async function store() {
       </main>
       <Footer v-if="isMobile"></Footer>
     </div>
-    <!-- <div class="nav-bar">
+    <div class="nav-bar">
       <div class="user-info" :style="{ height: isLogin ? '144px' : '90px', bottom: isLogin ? '84px' : '24px' }">
 
         <div v-show="isLogin">
@@ -208,7 +208,7 @@ async function store() {
 
           <div class="user-bottom" @click="store">
             <Button block>
-        
+              <!-- 应用市场 -->
               {{ $t('store.siderButton') }}
             </Button>
           </div>
@@ -232,7 +232,7 @@ async function store() {
           {{ $t('mjset.logout') }}
         </div>
       </div>
-    </div> -->
+    </div>
 
 
     

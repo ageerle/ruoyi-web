@@ -67,6 +67,8 @@ dataSources.value.forEach((item, index) => {
 })
 
 function handleSubmit() {
+  homeStore.myData.local = "chating"
+  alert(homeStore.myData.local)
   //onConversation() //把这个放到aiGpt
   let message = prompt.value;
   if (!message || message.trim() === '')
@@ -629,18 +631,6 @@ load()
 </script>
 
 <template>
-  <NModal
-  v-model:show="showModal"
-   closable @on-after-leave=""
-   :mask-closable="false"
-    preset="dialog"
-    title="公告详情"
-    positive-text="我已知晓"
-    @positive-click="handleClose"
-   >
-   <div v-html="modalContent"></div>
-  </NModal>
-
   <div class="flex flex-col w-full h-full chat-content" :class="[isMobile? '' : 'chat-content-noMobile']">
     <main class="flex-1 overflow-hidden">
 
@@ -657,53 +647,7 @@ load()
             </div>
             <div class="gpts-box" v-else>
               <div class="help" v-if="gptsFilterList && gptsFilterList.length">
-                <!-- <div class="ai-icon">
-                  <IconSvg icon="chatGPT" :width="isMobile ? '32px' : '64px'" :height="isMobile ? '32px' : '64px'"></IconSvg>
-                </div> -->
-                <div class="text" :style="{padding: isMobile? '22px 10px' : '22px 68px', 'font-size': isMobile? '14px' : '16px', 'line-height': isMobile? '20px' : '28px'}">
-                  <p class="title">
-                    {{ t('chat.helpTitle') }}
-                  </p>
-                  <p v-for="(item,index) in t('chat.helpcontent').split(';')" :key="index">{{ item }}</p>
-                  <div class="gpts-list">
-                    <div class="refresh" @click="refresh">
-                      <IconSvg icon="refresh"></IconSvg>&nbsp;{{ t('chat.refresh') }}
-                    </div>
-                    <div v-for="v in gptsFilterList" :key="v.name" class="gpts-item" :style="{width: isMobile ? '100%' : 'calc(50% - 20px)', marginRight: '20px', padding: isMobile ? '5px 8px' : '14px 10px', 'margin-bottom': isMobile ? '8px' : '20px'}">
-                      <NImage :src="v.logo" :preview-disabled="true" lazy
-                      class="group-hover:scale-[130%] duration-300 shrink-0 overflow-hidden bg-base object-cover rounded-full bc-avatar w-[80px] h-[80px]" :style="{width: isMobile ? '23px' : '46px', height: isMobile ? '23px' : '46px'}">
-                          <template #placeholder>
-                            <div class="w-full h-full justify-center items-center flex"  >
-                            <SvgIcon icon="line-md:downloading-loop" class="text-[60px] text-green-300"   ></SvgIcon>
-                            </div>
-                          </template>
-                      </NImage>
-                      <div :style="{width: `calc(100% - ${isMobile ? '43px' : '66px'})`, float: 'left', marginLeft: '10px'}">
-                        <p class="info" :title="v.info"> {{ v.info }}</p>
-                        <p @click="goUseGpts(v)" class="name"> {{ t('chat.used') }} {{ v.name }}</p>
-                      </div>
-                    </div>
-                  </div>
 
-                  <div>
-                   <p>常见问题：</p> 
-                  <n-space >
-                      <n-tag :bordered="false" :round="true" size="large">
-                        它支持插件系统吗？
-                      </n-tag>
-                      <n-tag :bordered="false" :round="true" size="large">
-                        是否支持多个 AI 服务提供商？
-                      </n-tag>
-                      <n-tag :bordered="false" :round="true" size="large">
-                        它是否支持本地语言模型？
-                      </n-tag>
-                      <n-tag :bordered="false" :round="true" size="large">
-                        部署文档在哪?
-                      </n-tag>
-                  </n-space>
-
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -745,7 +689,7 @@ load()
       </div>
     </main>
 
-    <footer :class="footerClass" class="footer-content" v-if="local!=='draw'">
+    <footer :class="footerClass" class="footer-content" v-if="local!=='chating'">
       <div class="w-full max-w-screen-xl m-auto">
         <aiGptInput @handle-clear="handleClear" @export="handleExport" v-if="['gpt-4o-mini','gpt-3.5-turbo-16k'].indexOf(gptConfigStore.myData.model)>-1 || st.inputme "
          v-model:modelValue="prompt" :disabled="buttonDisabled"
