@@ -61,14 +61,14 @@ const show = computed({
           </div>
         </NTabPane>
 
-<!--         
+        
        <NTabPane name="chatmsg" tab="chatmsg">
           <template #tab>
             <SvgIcon class="text-lg" icon="mdi:message" />
             <span class="ml-2">{{ $t('setting.message') }}</span>
           </template>
           <aiMsg />
-        </NTabPane> -->
+        </NTabPane>
 
         <!-- <NTabPane name="Config" tab="Config">
           <template #tab>

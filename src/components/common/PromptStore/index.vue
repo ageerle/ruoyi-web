@@ -177,15 +177,15 @@ const createColumns = () => {
 				let text, type;
 				switch (row.modelType) {
 					case "1":
-						text = 'Token计费';
+						text = 'Token billing';
 						type = 'success'; // 绿色标签
 						break;
 					case "2":
-						text = '次数计费';
+						text = 'Frequency billing';
 						type = 'info'; // 蓝色标签
 						break;
 					default:
-						text = '未知方式';
+						text = 'Unknown billing';
 						type = 'default'; // 默认灰色标签
 				}
 				// 直接使用导入的 NTag 组件，设置相应的属性
@@ -279,12 +279,12 @@ const loading = ref<boolean>(false)
 					</main>
 				</div>
 			</n-tab-pane>
-			<!-- <n-tab-pane :name="$t('setting.exchange')">
+			<n-tab-pane :name="$t('setting.exchange')">
 				<div class="input-button-container">
 					<n-input v-model:value="redeem" type="text" :placeholder="$t('store.input')" style="width: 70%" />
 					<n-button :bordered="false" type="success" @click="handleRedeemKey">{{  $t('store.redeemKey') }}</n-button>
 				</div>
-			</n-tab-pane> -->
+			</n-tab-pane>
 		</n-tabs>
 	</NModal>
 

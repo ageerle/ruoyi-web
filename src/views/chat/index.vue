@@ -5,7 +5,7 @@ import type { Ref } from 'vue'
 import { computed, onMounted, onUnmounted, ref,watch,h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { NAutoComplete, NButton, NInput, useDialog, useMessage,NAvatar,NModal,NCard,NImage,NTag,NSpace } from 'naive-ui'
+import { NAutoComplete, NButton, NInput, useDialog, useMessage,NAvatar,NModal,NCard,NImage } from 'naive-ui'
 import html2canvas from 'html2canvas'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -23,7 +23,6 @@ import AiSiderInput from '../mj/aiSiderInput.vue'
 import aiGptInput from '../mj/aiGptInput.vue'
 import { getNotice,readNotice, getInform } from '@/api/notice'
 import to from "await-to-js";
-import { truncate } from 'fs'
 
 let controller = new AbortController()
 
@@ -67,8 +66,6 @@ dataSources.value.forEach((item, index) => {
 })
 
 function handleSubmit() {
-  homeStore.myData.local = "chating"
-  alert(homeStore.myData.local)
   //onConversation() //把这个放到aiGpt
   let message = prompt.value;
   if (!message || message.trim() === '')
@@ -631,8 +628,35 @@ load()
 </script>
 
 <template>
+  <NModal
+  v-model:show="showModal"
+   closable @on-after-leave=""
+   :mask-closable="false"
+    preset="dialog"
+    title="公告详情"
+    positive-text="我已知晓"
+    @positive-click="handleClose"
+   >
+   <div v-html="modalContent"></div>
+  </NModal>
+
   <div class="flex flex-col w-full h-full chat-content" :class="[isMobile? '' : 'chat-content-noMobile']">
+   <!-- v-if="isMobile" -->
+    <!-- <HeaderComponent
+      :haveData="!!dataSources.length"
+      :using-context="usingContext"
+      @export="handleExport"
+      @handle-clear="handleClear"
+    /> -->
+
     <main class="flex-1 overflow-hidden">
+
+      <template v-if="gptConfigStore.myData.kid">
+        <div class="flex  mt-4  text-neutral-300 chat-header">
+           <SvgIcon icon="material-symbols:book" class="mr-1 text-2xl" ></SvgIcon>
+           <span>{{ gptConfigStore.myData.kName }}</span>
+        </div>
+      </template>
 
       <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
 
@@ -646,11 +670,55 @@ load()
 
             </div>
             <div class="gpts-box" v-else>
+              <h1>{{ href }}</h1>
+              <div class="annou" v-if="informContent.length" :style="{'margin-bottom': isMobile ? '15px' : '30px'}">
+                <div class="ai-icon">
+                  <IconSvg icon="chatGPT" :width="isMobile ? '32px' : '64px'" :height="isMobile ? '32px' : '64px'"></IconSvg>
+                </div>
+                <div class="text" :style="{padding: isMobile? '22px 10px' : '22px 68px'}">
+                  <p class="title">{{ t('chat.annouce') }}</p>
+                  <!-- <p v-for="(item,index) in t('chat.annouceContent').split(';')" :key="index">{{ item }}</p> -->
+                  <div v-for="(item, index) in informContent.slice(0, 1)" :key="index" >
+                    <!-- <p style="margin-top: 10px; font-size: 18px">{{ item.noticeTitle }}</p> -->
+                    <div v-html="item.noticeContent"></div>
+                  </div>
+                </div>
+              </div>
               <div class="help" v-if="gptsFilterList && gptsFilterList.length">
-
+                <div class="ai-icon">
+                  <IconSvg icon="chatGPT" :width="isMobile ? '32px' : '64px'" :height="isMobile ? '32px' : '64px'"></IconSvg>
+                </div>
+                <div class="text" :style="{padding: isMobile? '22px 10px' : '22px 68px', 'font-size': isMobile? '14px' : '16px', 'line-height': isMobile? '20px' : '28px'}">
+                  <p class="title">
+                    {{ t('chat.helpTitle') }}
+                  </p>
+                  <p v-for="(item,index) in t('chat.helpcontent').split(';')" :key="index">{{ item }}</p>
+                  <div class="gpts-list">
+                    <div class="refresh" @click="refresh">
+                      <IconSvg icon="refresh"></IconSvg>&nbsp;{{ t('chat.refresh') }}
+                    </div>
+                    <div v-for="v in gptsFilterList" :key="v.name" class="gpts-item" :style="{width: isMobile ? '100%' : 'calc(50% - 20px)', marginRight: '20px', padding: isMobile ? '5px 8px' : '14px 10px', 'margin-bottom': isMobile ? '8px' : '20px'}">
+                      <NImage :src="v.logo" :preview-disabled="true" lazy
+                      class="group-hover:scale-[130%] duration-300 shrink-0 overflow-hidden bg-base object-cover rounded-full bc-avatar w-[80px] h-[80px]" :style="{width: isMobile ? '23px' : '46px', height: isMobile ? '23px' : '46px'}">
+                          <template #placeholder>
+                            <div class="w-full h-full justify-center items-center flex"  >
+                            <SvgIcon icon="line-md:downloading-loop" class="text-[60px] text-green-300"   ></SvgIcon>
+                            </div>
+                          </template>
+                      </NImage>
+                      <div :style="{width: `calc(100% - ${isMobile ? '43px' : '66px'})`, float: 'left', marginLeft: '10px'}">
+                        <p class="info" :title="v.info"> {{ v.info }}</p>
+                        <p @click="goUseGpts(v)" class="name"> {{ t('chat.used') }} {{ v.name }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-
+            <!-- <div class="flex items-center justify-center mt-4 text-center text-neutral-300" v-else>
+              <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
+              <span>Aha~</span>
+            </div> -->
           </template>
 
           <template v-else>
@@ -688,14 +756,32 @@ load()
         </div>
       </div>
     </main>
-
-    <footer :class="footerClass" class="footer-content" v-if="local!=='chating'">
+    
+    <footer :class="footerClass" class="footer-content" v-if="local!=='draw'">
       <div class="w-full max-w-screen-xl m-auto">
         <aiGptInput @handle-clear="handleClear" @export="handleExport" v-if="['gpt-4o-mini','gpt-3.5-turbo-16k'].indexOf(gptConfigStore.myData.model)>-1 || st.inputme "
          v-model:modelValue="prompt" :disabled="buttonDisabled"
          :searchOptions="searchOptions"  :renderOption="renderOption"
           />
         <div class="flex items-center justify-between space-x-2" v-else>
+          <!--
+          <HoverButton v-if="!isMobile" @click="handleClear">
+            <span class="text-xl text-[#4f555e] dark:text-white">
+              <SvgIcon icon="ri:delete-bin-line" />
+            </span>
+          </HoverButton>
+          <HoverButton v-if="!isMobile" @click="handleExport">
+            <span class="text-xl text-[#4f555e] dark:text-white">
+              <SvgIcon icon="ri:download-2-line" />
+            </span>
+          </HoverButton>
+          <HoverButton @click="toggleUsingContext">
+            <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
+              <SvgIcon icon="ri:chat-history-line" />
+            </span>
+          </HoverButton>
+          -->
+
           <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
             <template #default="{ handleInput, handleBlur, handleFocus }">
               <NInput

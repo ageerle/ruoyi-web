@@ -291,7 +291,7 @@ const columns = ref(createColumns());
 							</n-form-item>
 						</n-gi>
 
-						<!-- <n-gi :span="12">
+						<n-gi :span="12">
 							<n-form-item label="向量库" required>
 								<n-select
 									:options="getVector"
@@ -300,9 +300,9 @@ const columns = ref(createColumns());
 									clearable
 								></n-select>
 							</n-form-item>
-						</n-gi> -->
+						</n-gi>
 
-						<!-- <n-gi :span="12">
+						<n-gi :span="12">
 							<n-form-item label="提问分割符">
 								<n-input
 									v-model:value="formValue.questionSeparator"
@@ -310,7 +310,7 @@ const columns = ref(createColumns());
 									clearable
 								/>
 							</n-form-item>
-						</n-gi> -->
+						</n-gi>
 
 						<n-gi :span="12">
 							<n-form-item label="向量模型" required>
@@ -336,7 +336,7 @@ const columns = ref(createColumns());
 							</n-form-item>
 						</n-gi>
 
-						<!-- <n-gi :span="24">
+						<n-gi :span="24">
 							<n-form-item label="是否公开" label-placement="left">
 								<n-switch
 									size="large"
@@ -348,7 +348,7 @@ const columns = ref(createColumns());
 									<template #unchecked>否</template>
 								</n-switch>
 							</n-form-item>
-						</n-gi> -->
+						</n-gi>
 					</n-grid>
 				</n-form>
 			</n-space>

@@ -83,8 +83,6 @@ watch(
 	{ deep: true }
 );
 const handleSubmit = () => {
- 
-
 	if (mvalue.value == "") return;
 	if (checkDisableGpt4(gptConfigStore.myData.model)) {
 		ms.error(t("mj.disableGpt4"));
@@ -217,6 +215,7 @@ const paste = (e: ClipboardEvent) => {
 	let rz = getFileFromClipboard(e);
 	if (rz.length > 0) upFile(rz[0]);
 };
+
 const sendMic = (e: any) => {
 	mlog("sendMic", e);
 	st.value.showMic = false;
@@ -280,22 +279,6 @@ const handleSelectASR = (key: string | number) => {
 	if (key == "asr") goASR();
 	if (key == "whisper") st.value.showMic = true;
 };
-/**
- * 校验字符串的大小
- * @param inputStr 输入的字符
- * @param maxLength 字符串长度
- */
-const truncateText = (inputStr:any, maxLength = 20) => {
-	// 处理空值情况
-	if (!inputStr) return ''
-	// 类型安全校验
-	const str = String(inputStr)
-	// 判断并截断
-	return str.length > maxLength
-		? `${str.slice(0, maxLength)}...`
-		: str
-}
-
 const show = ref(false);
 function handleExport() {
 	emit("export");
@@ -357,9 +340,9 @@ function handleClear() {
 						</template>
 						<template v-else>
 							<SvgIcon icon="heroicons:sparkles" />
-							<span>模型:{{
-								nGptStore.modelLabel ? truncateText(nGptStore.modelLabel,20) : "gpt-4o-mini"
-							}} {{nGptStore.kid?'知识库:'+truncateText(nGptStore.kName,10):''}}</span>
+							<span>{{
+								nGptStore.modelLabel ? nGptStore.modelLabel : "gpt-4o-mini"
+							}}</span>
 						</template>
 						<SvgIcon icon="icon-park-outline:right" />
 					</div>
@@ -420,7 +403,9 @@ function handleClear() {
 					width="28px"
 					height="22px"
 				></IconSvg>
-
+				<!-- <div @click="show = true">
+            {{ $t('store.siderButton') }}
+        </div> -->
 			</div>
 			<input
 				type="file"
@@ -559,8 +544,24 @@ function handleClear() {
 			</NAutoComplete>
 			<div class="send" @click="handleSubmit" v-if="!isMobile">
 				<IconSvg icon="send" width="16px" height="15px"></IconSvg>
+				|
+				<IconSvg icon="money" width="14px" height="24px"></IconSvg>
+				<NPopover trigger="hover">
+					<template #trigger>
+						{{ myToken.modelTokens }}
+					</template>
+					<div class="w-[300px]">
+						{{ $t("mj.tokenInfo1") }}
+						<p class="py-1" v-text="$t('mj.tokenInfo2')"></p>
+						<p class="text-right">
+							<NButton @click="st.isShow = true" type="info" size="small">{{
+								$t("setting.setting")
+							}}</NButton>
+						</p>
+					</div>
+				</NPopover>
 			</div>
-	
+			<!-- translate-y-[-8px]       -->
 		</div>
 	</div>
 

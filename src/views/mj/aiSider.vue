@@ -133,7 +133,7 @@ const handleSelect = (key: string) => {
 <template>
 
 
-  <!-- <div class="flex-shrink-0 w-[60px] z-[1000]  h-full" v-if="!isMobile" data-tauri-drag-region>
+  <div class="flex-shrink-0 w-[60px] z-[1000]  h-full" v-if="!isMobile" data-tauri-drag-region>
     <div
       class="flex h-full select-none flex-col items-center justify-between bg-[#e8eaf1] px-2 pt-4 pb-8 dark:bg-[#25272d]">
       <div class="flex flex-col space-y-4 flex-1 " data-tauri-drag-region>
@@ -176,6 +176,9 @@ const handleSelect = (key: string) => {
       </div>
 
       <div class="flex flex-col  space-y-2 ">
+        <!-- <NAvatar  v-show="isLogin"  size="large"  round  :src="userInfo.avatar"   v-if="userInfo.avatar"  :fallback-src="defaultAvatar"
+         class=" cursor-pointer"  /> -->
+
         <n-popover trigger="click" :show-arrow="false">
           <template #trigger>
             <n-avatar v-show="isLogin" size="large" round :src="userInfo.avatar" />
@@ -196,6 +199,6 @@ const handleSelect = (key: string) => {
     
   </div>
   <Setting v-if="st.show" v-model:visible="st.show" />
-  <PromptStore v-model:visible="show"></PromptStore> -->
+  <PromptStore v-model:visible="show"></PromptStore>
   
 </template>
