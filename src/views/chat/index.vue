@@ -651,6 +651,13 @@ load()
 
     <main class="flex-1 overflow-hidden">
 
+      <template v-if="gptConfigStore.myData.kid">
+        <div class="flex  mt-4  text-neutral-300 chat-header">
+           <SvgIcon icon="material-symbols:book" class="mr-1 text-2xl" ></SvgIcon>
+           <span>{{ gptConfigStore.myData.kName }}</span>
+        </div>
+      </template>
+
       <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
 
         <div
@@ -749,7 +756,7 @@ load()
         </div>
       </div>
     </main>
-
+    
     <footer :class="footerClass" class="footer-content" v-if="local!=='draw'">
       <div class="w-full max-w-screen-xl m-auto">
         <aiGptInput @handle-clear="handleClear" @export="handleExport" v-if="['gpt-4o-mini','gpt-3.5-turbo-16k'].indexOf(gptConfigStore.myData.model)>-1 || st.inputme "

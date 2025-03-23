@@ -52,7 +52,7 @@ const fetchDataGetKnowledge = async () => {
         }));
 
         // 请求成功
-        options.value.push({ label: '暂不配置', value: '' });
+        options.value.push({ label: 'please select', value: '' });
       }
     } catch (error) {
       console.error('Error fetching data:', error);

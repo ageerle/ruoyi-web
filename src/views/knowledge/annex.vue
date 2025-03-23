@@ -245,7 +245,7 @@ function goBack() {
 								</div>
 
 								<div class="upload-warnings">
-									<div class="warning-title"></div>
+									<div class="warning-title">{{ $t("annex.uploadNotes") }}</div>
 									<n-p class="upload-warning">
 										<span class="warning-dot">•</span>
 										{{ $t("annex.friendlyReminder") }}

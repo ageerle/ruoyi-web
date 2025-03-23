@@ -215,6 +215,7 @@ const paste = (e: ClipboardEvent) => {
 	let rz = getFileFromClipboard(e);
 	if (rz.length > 0) upFile(rz[0]);
 };
+
 const sendMic = (e: any) => {
 	mlog("sendMic", e);
 	st.value.showMic = false;
@@ -278,22 +279,6 @@ const handleSelectASR = (key: string | number) => {
 	if (key == "asr") goASR();
 	if (key == "whisper") st.value.showMic = true;
 };
-/**
- * 校验字符串的大小
- * @param inputStr 输入的字符
- * @param maxLength 字符串长度
- */
-const truncateText = (inputStr:any, maxLength = 20) => {
-	// 处理空值情况
-	if (!inputStr) return ''
-	// 类型安全校验
-	const str = String(inputStr)
-	// 判断并截断
-	return str.length > maxLength
-		? `${str.slice(0, maxLength)}...`
-		: str
-}
-
 const show = ref(false);
 function handleExport() {
 	emit("export");
@@ -355,9 +340,9 @@ function handleClear() {
 						</template>
 						<template v-else>
 							<SvgIcon icon="heroicons:sparkles" />
-							<span>模型:{{
-								nGptStore.modelLabel ? truncateText(nGptStore.modelLabel,20) : "gpt-4o-mini"
-							}} {{nGptStore.kid?'知识库:'+truncateText(nGptStore.kName,10):''}}</span>
+							<span>{{
+								nGptStore.modelLabel ? nGptStore.modelLabel : "gpt-4o-mini"
+							}}</span>
 						</template>
 						<SvgIcon icon="icon-park-outline:right" />
 					</div>
