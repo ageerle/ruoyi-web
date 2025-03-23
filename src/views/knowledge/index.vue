@@ -107,6 +107,7 @@ const getVector = reactive([
 
 const getVectorModel = reactive([
 	{ label: "text-embedding-3-small", value: "text-embedding-3-small" },
+	{ label: "bge-large-zh-v1.5", value: "quentinz/bge-large-zh-v1.5" },
 ]);
 
 const createColumns = () => {
