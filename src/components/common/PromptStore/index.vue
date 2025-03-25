@@ -70,6 +70,8 @@ let intervalId: string | number | NodeJS.Timer | undefined;
 
 // 获取支付二维码
 async function getPayUrl(money: string, name: string) {
+	message.success('本系统仅用于演示，暂不支持此功能！')
+	return;
 	showMeVisible.value = true;
 	const response = await payUrl({ money: money, name: name });
 	imageUrl.value = response.data.url;
@@ -81,9 +83,8 @@ async function getPayUrl(money: string, name: string) {
 
 // 跳转到支付地址
 async function getPayUrl1(money: string, name: string) {
-	if(loading.value) {
-		return
-	}
+	message.success('本系统仅用于演示，暂不支持此功能！')
+	return;
 	loading.value = true
 	const [err, result] = await to(getSPayUrl({ money: money, name: name }));
 	if (err) {
