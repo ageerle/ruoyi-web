@@ -10,6 +10,7 @@ import fanyilayout from '@/views/fanyi/layout.vue'
 import pptlayout from '@/views/ppt/layout.vue'
 import musiclayout from '@/views/suno/layout.vue'
 import knowledgelayout from '@/views/knowledge/layout.vue'
+import wxlayout from '@/views/wxbot/layout.vue'
 
 
 const routes: RouteRecordRaw[] = [
@@ -55,6 +56,7 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
+    
     path: '/draw',
     name: 'Rootdraw',
     component: mjlayout,
@@ -141,7 +143,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/wxbot',
     name: 'Wxbot',
-    component: mjlayout,
+    component: wxlayout,
     redirect: '/wxbot/t',
     children: [
       {

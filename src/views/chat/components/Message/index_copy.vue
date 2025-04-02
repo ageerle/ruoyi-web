@@ -115,19 +115,6 @@ function handleRegenerate2() {
   homeStore.setMyData({act:'gpt.resubmit', actData:{ index:props.index , uuid:props.chat.uuid } });
 }
  
-// 新增内容分割逻辑
-const splitContent = computed(() => {
-  const content = props.text || ''
-  const thinkStart = content.indexOf('<think>')
-  const thinkEnd = content.indexOf('</think>')
-  
-  return {
-    hasThink: thinkStart > -1 && thinkEnd > -1,
-    think: thinkEnd > -1 ? content.slice(thinkStart + 7, thinkEnd) : '',
-    response: thinkEnd > -1 ? content.slice(thinkEnd + 8) : content
-  }
-})
-
 </script>
 
 <template>
@@ -160,18 +147,7 @@ const splitContent = computed(() => {
       
       <div  class="flex items-end gap-1 mt-2"
         :class="[inversion ? 'flex-row-reverse' : 'flex-row']" > 
-
-<div v-if="!inversion" class="message-container">
-  <div v-if="splitContent.hasThink" class="think-section">
-    {{ splitContent.think }}
-  </div>
-  <div class="response-section">
-    {{ splitContent.response }}
-  </div>
-</div>
-
         <TextComponent 
-          v-else
           ref="textRef"
           :inversion="inversion"
           :error="error"
@@ -211,84 +187,3 @@ const splitContent = computed(() => {
     </div>
   </div>
 </template>
-
-
-<style scoped>
-.think-card {
-  border: 1px solid #374151;
-  border-radius: 8px;
-  background: #1F2937;
-  color: white;
-  width: 100%;
-  margin: 8px 0;
-}
-
-.dark-theme {
-  background: #111827;
-  border-color: #4B5563;
-}
-
-.think-section {
-  padding: 12px;
-  font-style: italic;
-  color: #9CA3AF;
-}
-
-.response-divider {
-  height: 1px;
-  background: #374151;
-  margin: 0 12px;
-}
-
-.response-section {
-  padding: 12px;
-  color: #E5E7EB;
-  line-height: 1.5;
-}
-
-/* 移动端适配 */
-@media (max-width: 640px) {
-  .think-card {
-    border-radius: 6px;
-    margin: 6px 0;
-  }
-  
-  .think-section,
-  .response-section {
-    padding: 8px;
-    font-size: 0.9rem;
-  }
-}
-
-.message-container {
-  border: 1px solid #374151;
-  border-radius: 8px;
-  background: #1F2937;
-  width: 100%;
-  margin: 8px 0;
-}
-
-.think-section {
-  padding: 12px;
-  background: rgba(107, 114, 128, 0.2);
-  border-radius: 6px 6px 0 0;
-  font-style: italic;
-  color: #9CA3AF;
-  border-bottom: 1px solid #374151;
-}
-
-.response-section {
-  padding: 12px;
-  color: #E5E7EB;
-  line-height: 1.6;
-}
-
-/* 移动端适配 */
-@media (max-width: 640px) {
-  .think-section,
-  .response-section {
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-}
-</style>
