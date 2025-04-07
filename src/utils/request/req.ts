@@ -90,7 +90,7 @@ service.interceptors.response.use(
       // 退出登录
       message.error('无效的会话，或者会话已过期，请重新登录。')
       useUserStore().logout().then(() => {
-        location.href = '/login';
+          location.href = '#/login';
       });
     } else if (code === HttpStatus.SERVER_ERROR) {
       // console.log(msg);

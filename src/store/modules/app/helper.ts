@@ -14,7 +14,7 @@ export interface AppState {
 }
 
 export function defaultSetting(): AppState {
-  return { siderCollapsed: false,isChat:true, theme: 'dark', language: 'zh-CN' }
+  return { siderCollapsed: false,isChat:true, theme: 'light', language: 'zh-CN' }
 }
 
 export function getLocalSetting(): AppState {
