@@ -15,7 +15,7 @@ import whisperText from '@/views/mj/whisperText.vue'
 import MjTextAttr from '@/views/mj/mjTextAttr.vue'
 import aiTextSetting from '@/views/mj/aiTextSetting.vue'
 import aiSetAuth from '@/views/mj/aiSetAuth.vue'
-import { isApikeyError, isAuthSessionError, isTTS } from '@/api'
+import { isApikeyError, isAuthSessionError, isTTS, mlog } from '@/api'
 
 interface Props {
   inversion?: boolean
@@ -51,7 +51,7 @@ mdi.use(mdKatex, { blockClass: 'katexmath-block rounded-md p-[10px]', errorColor
 const wrapClass = computed(() => {
   return [
     'text-wrap',
-    'min-w-[20px]',
+    'min-w-[20px]','max-w-[810px]',
     'rounded-md',
     isMobile.value ? 'p-2' : 'px-3 py-2',
     props.inversion ? 'bg-[#d2f9d1]' : 'bg-[#f4f6f8]',
@@ -62,11 +62,30 @@ const wrapClass = computed(() => {
 })
 
 const text = computed(() => {
-  const value = props.text ?? ''
-  // if (!props.asRawText)
-  //   return mdi.render(value)
-  // return value
-  return mdi.render(value)
+  let value = props.text ?? ''
+  if (!props.asRawText){
+    value = value.replace(/\\\( *(.*?) *\\\)/g, '$$$1$$');
+    //value = value.replace(/\\\((.*?)\\\)/g, '$$$1$$');
+    value = value.replace(/\\\[ *(.*?) *\\\]/g, '$$$$$1$$$$');
+    //
+    value= value.replaceAll('\\[',"$$$$")
+    value= value.replaceAll('\\]',"$$$$")   
+
+    //思考过程处理
+    //value= value.replace(/<think>([\s\S]*?)<\/think>/g, (match: string, content: string) => { 
+    value= value.replace(/<think>([\s\S]*?)(?=<\/think>|$)/g, (match: string, content: string) => { 
+      const processedContent: string = content
+        .split('\n')
+        .map(line => line.trim() ? '>' + line : line)  
+        .join('\n').replace(/(\r?\n)+/g, '\n>\n');
+       
+      return ">Thinking..."+(processedContent) ;
+    });
+    value= value.replaceAll('</think>','')
+    //mlog('replace', value)
+    return mdi.render(value) 
+  }
+  return value
 })
 
 function highlightBlock(str: string, lang?: string) {
@@ -121,15 +140,16 @@ onUnmounted(() => {
         <aiTextSetting v-if="!inversion && isApikeyError(text)"/>
         <aiSetAuth v-if="!inversion && isAuthSessionError(text)" />
           
-        <dallText :chat="chat" v-if="chat.model=='dall-e-3' || chat.model=='dall-e-2'" class="whitespace-pre-wrap" />
+        <dallText :chat="chat" v-if=" chat.model && chat.model?.indexOf('chat') == -1" class="whitespace-pre-wrap" />
         <mjText v-if="chat.mjID" class="whitespace-pre-wrap" :chat="chat" :mdi="mdi"></mjText>
         <ttsText v-else-if="chat.model && isTTS(chat.model) && chat.text=='ok'" :chat="chat"/>
         <template v-else>
-          <div v-if="!asRawText" class="markdown-body " :class="{ 'markdown-body-generate': loading }" v-html="text" />
-          <div style="font-size: 17px; font-family: 'Karla';" v-else class="whitespace-pre-wrap" v-text="text" />
+          <div v-if="!asRawText" class="markdown-body" :class="{ 'markdown-body-generate': loading }" v-html="text" />
+          <div v-else class="whitespace-pre-wrap" v-text="text" />
         </template>
       </div>
       <whisperText v-else-if="text=='whisper' && chat.opt?.lkey "  :chat="chat" />
+      <div v-else-if="asRawText" class="whitespace-pre-wrap" v-text="text" />
       <div v-else class="markdown-body "  style="--color-fg-default:#24292f"  v-html="text" />
       <!-- <div v-else class="whitespace-pre-wrap" v-text="text" /> -->
       <MjTextAttr :image="chat.opt?.images[0]" v-if="chat.opt?.images"></MjTextAttr>
