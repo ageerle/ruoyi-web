@@ -662,9 +662,11 @@ load()
 						<div v-if="homeStore.myData.session.notify" v-html="homeStore.myData.session.notify" class="text-neutral-300 mt-4">
 
 						</div>
+
 						<div class="gpts-box" v-else>
 							<br>
 							<br>
+							<div  v-if="local!=='draw'">
 <!--							<h1>{{ href }}</h1>-->
 							<div class="annou" v-if="informContent.length" :style="{'margin-bottom': isMobile ? '15px' : '30px'}">
 								<div class="ai-icon">
@@ -709,6 +711,7 @@ load()
 									</div>
 								</div>
 							</div>
+						</div>
 						</div>
 						<!-- <div class="flex items-center justify-center mt-4 text-center text-neutral-300" v-else>
 							<SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
