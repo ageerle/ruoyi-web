@@ -26,9 +26,10 @@ import {
 import to from "await-to-js";
 import { useRouter } from "vue-router";
 import { t } from "@/locales";
+import { modelList } from "@/api/model";
 
 onMounted(() => {
-	fetchData();
+	fetchData(),getModelList();
 });
 
 const router = useRouter();
@@ -102,13 +103,20 @@ const placement = ref<DrawerPlacement>("right");
 
 const getVector = reactive([
 	{ label: "weaviate", value: "weaviate" },
-	{ label: "milvus", value: "milvus" },
+	{ label: "milvus", value: "milvus" }, 
 ]);
 
-const getVectorModel = reactive([
-	{ label: "text-embedding-3-small", value: "text-embedding-3-small" },
-	{ label: "bge-large-zh-v1.5", value: "quentinz/bge-large-zh-v1.5" },
-]);
+const getVectorModel = ref([]);
+
+async function getModelList() {
+	try {
+		const res = await modelList('vector');
+		getVectorModel.value = res.data;
+	} catch (error) {
+		console.error("获取模型列表失败:", error);
+		message.error("获取模型列表失败");
+	}
+}
 
 const createColumns = () => {
 	return [
@@ -318,6 +326,8 @@ const columns = ref(createColumns());
 								<n-select
 									:options="getVectorModel"
 									v-model:value="formValue.vectorModel"
+									value-field="modelDescribe"
+									label-field="modelName"
 									placeholder="请选择向量模型"
 									clearable
 								></n-select>

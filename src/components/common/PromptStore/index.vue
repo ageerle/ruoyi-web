@@ -213,7 +213,7 @@ const tableData = ref([]);
 const fetchData1 = async () => {
 	try {
 		// 发起一个请求
-		const [err, result] = await to(modelList());
+		const [err, result] = await to(modelList('chat'));
 
 		if (err) {
 			message.error(err.message)
