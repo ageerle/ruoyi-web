@@ -149,7 +149,7 @@ onMounted(() => {
 
 async function getModelList() {
 	try {
-		const res = await modelList();
+		const res = await modelList('chat');
 		modelListData.value = res.data;
 		model.value = modelListData.value[0]?.modelDescribe || "";
 	} catch (error) {
