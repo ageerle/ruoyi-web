@@ -460,7 +460,7 @@ const searchOptions = computed(() => {
 })
 
 const goUseGpts= async ( item: gptsType)=>{
-	const saveObj= {model:  `${ item.gid }`   ,gpts:item}
+	const saveObj= {model:  `${ item.modelName }`   ,gpts:item}
 	gptConfigStore.setMyData(saveObj);
 	if(chatStore.active){ //保存到对话框
 		const chatSet = new chatSetting( chatStore.active );
