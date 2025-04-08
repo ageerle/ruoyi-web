@@ -39,7 +39,7 @@ const { iconRender } = useIconRender();
 //import FormData from 'form-data'
 const route = useRoute();
 const chatStore = useChatStore();
-const emit = defineEmits(["update:modelValue", "export", "handleClear"]);
+const emit = defineEmits(["update:modelValue", "update:chatType","export", "handleClear"]);
 const props = defineProps<{
 	modelValue: string;
 	disabled?: boolean;
@@ -53,12 +53,14 @@ const st = ref<{
 	isShow: boolean;
 	showMic: boolean;
 	micStart: boolean;
+	chatType: boolean;
 }>({
 	fileBase64: [],
 	isLoad: 0,
 	isShow: false,
 	showMic: false,
 	micStart: false,
+	chatType: false,
 });
 const { isMobile } = useBasicLayout();
 const placeholder = computed(() => {
@@ -94,6 +96,8 @@ const handleSubmit = () => {
 	let obj = {
 		prompt: mvalue.value,
 		fileBase64: st.value.fileBase64,
+		chatType: st.value.chatType? 1 : 0,
+		appId: gptConfigStore.myData.gpts? gptConfigStore.myData.gpts.id : ''
 	};
 	homeStore.setMyData({ act: "gpt.submit", actData: obj });
 	mvalue.value = "";
@@ -107,6 +111,11 @@ const mvalue = computed({
 	},
 	set(value) {
 		emit("update:modelValue", value);
+	},
+});
+const chatTypeBn = computed({
+	get() {
+		return st.value.chatType ? "info" : "";
 	},
 });
 function selectFile(input: any) {
@@ -356,7 +365,7 @@ function handleClear() {
 						<template v-else>
 							<SvgIcon icon="heroicons:sparkles" />
 							<span>模型:{{
-									nGptStore.modelLabel ? truncateText(nGptStore.modelLabel,20) : "gpt-4o-mini"
+									nGptStore.modelLabel ? truncateText(nGptStore.modelLabel,20) : "deepseek-r1:1.5b"
 								}} {{nGptStore.kid?'知识库:'+truncateText(nGptStore.kName,10):''}}</span>
 						</template>
 						<SvgIcon icon="icon-park-outline:right" />
@@ -410,6 +419,18 @@ function handleClear() {
 						width="22px"
 						height="22px"
 					></IconSvg>
+					<n-tooltip trigger="hover">
+						<template #trigger>
+							<n-tag :bordered="false" :type="chatTypeBn" :round="true" style="margin-top:-3px;margin-left:-5px">
+								<IconSvg  style="margin:0px 5px"  @click="st.chatType = !st.chatType"
+									icon="search"
+									width="22px"
+									height="22px"
+								></IconSvg>
+							</n-tag>
+						</template>
+						联网搜索
+				</n-tooltip>
 				</div>
 				<IconSvg
 					@click="handleClear"

@@ -11,7 +11,9 @@ export interface gptsType{
     logo:string
     info:string
     use_cnt?:string
+    id:string
     bad?:string|number
+    modelName:string
 }
  //const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 export function upImg(file:any   ):Promise<any>

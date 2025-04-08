@@ -192,6 +192,8 @@ interface subModelType{
     signal?:AbortSignal
     model?:string
     uuid?:string|number
+    chatType: number
+    appId: string
 }
 function getHeaderAuthorization(){
     // if(!gptServerStore.myData.OPENAI_API_KEY){
@@ -236,7 +238,6 @@ export const subModel= async (opt: subModelType)=>{
         frequency_penalty = gStore.frequency_penalty??frequency_penalty;
         max_tokens= gStore.max_tokens;
     }
-   
     let body ={
             max_tokens ,
             model ,
@@ -246,6 +247,8 @@ export const subModel= async (opt: subModelType)=>{
             "messages": opt.message
            ,stream:true
            ,kid:gptConfigStore.myData.kid
+           ,chat_type: opt.chatType
+           ,appId: opt.appId
         }
 
         let headers=   {'Content-Type': 'application/json;charset=UTF-8',
@@ -267,8 +270,9 @@ export const subModel= async (opt: subModelType)=>{
                  if(data=='[DONE]') opt.onMessage({text:'',isFinish:true})
                  else {
                     try{
+                        // TODO 思考处理，DeepSeek  API 字段reasoning_content ，本地部署标签<think> 
                         const obj= JSON.parse(data );
-                        opt.onMessage({text:obj.choices[0].delta?.content??'' ,isFinish:obj.choices[0].finish_reason!=null })
+                        opt.onMessage({text:obj.choices[0].delta?.content??obj.choices[0].delta?.reasoning_content??'' ,isFinish:obj.choices[0].finish_reason!=null })
                     }catch{
                         opt.onMessage({
                             text: data,

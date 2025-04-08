@@ -12,7 +12,7 @@ import { t } from "@/locales";
 const emit = defineEmits(['finished']);
 const { addChat , updateChatSome } = useChat()
 const chatStore = useChatStore()
-const st=ref({uuid:'1002', index:-1 });
+const st=ref({uuid:'1002', index:-1, chatType:0, appId:'' });
 const controller = ref<AbortController>( );;// new AbortController();
 const dataSources = computed(() => chatStore.getChatByUuid(+st.value.uuid))
 const ms= useMessage();
@@ -52,8 +52,10 @@ watch(()=>homeStore.myData.act, async (n)=>{
 
         let  uuid2 =  dd.uuid?? uuid;
         st.value.uuid =  uuid2 ;
+        st.value.chatType = dd.chatType;
+        st.value.appId = dd.appId??'';
         const chatSet = new chatSetting(   +st.value.uuid  );
-        const nGptStore =   chatSet.getGptConfig()  ;
+        const nGptStore =   chatSet.getGptConfig();
          mlog('gpt.submit', dd , dd.uuid,  nGptStore ) ;
         let model = nGptStore.model ;//gptConfigStore.myData.model
 
@@ -145,8 +147,10 @@ watch(()=>homeStore.myData.act, async (n)=>{
         let historyMesg=  await getMessage();
         mlog('historyMesg', historyMesg );
         //return ;
-        let message= [ {  "role": "system", "content": getSystemMessage(  +uuid2) },
-                ...historyMesg ];
+        // let message= [ {  "role": "system", "content": getSystemMessage(  +uuid2) },
+        //         ...historyMesg ];
+        let message= [...historyMesg ];
+                
         if( dd.fileBase64 && dd.fileBase64.length>0 ){
             if(isCanBase64Model(model)){ 
                 let obj={
@@ -307,7 +311,9 @@ const submit= (model:string, message:any[],opt?:any)=>{
                     goFinish()
                 },
                 signal: controller.value.signal,
-                kid: ''
+                kid: '',
+                chatType: st.value.chatType,
+                appId: st.value.appId
             }).then(()=>goFinish() ).catch(e=>{
                 if(e.message!='canceled')  textRz.value.push("\n"+t('mj.fail')+":\n```\n"+(e.reason??JSON.stringify(e,null,2)) +"\n```\n")
                 goFinish();
