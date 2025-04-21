@@ -685,7 +685,8 @@ load()
 								<div class="ai-icon">
 									<IconSvg icon="chatGPT" :width="isMobile ? '32px' : '64px'" :height="isMobile ? '32px' : '64px'"></IconSvg>
 								</div>
-								<div class="text" :style="{padding: isMobile? '22px 10px' : '22px 68px', 'font-size': isMobile? '14px' : '16px', 'line-height': isMobile? '20px' : '28px'}">
+
+								<div style="margin-top:15px ;"  class="text" :style="{padding: isMobile? '22px 10px' : '22px 68px', 'font-size': isMobile? '14px' : '16px', 'line-height': isMobile? '20px' : '28px'}">
 									<p class="title">
 										{{ t('chat.helpTitle') }}
 									</p>

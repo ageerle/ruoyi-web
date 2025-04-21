@@ -11,7 +11,7 @@ import { useBasicLayout } from '@/hooks/useBasicLayout'
 onMounted(() => {
 	fetchData1()
 	// 查询套餐信息
-	fetchPackages()
+	//fetchPackages()
 });
 
 interface Props {

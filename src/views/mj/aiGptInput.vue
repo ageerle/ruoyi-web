@@ -365,7 +365,7 @@ function handleClear() {
 						<template v-else>
 							<SvgIcon icon="heroicons:sparkles" />
 							<span>模型:{{
-									nGptStore.modelLabel ? truncateText(nGptStore.modelLabel,20) : "deepseek-r1:1.5b"
+									nGptStore.modelLabel ? truncateText(nGptStore.modelLabel,20) : "gpt-4o-mini"
 								}} {{nGptStore.kid?'知识库:'+truncateText(nGptStore.kName,10):''}}</span>
 						</template>
 						<SvgIcon icon="icon-park-outline:right" />
@@ -419,7 +419,7 @@ function handleClear() {
 						width="22px"
 						height="22px"
 					></IconSvg>
-					<n-tooltip trigger="hover">
+					<!-- <n-tooltip trigger="hover">
 						<template #trigger>
 							<n-tag :bordered="false" :type="chatTypeBn" :round="true" style="margin-top:-3px;margin-left:-5px">
 								<IconSvg  style="margin:0px 5px"  @click="st.chatType = !st.chatType"
@@ -430,7 +430,7 @@ function handleClear() {
 							</n-tag>
 						</template>
 						联网搜索
-				</n-tooltip>
+				</n-tooltip> -->
 				</div>
 				<IconSvg
 					@click="handleClear"

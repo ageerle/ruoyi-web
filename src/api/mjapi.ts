@@ -358,7 +358,7 @@ export const getLastVersion=  async ()=>{
 export const isCanBase64Model=(model:string)=>{
     //gpt-4o
     //customVisionModel
-    let arr=['gpt-4o','gemini','1.5','sonnet','opus','deepseek' ];
+    let arr=['gpt-4o','gemini','1.5','sonnet','opus'];
     for( let m of arr){
         if(model.indexOf(m)>-1) return true
     }
