@@ -257,10 +257,6 @@ export const subModel= async (opt: subModelType)=>{
         headers={...headers,...getHeaderAuthorization()}
         try {
             let url = "/chat/send"
-            if(gptConfigStore.myData.kid){
-                url = "/knowledge/send"
-            }
-        
          await fetchSSE( gptGetUrl(url),{
             method: 'POST',
             headers: headers,
