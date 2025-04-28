@@ -71,7 +71,7 @@ async function handleActionButtonClick(item: Character) {
             <!-- <n-avatar :size="48" :src="item.avatar" /> -->
            
             <n-icon size="48">
-              <img :src="item.avatar" alt="Icon" />
+              <!-- <img :src="item.avatar" alt="Icon" /> -->
             </n-icon>
           </div>
           <n-divider />
