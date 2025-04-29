@@ -8,6 +8,7 @@ import { useRouter } from 'vue-router'
 import { loginOut,getUserInfo} from '@/api/user'
 import { UserData } from "@/typings/user"
 import { defaultSetting,UserInfo } from '@/store/modules/user/helper'
+import { getToken } from "@/store/modules/auth/helper";
 import to from "await-to-js";
 
 const router = useRouter()
@@ -21,7 +22,11 @@ onMounted(() => { getLoginUserInfo() });
  */
 
 async function getLoginUserInfo() {
-  const [err, newUserInfo] = await to(getUserInfo<UserData>());
+  if(!getToken()){
+      return
+  }
+
+  const [err, newUserInfo] = await to(getUserInfo());
       if (err) {
         message.error(err.toString())
       }

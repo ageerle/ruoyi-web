@@ -66,7 +66,7 @@ async function getLoginUserInfo() {
   if (!getToken()) {
     return
   }
-  const [err, newUserInfo] = await to(getUserInfo<UserData>());
+  const [err, newUserInfo] = await to(getUserInfo());
   if (err) {
     // message.error(err.toString())
     console.log(err.toString())
@@ -150,27 +150,64 @@ const handleSelect = (key: string) => {
           </n-tooltip>
         </a>
 
-        <a @click="urouter.push(`/store`)"
+        <a @click="urouter.push(`/knowledge`)"
           class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
           <n-tooltip placement="right" trigger="hover">
             <template #trigger>
               <div class="flex h-full justify-center items-center   py-1 flex-col">
-                <SvgIcon icon="ri:apps-fill" class="text-3xl flex-1"></SvgIcon>
+                <SvgIcon icon="garden:knowledge-base-26" class="text-3xl flex-1"></SvgIcon>
               </div>
             </template>
-            应用中心
+            知识库
           </n-tooltip>
         </a>
 
-        <a
+        <a @click="urouter.push(`/draw`)"
           class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
           <n-tooltip placement="right" trigger="hover">
             <template #trigger>
               <div class="flex h-full justify-center items-center   py-1 flex-col">
-                <SvgIcon icon="weui:shop-filled" class="text-3xl flex-1"></SvgIcon>
+                <SvgIcon icon="material-symbols:draw-rounded" class="text-3xl flex-1"></SvgIcon>
               </div>
             </template>
-            插件市场
+            绘画
+          </n-tooltip>
+        </a>
+
+        <a @click="urouter.push(`/music`)"
+          class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
+          <n-tooltip placement="right" trigger="hover">
+            <template #trigger>
+              <div class="flex h-full justify-center items-center   py-1 flex-col">
+                <SvgIcon icon="mingcute:music-line" class="text-3xl flex-1"></SvgIcon>
+              </div>
+            </template>
+            音乐
+          </n-tooltip>
+        </a>
+
+        <a @click="urouter.push(`/video`)"
+          class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
+          <n-tooltip placement="right" trigger="hover">
+            <template #trigger>
+              <div class="flex h-full justify-center items-center   py-1 flex-col">
+                <SvgIcon icon="mynaui:video" class="text-3xl flex-1"></SvgIcon>
+              </div>
+            </template>
+            视频
+          </n-tooltip>
+        </a>
+
+
+        <a @click="urouter.push(`/ppt`)"
+          class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
+          <n-tooltip placement="right" trigger="hover">
+            <template #trigger>
+              <div class="flex h-full justify-center items-center   py-1 flex-col">
+                <SvgIcon icon="icon-park-outline:ppt" class="text-3xl flex-1"></SvgIcon>
+              </div>
+            </template>
+            PPT
           </n-tooltip>
         </a>
       </div>
