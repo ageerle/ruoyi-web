@@ -102,12 +102,12 @@ watch(()=>gptConfigStore.myData , toMyuid , {deep:true})
               </template>
               <template v-else>
                 <button class="p-1">
-                  <SvgIcon icon="ri:edit-line" @click="handleEdit(item, true, $event)" />
+                  <SvgIcon icon="ri:edit-line" width="18px" height="18px" @click="handleEdit(item, true, $event)" />
                 </button>
                 <NPopconfirm placement="bottom" @positive-click="handleDeleteDebounce(index, $event)">
                   <template #trigger>
                     <button class="p-1">
-                      <SvgIcon icon="ri:delete-bin-line" />
+                      <SvgIcon icon="ri:delete-bin-line" width="16px" height="16px" />
                     </button>
                   </template>
                   {{ $t('chat.deleteHistoryConfirm') }}

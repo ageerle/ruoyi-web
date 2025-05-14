@@ -133,17 +133,17 @@ const handleSelect = (key: string) => {
 <template>
 
 
-  <div class="flex-shrink-0 w-[60px] z-[1000]  h-full" v-if="!isMobile" data-tauri-drag-region>
+  <div class="flex-shrink-0 w-[70px] z-[1000]  h-full" v-if="!isMobile" data-tauri-drag-region>
     <div
       class="flex h-full select-none flex-col items-center justify-between bg-[#e8eaf1] px-2 pt-4 pb-8 dark:bg-[#25272d]">
       <div class="flex flex-col space-y-4 flex-1 " data-tauri-drag-region>
         <a @click="st.active = 'chat'; urouter.push(`/chat`)"
-          class="router-link-active router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
+          class="router-link-active router-link-exact-active h-10 w-10 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
           <n-tooltip placement="right" trigger="hover">
             <template #trigger>
               <div class="flex h-full justify-center items-center py-1 flex-col "
                 :class="[goHome == 'Chat' ? 'active' : '']">
-                <SvgIcon icon="ri:wechat-line" class="text-3xl  flex-1"></SvgIcon>
+                <SvgIcon icon="ri:wechat-line" class="text-2xl  flex-1"></SvgIcon>
               </div>
             </template>
             对话
@@ -151,11 +151,11 @@ const handleSelect = (key: string) => {
         </a>
 
         <a @click="urouter.push(`/knowledge`)"
-          class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
+          class=" router-link-exact-active h-10 w-10 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
           <n-tooltip placement="right" trigger="hover">
             <template #trigger>
               <div class="flex h-full justify-center items-center   py-1 flex-col">
-                <SvgIcon icon="garden:knowledge-base-26" class="text-3xl flex-1"></SvgIcon>
+                <SvgIcon icon="garden:knowledge-base-26" class="text-2xl flex-1"></SvgIcon>
               </div>
             </template>
             知识库
@@ -163,11 +163,11 @@ const handleSelect = (key: string) => {
         </a>
 
         <a @click="urouter.push(`/draw`)"
-          class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
+          class=" router-link-exact-active h-10 w-10 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
           <n-tooltip placement="right" trigger="hover">
             <template #trigger>
               <div class="flex h-full justify-center items-center   py-1 flex-col">
-                <SvgIcon icon="material-symbols:draw-rounded" class="text-3xl flex-1"></SvgIcon>
+                <SvgIcon icon="material-symbols:draw-rounded" class="text-2xl flex-1"></SvgIcon>
               </div>
             </template>
             绘画
@@ -175,11 +175,11 @@ const handleSelect = (key: string) => {
         </a>
 
         <a @click="urouter.push(`/music`)"
-          class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
+          class=" router-link-exact-active h-10 w-10 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
           <n-tooltip placement="right" trigger="hover">
             <template #trigger>
               <div class="flex h-full justify-center items-center   py-1 flex-col">
-                <SvgIcon icon="mingcute:music-line" class="text-3xl flex-1"></SvgIcon>
+                <SvgIcon icon="mingcute:music-line" class="text-2xl flex-1"></SvgIcon>
               </div>
             </template>
             音乐
@@ -187,11 +187,11 @@ const handleSelect = (key: string) => {
         </a>
 
         <a @click="urouter.push(`/video`)"
-          class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
+          class=" router-link-exact-active h-10 w-10 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
           <n-tooltip placement="right" trigger="hover">
             <template #trigger>
               <div class="flex h-full justify-center items-center   py-1 flex-col">
-                <SvgIcon icon="mynaui:video" class="text-3xl flex-1"></SvgIcon>
+                <SvgIcon icon="mynaui:video" class="text-2xl flex-1"></SvgIcon>
               </div>
             </template>
             视频
@@ -200,11 +200,11 @@ const handleSelect = (key: string) => {
 
 
         <a @click="urouter.push(`/ppt`)"
-          class=" router-link-exact-active h-12 w-12 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
+          class=" router-link-exact-active h-10 w-10 cursor-pointer rounded-xl bg-white duration-300 dark:bg-[#34373c] hover:bg-[#bbb] dark:hover:bg-[#555]">
           <n-tooltip placement="right" trigger="hover">
             <template #trigger>
               <div class="flex h-full justify-center items-center   py-1 flex-col">
-                <SvgIcon icon="icon-park-outline:ppt" class="text-3xl flex-1"></SvgIcon>
+                <SvgIcon icon="icon-park-outline:ppt" class="text-2xl flex-1"></SvgIcon>
               </div>
             </template>
             PPT

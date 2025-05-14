@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
-import { useMessage, NButton, NInput, NImage, NModal, NCard } from "naive-ui";
+import { useRouter, useRoute } from "vue-router";
+import { useMessage, NButton, NInput, NImage, NModal, NCard, NSpin } from "naive-ui";
 import { LoginFrom } from "@/typings/user";
 import {
 	getConfigKey,
@@ -18,13 +18,15 @@ const { t } = useI18n();
 
 const userStore = useUserStore();
 const router = useRouter();
+const route = useRoute();
 const message = useMessage();
 const user = ref<LoginFrom>(Object.create(null));
 
 // 点击登录
 let loginLoading = ref(false);
+let loading = ref(false);
 async function handleValidateButtonClick(e: MouseEvent) {
-	e.preventDefault();
+	e&&e.preventDefault();
 	const { username, password } = user.value;
 	// if (!validateAccount(username)) {
 	// 	message.error(t("login.accountFormatError"));
@@ -37,9 +39,11 @@ async function handleValidateButtonClick(e: MouseEvent) {
 			message.success(t("login.loginSuccess"));
 			await router.push("/");
 			loginLoading.value = false;
+			loading.value = false
 		} else {
 			message.error(err.message);
 			loginLoading.value = false;
+			loading.value = false
 		}
 	} else {
 		message.error(t("login.usernameOrPasswordEmpty"));
@@ -69,6 +73,15 @@ const code = ref("");
 
 // 在组件挂载后执行异步操作
 onMounted(async () => {
+	console.log("onMounted", route.query);
+	const {u, p} = route.query
+	if (u&&p){
+		user.value.username = u
+		user.value.password = p
+		loading.value = true
+		handleValidateButtonClick()
+	}
+
 	const [err, res] = await to(getConfigKey("copyright"));
 	if (err) {
 		console.error("获取配置失败", err.message);
@@ -129,90 +142,92 @@ onUnmounted(() => {
 </script>
 
 <template>
-	<div id="app">
+	<div id="app" >
 		<br /><br /><br /><br />
 		<div class="flex justify-center mt-8 md:mt-0">
 			<img style="border-radius: 60px; width: 120px; height: 120px" :src="logo" alt="Robot Icon"
 				class="h-12 w-fit hover:cursor-pointer md:h-16" />
 		</div>
 		<br />
-		<div class="relative w-full bg-white mt-10 overflow-hidden shadow-xl ring-1 sm:mx-auto sm:h-min sm:max-w-4xl sm:rounded-lg lg:max-w-5xl 2xl:max-w-6xl login-box"
-			:style="{ width: isMobile ? '100%' : '880px' }">
-			<div class="px-6 pt-4 pb-8 sm:px-10">
-				<main class="mx-auto sm:max-w-4xl lg:max-w-5xl 2xl:max-w-6xl">
-					<div v-if="activeTab === 'login'">
-						<!-- 登录表单 -->
-						<div class="flex flex-col justify-center my-4 space-y-8">
-							<div class="mx-auto w-full max-w-md">
-								<h2 class="text-3xl font-bold text-center text-gray-900">
-									{{ $t("login.login") }}
-								</h2>
-								<p class="mt-2 text-sm text-center text-gray-600 login-desc">
-									{{ $t("login.or") }}
-									<a @click="handleRegistBtnClick"
-										class="font-semibold text-teal-500 hover:text-teal-600">{{ $t("login.register")
-										}}</a>
-									{{ $t("login.andExperience") }}
-								</p>
-							</div>
-							<div class="mx-auto w-full max-w-sm">
-								<form class="space-y-6" :style="{
-									width: !isMobile ? '580px' : 'calc(100% - 20px)',
-									marginLeft: isMobile ? '10px' : 'calc(50% - 290px)',
-								}">
-									<div>
-										<label for="email" class="block text-sm font-medium text-gray-700">{{
-											$t("login.emailOrPhone") }}</label>
-										<div class="mt-1">
-											<input id="email" v-model="user.username"
-												:allow-input="(val: string) => { return !/[^A-Za-z0-9_@.]/g.test(val) }"
-												maxlength="32" :placeholder="$t('login.enterEmailOrPhone')" name="email"
-												type="email" autocomplete="email" required
-												class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:border-teal-500 focus:outline-none focus:ring-teal-500" />
+		<n-spin :show="loading">
+			<div class="relative w-full bg-white mt-10 overflow-hidden shadow-xl ring-1 sm:mx-auto sm:h-min sm:max-w-4xl sm:rounded-lg lg:max-w-5xl 2xl:max-w-6xl login-box"
+				:style="{ width: isMobile ? '100%' : '880px' }" v-loading="loading" >
+				<div class="px-6 pt-4 pb-8 sm:px-10">
+					<main class="mx-auto sm:max-w-4xl lg:max-w-5xl 2xl:max-w-6xl">
+						<div v-if="activeTab === 'login'">
+							<!-- 登录表单 -->
+							<div class="flex flex-col justify-center my-4 space-y-8">
+								<div class="mx-auto w-full max-w-md">
+									<h2 class="text-3xl font-bold text-center text-gray-900">
+										{{ $t("login.login") }}
+									</h2>
+									<p class="mt-2 text-sm text-center text-gray-600 login-desc">
+										{{ $t("login.or") }}
+										<a @click="handleRegistBtnClick"
+											class="font-semibold text-teal-500 hover:text-teal-600">{{ $t("login.register")
+											}}</a>
+										{{ $t("login.andExperience") }}
+									</p>
+								</div>
+								<div class="mx-auto w-full max-w-sm">
+									<form class="space-y-6" :style="{
+										width: !isMobile ? '580px' : 'calc(100% - 20px)',
+										marginLeft: isMobile ? '10px' : 'calc(50% - 290px)',
+									}">
+										<div>
+											<label for="email" class="block text-sm font-medium text-gray-700">{{
+												$t("login.emailOrPhone") }}</label>
+											<div class="mt-1">
+												<input id="email" v-model="user.username"
+													:allow-input="(val: string) => { return !/[^A-Za-z0-9_@.]/g.test(val) }"
+													maxlength="32" :placeholder="$t('login.enterEmailOrPhone')" name="email"
+													type="email" autocomplete="email" required
+													class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:border-teal-500 focus:outline-none focus:ring-teal-500" />
+											</div>
 										</div>
-									</div>
-									<div>
-										<label for="password" class="block text-sm font-medium text-gray-700">{{
-											$t("login.password") }}</label>
-										<div class="mt-1">
-											<input id="password" maxLength="16" v-model="user.password"
-												:placeholder="$t('login.enterPassword')" name="password" type="password"
-												required
-												class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:border-teal-500 focus:outline-none focus:ring-teal-500" />
+										<div>
+											<label for="password" class="block text-sm font-medium text-gray-700">{{
+												$t("login.password") }}</label>
+											<div class="mt-1">
+												<input id="password" maxLength="16" v-model="user.password"
+													:placeholder="$t('login.enterPassword')" name="password" type="password"
+													required
+													class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:border-teal-500 focus:outline-none focus:ring-teal-500" />
+											</div>
+											<a style="color: #0084ff; font-weight: 500" href="#/resetpassword"
+												class="float-right mt-2 text-sm font-semibold text-teal-500 hover:text-teal-600">{{
+													$t("login.forgotPassword") }}</a>
 										</div>
-										<a style="color: #0084ff; font-weight: 500" href="#/resetpassword"
-											class="float-right mt-2 text-sm font-semibold text-teal-500 hover:text-teal-600">{{
-												$t("login.forgotPassword") }}</a>
-									</div>
-									<div class="footer-login">
-										<n-button :loading="loginLoading" @click="handleValidateButtonClick">{{
-											$t("login.login") }}</n-button>
+										<div class="footer-login">
+											<n-button :loading="loginLoading" @click="handleValidateButtonClick">{{
+												$t("login.login") }}</n-button>
 
-										<n-button @click="handleWxLogin">微信登录</n-button>
-									</div>
-								</form>
+											<n-button @click="handleWxLogin">微信登录</n-button>
+										</div>
+									</form>
+								</div>
 							</div>
 						</div>
-					</div>
 
-					<!-- 扫码登录 -->
-					<n-modal
-						v-model:show="showModal"
-						title="请扫描下方二维码登录"
-						preset="card"
-						draggable
-						:style="{ width: '400px' }"
- 						 >
-   					 <n-image width="350" :src="qrCode" />
- 					</n-modal>
-				</main>
+						<!-- 扫码登录 -->
+						<n-modal
+							v-model:show="showModal"
+							title="请扫描下方二维码登录"
+							preset="card"
+							draggable
+							:style="{ width: '400px' }"
+							>
+							<n-image width="350" :src="qrCode" />
+						</n-modal>
+					</main>
+				</div>
 			</div>
-		</div>
-		<div class="footer">
-			<a target="_blank" style="color: #999999; font-size: 14px" href="https://beian.miit.gov.cn/">
-				&nbsp;{{ copyright }}
-			</a>
-		</div>
+			<div class="footer">
+				<a target="_blank" style="color: #999999; font-size: 14px" href="https://beian.miit.gov.cn/">
+					&nbsp;{{ copyright }}
+				</a>
+			</div>
+		</n-spin>
 		<!-- <div v-if="!activate" id="specialDiv">
 			<p>
 				{{ $t("login.systemNotActivated") }}
