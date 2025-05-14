@@ -365,7 +365,7 @@ function handleClear() {
 						<template v-else>
 							<SvgIcon icon="heroicons:sparkles" />
 							<span>模型:{{
-									nGptStore.modelLabel ? truncateText(nGptStore.modelLabel,20) : "gpt-4o-mini"
+									nGptStore.modelLabel ? truncateText(nGptStore.modelLabel,20) : "deepseek-ai/DeepSeek-R1"
 								}} {{nGptStore.kid?'知识库:'+truncateText(nGptStore.kName,10):''}}</span>
 						</template>
 						<SvgIcon icon="icon-park-outline:right" />
