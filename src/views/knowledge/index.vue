@@ -48,8 +48,8 @@ const formValue = ref({
 	overlapChar: 50, // 重叠字符数
 	retrieveLimit: 3, // 知识库中检索的条数
 	textBlockSize: 500, // 文本块大小
-	vector: "", //  向量库
-	vectorModel: "", //  向量模型
+	vectorModelName: "", //  向量库
+	embeddingModelName: "", //  向量模型
 });
 
 async function submitForm() {
@@ -304,7 +304,7 @@ const columns = ref(createColumns());
 							<n-form-item label="向量库" required>
 								<n-select
 									:options="getVector"
-									v-model:value="formValue.vector"
+									v-model:value="formValue.vectorModelName"
 									placeholder="请选择向量库"
 									clearable
 								></n-select>
@@ -325,7 +325,7 @@ const columns = ref(createColumns());
 							<n-form-item label="向量模型" required>
 								<n-select
 									:options="getVectorModel"
-									v-model:value="formValue.vectorModel"
+									v-model:value="formValue.embeddingModelName"
 									value-field="modelDescribe"
 									label-field="modelName"
 									placeholder="请选择向量模型"
