@@ -91,7 +91,7 @@ export default {
     loginFailed: "登录失败!",
     usernameOrPasswordEmpty: "用户名或者密码不能为空!",
     emailOrPhone: "账号登录",
-    enterEmailOrPhone: "请输入邮箱或者电话号码",
+    enterEmailOrPhone: "请输入账号",
     password: "密码",
     enterPassword: "请输入密码",
     forgotPassword: "忘记密码?",

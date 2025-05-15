@@ -129,19 +129,18 @@ function handleRegenerate2() {
 <template>
   <div
     ref="messageRef"
-    class="flex w-full mb-6 overflow-hidden"
+    class="flex w-full mb-8 overflow-hidden"
     :class="[{ 'flex-row-reverse': inversion }]"
   >
     <div
       class="flex items-center justify-center flex-shrink-0 h-8 overflow-hidden rounded-full basis-8"
-      :class="[inversion ? 'ml-2' : 'mr-2']"
-    >
+      :class="[inversion ? 'ml-2' : 'mr-2']" v-if="!inversion">
       <AvatarComponent :image="inversion" :logo="chat.logo"/>
     </div>
     <div class="overflow-hidden text-sm " :class="[inversion ? 'items-end' : 'items-start']">
       <p class="text-xs group  text-[#b4bbc4] flex  items-center space-x-2 " :class="[inversion ? 'justify-end' : 'justify-start']">
-        <span>{{ dateTime }}</span>
-        <span v-if="chat.model"  class="text-[#b4bbc4]/50">{{ chat.model }}</span>
+        <!-- <span>{{ dateTime }}</span>
+        <span v-if="chat.model"  class="text-[#b4bbc4]/50">{{ chat.model }}</span> -->
         <!-- <span>{{ chat.opt?.progress }}</span> -->
         <template  v-if="chat.opt?.status=='SUCCESS'">
           <SvgIcon icon="ri:restart-line" @click="sendReload"  class="cursor-pointer text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-300 " ></SvgIcon>
@@ -154,7 +153,7 @@ function handleRegenerate2() {
         </template>
       </p>
       
-      <div  class="flex items-end gap-1 mt-2"
+      <div  class="flex items-end gap-1"
         :class="[inversion ? 'flex-row-reverse' : 'flex-row']" > 
         <TextComponent 
           ref="textRef"
