@@ -277,3 +277,33 @@ export const listRobConfig = (query?: RobConfigQuery): AxiosPromise<RobConfigVO[
 		method: 'get',
 	})
 }
+
+//  会话列表
+export function getSessionList(query:any) {
+	return request({
+		url: '/system/session/list',
+		method: 'get',
+    params: query
+	})
+}
+export function changeSessionList(data:any) {
+	return request({
+		url: '/system/session/list',
+		method: 'put',
+		data: data
+	})
+}
+// 移除会话
+export function removeSession(id:any) {
+	return request({
+		url: '/system/session/'+ id,
+		method: 'get',
+	})
+}
+// 获取消息体
+export function getMessage(id:any) {
+	return request({
+		url: '/system/message/'+ id,
+		method: 'get',
+	})
+}

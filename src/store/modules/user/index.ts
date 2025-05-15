@@ -4,7 +4,7 @@ import type { UserInfo, UserState } from './helper'
 import { defaultSetting, getLocalState, setLocalState } from './helper'
 import {LoginFrom,UserData} from "@/typings/user";
 import { doLogin,loginOut } from '@/api/user'
-import { removeToken,setToken,getToken } from '@/store/modules/auth/helper'
+import { removeToken,setToken,getToken, setUser } from '@/store/modules/auth/helper'
 import { to } from 'await-to-js';
 
 const token = ref(getToken())
@@ -21,8 +21,10 @@ export const useUserStore = defineStore('user-store', {
       const [err, res] = await to(doLogin<UserData>(data));
       if (res) {
         const data = res.data;
+        console.log("=======data",data);
         // token本地存储
         setToken(data.token);
+        setUser(data.userInfo)
         token.value = data.token;
         return Promise.resolve();
       }
