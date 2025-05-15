@@ -671,7 +671,7 @@ load()
       <div id="scrollRef"
            ref="scrollRef"
            class="h-full overflow-hidden overflow-y-auto">
-           <div class="new-chat-header">对话框</div>
+           <!-- <div class="new-chat-header">对话框</div> -->
         <!-- max-w-screen-xl -->
         <div id="image-wrapper"
              class="w-full max-w-[1100px] m-auto dark:bg-[#101014]"
@@ -686,28 +686,12 @@ load()
             <div class="gpts-box"
                  v-else>
               <br>
+          
               <br>
               <div v-if="local!=='draw'">
                 <!--							<h1>{{ href }}</h1>-->
-                <div class="annou"
-                     v-if="informContent.length"
-                     :style="{'margin-bottom': isMobile ? '15px' : '30px'}">
-                  <div class="ai-icon">
-                    <IconSvg icon="chatGPT"
-                             :width="isMobile ? '32px' : '64px'"
-                             :height="isMobile ? '32px' : '64px'"></IconSvg>
-                  </div>
-                  <div class="text"
-                       :style="{padding: isMobile? '22px 10px' : '22px 68px'}">
-                    <p class="title">{{ t('chat.annouce') }}</p>
-                    <!-- <p v-for="(item,index) in t('chat.annouceContent').split(';')" :key="index">{{ item }}</p> -->
-                    <div v-for="(item, index) in informContent.slice(0, 1)"
-                         :key="index">
-                      <!-- <p style="margin-top: 10px; font-size: 18px">{{ item.noticeTitle }}</p> -->
-                      <div v-html="item.noticeContent"></div>
-                    </div>
-                  </div>
-                </div>
+
+
                 <div class="help"
                      v-if="gptsFilterList && gptsFilterList.length">
                   <div class="ai-icon">
