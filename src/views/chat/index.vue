@@ -699,7 +699,7 @@ load()
                              :width="isMobile ? '32px' : '64px'"
                              :height="isMobile ? '32px' : '64px'"></IconSvg>
                   </div>
-
+11
                   <div  class="text"
                        :style="{padding: isMobile? '22px 10px' : '22px 27px 5px', 'font-size': isMobile? '14px' : '16px', 'line-height': isMobile? '20px' : '28px'}">
                     <p class="title">

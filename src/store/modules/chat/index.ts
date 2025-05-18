@@ -2,7 +2,14 @@ import { defineStore } from 'pinia'
 import { defaultState, getLocalState, setLocalState } from './helper'
 import { router } from '@/router'
 import { homeStore } from '@/store/homeStore'
+import { getUser } from "@/store/modules/auth/helper";
+import {
+	getSessionList,
+	removeSession,
+	changeSessionList,
+	getMessageList,
 
+} from "@/api/bot";
 export const useChatStore = defineStore('chat-store', {
   state: (): Chat.ChatState => getLocalState(),
 
@@ -16,14 +23,63 @@ export const useChatStore = defineStore('chat-store', {
 
     getChatByUuid(state: Chat.ChatState) {
       return (uuid?: number) => {
-        if (uuid)
+        if (uuid){
           return state.chat.find(item => item.uuid === uuid)?.data ?? []
+        }
         return state.chat.find(item => item.uuid === state.active)?.data ?? []
       }
     },
   },
 
   actions: {
+
+
+    async initializeData(){
+      let userId = getUser()?.userId || null;
+      const res: any = await getSessionList({ userId });
+      if (res.code === 200) {
+        const serverData = res.rows;
+        for (const item of serverData) {
+          if (item?.id != null) {
+            item.title = item.sessionContent;
+            item.uuid = item.id;
+            item.isEdit = false;
+          }
+        }
+        this.history = serverData;
+        if (serverData.length>0) {
+          const sessionId = serverData[0].uuid;
+          this.active=sessionId
+          const remoteRes: any = await getMessageList({ id: sessionId });
+         
+          if (remoteRes.code === 200 && remoteRes.rows) {
+            let remoteList=remoteRes.rows
+           
+            const chatIndex = this.chat.findIndex(item => item.uuid === sessionId)
+            if (chatIndex === -1)
+               this.chat[chatIndex]={
+                uuid: sessionId,
+                data:remoteList,
+              }
+            
+            // const serverMessages = remoteRes.rows.map((msg: any) => ({
+            //   ...msg,
+            //   sessionId, // 确保有 sessionId 字段
+            // }));
+        
+            
+          }
+          
+          
+      }  
+    
+    }
+
+
+    },
+  
+
+
     setUsingContext(context: boolean) {
       this.usingContext = context
       this.recordState()

@@ -13,6 +13,7 @@ import {
 import { useBasicLayout } from "@/hooks/useBasicLayout";
 import { debounce } from "@/utils/functions/debounce";
 import { chatSetting, mlog } from "@/api";
+import { changeSessionList ,getMessage,removeSession,getMessageList} from "@/api/bot";
 import AiListText from "@/views/mj/aiListText.vue";
 
 const { isMobile } = useBasicLayout();
@@ -21,12 +22,14 @@ const appStore = useAppStore();
 const chatStore = useChatStore();
 const dataSources = computed(() => chatStore.history);
 // const dataStore = useDataStore();
-// const dataSources=computed(() => dataStore.items)
-console.log("===============dataSources", dataSources);
+// const dataSources=computed(() => dataStore.sessions)
+// const messages=computed(() => dataStore.messages)
+// console.log("===============dataStore", dataStore);
+// console.log("===============dataStore.messages", messages);
 // useDataStore
 
 onMounted(() => {
-	// dataStore.initializeData();
+	// chatStore.initializeData();
 });
 
 async function handleSelect({ uuid }: Chat.History) {
@@ -40,12 +43,16 @@ async function handleSelect({ uuid }: Chat.History) {
 }
 
 function handleEdit(
+	// item:any,
 	{ uuid }: Chat.History,
 	isEdit: boolean,
 	event?: MouseEvent
 ) {
 	event?.stopPropagation();
 	chatStore.updateHistory(uuid, { isEdit });
+// 		item.isEdit = isEdit;
+// console.log("handleEdit", item);
+// 	dataStore.updateItemAction(item,false)
 }
 
 function handleDelete(index: number, event?: MouseEvent | TouchEvent) {
@@ -62,10 +69,13 @@ function handleEnter(
 	event: KeyboardEvent
 ) {
 	event?.stopPropagation();
+	// if (event.key === "Enter") dataStore.updateItemAction(item,false);
 	if (event.key === "Enter") chatStore.updateHistory(uuid, { isEdit });
 }
 
 function isActive(uuid: number) {
+	// console.log(dataStore.active, uuid);
+	// return dataStore.active.id === uuid;
 	return chatStore.active === uuid;
 }
 
@@ -74,6 +84,7 @@ const myuid = ref<gptConfigType[]>([]); //computed( ()=>chatSet.getObjs() ) ;
 const toMyuid = () => (myuid.value = chatSet.getObjs());
 toMyuid();
 const isInObjs = (uuid: number): undefined | gptConfigType => {
+	// console.log("isInObjs", uuid);
 	if (!myuid.value.length) return;
 	const index = myuid.value.findIndex((item: gptConfigType) => {
 		return item.uuid == uuid;
@@ -93,6 +104,8 @@ watch(() => gptConfigStore.myData, toMyuid, { deep: true });
 <template>
 	<NScrollbar class="px-4 chat-history">
 		<div class="flex flex-col gap-2 text-sm">
+			<!-- <p class="history-title" @click="newChangeSessionList">测试点击</p> -->
+
 			<p class="history-title">{{ $t("common.history") }}</p>
 			<template v-if="!dataSources.length">
 				<div

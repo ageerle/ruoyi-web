@@ -3,6 +3,11 @@ import { gptConfigType } from '@/store';
 import { NPopover, NAvatar } from "naive-ui";
 import { SvgIcon } from '@/components/common'
 defineProps<{myItem:Chat.History,myObj?:gptConfigType, index: any}>()
+
+
+// console.log("myObj",this.myItem)
+// console.log("myObj",this.myObj)
+// console.log("myObj",this.index)
 </script>
 <template>
 <span class="flex justify-start items-center">

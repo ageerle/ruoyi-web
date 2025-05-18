@@ -286,24 +286,40 @@ export function getSessionList(query:any) {
     params: query
 	})
 }
+// 修改聊天消息
 export function changeSessionList(data:any) {
 	return request({
-		url: '/system/session/list',
+		url: '/system/session',
 		method: 'put',
 		data: data
 	})
 }
 // 移除会话
-export function removeSession(id:any) {
+export function removeSession(data:any) {
 	return request({
-		url: '/system/session/'+ id,
-		method: 'get',
+		url: '/system/session',
+		method: 'delete',
+		data: data
 	})
 }
+
 // 获取消息体
+export function getMessageList(query:any) {
+	console.log('getMessageList',query)
+	return request({
+		url: 'system/message/list',
+		method: 'get',
+		params: query
+	})
+}
+
+// 获取消息
 export function getMessage(id:any) {
 	return request({
-		url: '/system/message/'+ id,
-		method: 'get',
+		url: 'system/message/'+ id,
+		method: 'get'
 	})
 }
+
+
+

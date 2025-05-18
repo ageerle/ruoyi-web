@@ -10,6 +10,7 @@ import { ElMessage,ElNotification } from 'element-plus'
 import { createDiscreteApi} from "naive-ui"
 const {message} = createDiscreteApi(["message"])
 
+const ALLOWED_METHODS = ['get', 'post', 'put', 'delete'];
 
 // 是否显示重新登录
 export const isRelogin = { show: false };
@@ -25,7 +26,12 @@ const service = axios.create({
 // 请求拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const method = (config.method || '').toLowerCase();
 
+    if (!ALLOWED_METHODS.includes(method)) {
+      return config;
+    }
+    
     const isToken = (config.headers || {}).isToken === false;
     // 是否需要防止数据重复提交
     const isRepeatSubmit = (config.headers || {}).repeatSubmit === false;

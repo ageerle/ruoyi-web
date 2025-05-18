@@ -4,7 +4,7 @@ import { ref, watch } from 'vue'
 import { NButton, NLayoutSider, useDialog } from 'naive-ui'
 import List from './List.vue'
 import Footer from './Footer.vue'
-import { useAppStore, useChatStore, homeStore } from '@/store'
+import { useAppStore, useChatStore, homeStore ,useDataStore} from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { IconSvg, PromptStore, SvgIcon } from '@/components/common'
 import { t } from '@/locales'
@@ -20,6 +20,7 @@ const Setting = defineAsyncComponent(() => import('@/components/common/Setting/i
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
+const dataStore = useDataStore();
 const dialog = useDialog()
 
 const { isMobile } = useBasicLayout()
@@ -34,6 +35,13 @@ onMounted(() => {
 });
 
 function handleAdd() {
+  // chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false })
+  // let uuid  = String(Date.now())
+  // let session={
+  //   title: 'New Chat', uuid: uuid,id:uuid, isEdit: false 
+  // }
+  // dataStore.addItemAction(session)
+
   chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false })
   if (isMobile.value)
     appStore.setSiderCollapsed(true)
