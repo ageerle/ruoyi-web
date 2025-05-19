@@ -8,6 +8,7 @@ import {
 	removeSession,
 	changeSessionList,
 	getMessageList,
+  createSession,
 
 } from "@/api/bot";
 export const useChatStore = defineStore('chat-store', {
@@ -22,16 +23,69 @@ export const useChatStore = defineStore('chat-store', {
     },
 
     getChatByUuid(state: Chat.ChatState) {
-      return (uuid?: number) => {
+      console.log('===>getChatByUuid', state);
+
+      
+
+      return (uuid?: any) => {
         if (uuid){
-          return state.chat.find(item => item.uuid === uuid)?.data ?? []
+          return state.chat.find(item => item.uuid == uuid)?.data ?? []
         }
-        return state.chat.find(item => item.uuid === state.active)?.data ?? []
+        return state.chat.find(item => item.uuid == state.active)?.data ?? []
       }
     },
   },
 
   actions: {
+
+  //  async getChatByUuid(uuid:any){
+  //     console.log("uuid",uuid)
+  //     let chatList=[]
+  //     if(uuid){
+  //       chatList=   this.chat.find(item => item.uuid == uuid)?.data ?? []
+  //     }else {
+  //       chatList =this.chat.find(item => item.uuid == this.active)?.data ?? []
+  //     }
+  //     if(chatList.length) return chatList
+  //     let newId=uuid||this.active
+  //     const remoteRes: any = await getMessageList({ id:newId})
+
+  //     if (remoteRes.code === 200 && remoteRes.rows) {
+
+  //       console.log("========remoteRes",remoteRes)
+  //       let remoteList=remoteRes.rows
+  //       let newList=[]
+  //       for (const newItem of remoteList) {
+  //         if (newItem?.role != null) {
+  //           newItem.dateTime=newItem.createTime
+  //           newItem.text = newItem.content;
+  //           newItem.inversion=true
+  //           newItem.requestOptions={
+  //             prompt:newItem.content,
+  //             options:null
+  //           }
+  //           if(newItem.role=="assistant"){
+  //             newItem.requestOptions.options={}
+  //             newItem.inversion=false
+  //           }
+  //           newItem.model =newItem.modelName
+  //           newList.push(newItem)
+
+  //         }
+  //       }
+  //       this.chat.push({
+  //         uuid: newId,
+  //         data:newList,
+  //       })
+  //       this.recordState()
+  //       return newList
+  //     }
+  //     return []
+
+  //   },
+    
+
+    // const remoteRes: any = await getMessageList({ id: sessionId });
 
 
     async initializeData(){
@@ -46,6 +100,7 @@ export const useChatStore = defineStore('chat-store', {
             item.isEdit = false;
           }
         }
+        console.log("===>serverData", serverData);
         this.history = serverData;
         if (serverData.length>0) {
           const sessionId = serverData[0].uuid;
@@ -53,27 +108,56 @@ export const useChatStore = defineStore('chat-store', {
           const remoteRes: any = await getMessageList({ id: sessionId });
          
           if (remoteRes.code === 200 && remoteRes.rows) {
+
+            console.log("========remoteRes",remoteRes)
             let remoteList=remoteRes.rows
-           
+            let newList=[]
+            for (const newItem of remoteList) {
+              if (newItem?.role != null) {
+                newItem.dateTime=newItem.createTime
+                newItem.text = newItem.content;
+                newItem.inversion=true
+                newItem.conversationOptions=null
+                newItem.error=false
+                newItem.requestOptions={
+                  prompt:serverData[0].title,
+                  options:null
+                }
+                if(newItem.role=="assistant"){
+                  newItem.requestOptions.options={}
+                  newItem.inversion=false
+                }
+                newItem.model =newItem.modelName
+                newList.push(newItem)
+
+              }
+            }
+            console.log("newList",newList)
             const chatIndex = this.chat.findIndex(item => item.uuid === sessionId)
-            if (chatIndex === -1)
+            console.log("=========",chatIndex)
+            if (chatIndex !== -1){
                this.chat[chatIndex]={
                 uuid: sessionId,
-                data:remoteList,
+                data:newList,
+              }
+            }
+              else {
+                this.chat.push({
+                  uuid: sessionId,
+                  data:newList,
+                })
               }
             
-            // const serverMessages = remoteRes.rows.map((msg: any) => ({
-            //   ...msg,
-            //   sessionId, // 确保有 sessionId 字段
-            // }));
-        
+                console.log("=========", this.chat[chatIndex])
             
+        
+            this.recordState()
           }
           
           
       }  
     
-    }
+      }
 
 
     },
@@ -85,7 +169,12 @@ export const useChatStore = defineStore('chat-store', {
       this.recordState()
     },
 
-    addHistory(history: Chat.History, chatData: Chat.Chat[] = []) {
+    async addHistory(history: Chat.History, chatData: Chat.Chat[] = []) {
+      console.log('addHistory', history);
+      const res:any = await createSession({
+        sessionContent:history.title
+      })
+      // let uuid=res.data.id
       this.history.unshift(history)
       this.chat.unshift({ uuid: history.uuid, data: chatData })
       this.active = history.uuid
@@ -101,6 +190,14 @@ export const useChatStore = defineStore('chat-store', {
     },
 
     async deleteHistory(index: number) {
+      let newItem:any = this.history[index]
+      // removeSession()
+console.log("item",newItem)
+ let id=newItem.id||null
+const res:any = await removeSession(id);
+if(res.code==200 ||!id){
+
+     
       this.history.splice(index, 1)
       this.chat.splice(index, 1)
 
@@ -130,6 +227,7 @@ export const useChatStore = defineStore('chat-store', {
         this.active = uuid
         this.reloadRoute(uuid)
       }
+    }
     },
 
     async setActive(uuid: number) {

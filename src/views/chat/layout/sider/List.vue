@@ -29,7 +29,7 @@ const dataSources = computed(() => chatStore.history);
 // useDataStore
 
 onMounted(() => {
-	// chatStore.initializeData();
+	chatStore.initializeData();
 });
 
 async function handleSelect({ uuid }: Chat.History) {

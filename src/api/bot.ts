@@ -286,6 +286,15 @@ export function getSessionList(query:any) {
     params: query
 	})
 }
+
+export function createSession(data:any) {
+	return request({
+		url: '/system/session',
+		method: 'post',
+    data: data
+	})
+}
+
 // 修改聊天消息
 export function changeSessionList(data:any) {
 	return request({
@@ -295,11 +304,10 @@ export function changeSessionList(data:any) {
 	})
 }
 // 移除会话
-export function removeSession(data:any) {
+export function removeSession(id:any) {
 	return request({
-		url: '/system/session',
+		url: '/system/session/'+id,
 		method: 'delete',
-		data: data
 	})
 }
 

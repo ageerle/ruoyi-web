@@ -78,7 +78,7 @@ const { uuid } = route.params as { uuid: string };
 const uuid1 = chatStore.active;
 const chatSet = new chatSetting(uuid1 == null ? 1002 : uuid1);
 const nGptStore = ref(chatSet.getGptConfig());
-const dataSources = computed(() => chatStore.getChatByUuid(+uuid));
+const dataSources = computed(() => chatStore.getChatByUuid(uuid));
 
 watch(
   () => gptConfigStore.myData,

@@ -14,7 +14,7 @@ const { addChat , updateChatSome } = useChat()
 const chatStore = useChatStore()
 const st=ref({uuid:'1002', index:-1, chatType:0, appId:'' });
 const controller = ref<AbortController>( );;// new AbortController();
-const dataSources = computed(() => chatStore.getChatByUuid(+st.value.uuid))
+const dataSources = computed(() => chatStore.getChatByUuid(st.value.uuid))
 const ms= useMessage();
 const textRz= ref<string[]>([]);
 const goFinish= (  )=>{

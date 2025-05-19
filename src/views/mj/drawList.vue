@@ -29,7 +29,7 @@ const { usingContext, toggleUsingContext } = useUsingContext()
 const { uuid } = route.params as { uuid: string } // || chatStore.$state.active || '1003'
 //if(!uuid) uuid= chatStore.$state.active ;
 mlog('uuid', uuid, chatStore.$state.active) ;
-const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
+const dataSources = computed(() => chatStore.getChatByUuid(uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !!item.conversationOptions)))
 
 const prompt = ref<any>(null)
