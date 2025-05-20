@@ -1,5 +1,5 @@
 <script setup lang='ts'> 
-import { computed, onMounted, onUnmounted, ref,watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref,watch,watchEffect } from 'vue'
 import { useRoute } from 'vue-router' 
 import {   useDialog, useMessage } from 'naive-ui'
  
@@ -29,7 +29,13 @@ const { usingContext, toggleUsingContext } = useUsingContext()
 const { uuid } = route.params as { uuid: string } // || chatStore.$state.active || '1003'
 //if(!uuid) uuid= chatStore.$state.active ;
 mlog('uuid', uuid, chatStore.$state.active) ;
-const dataSources = computed(() => chatStore.getChatByUuid(uuid))
+// const dataSources = computed(() => chatStore.getChatByUuid(uuid))
+
+const dataSources = ref<Chat.Chat[]>([])
+
+watchEffect(async () => {
+  dataSources.value = await chatStore.getChatByUuid(uuid)
+})
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !!item.conversationOptions)))
 
 const prompt = ref<any>(null)
@@ -38,7 +44,7 @@ const loading = ref<boolean>(false)
 // 未知原因刷新页面，loading 状态不会重置，手动重置
 dataSources.value.forEach((item, index) => {
   if (item.loading)
-    updateChatSome(+uuid, index, { loading: false })
+    updateChatSome(uuid, index, { loading: false })
 })
 
 function handleSubmit() {
@@ -76,7 +82,7 @@ async function onConversation() {
      }catch(e){
          mlog('localSaveAny error',e);
      }
-     addChat(  +uuid, promptMsg );
+     addChat(  uuid, promptMsg );
      //return ;
 
   }else if( message.action && message.action=='blend' ){
@@ -89,12 +95,12 @@ async function onConversation() {
      }catch(e){
          mlog('localSaveAny error',e);
      }
-     addChat(  +uuid, promptMsg );
+     addChat(  uuid, promptMsg );
 
     
   }else if( message.action && ['gpt.dall-e-3','shorten'].indexOf(message.action) >-1   ){ //gpt.dall-e-3 //subTas
     let promptMsg: Chat.Chat= getInitChat( message.data.prompt ); 
-     addChat(  +uuid, promptMsg );
+     addChat(  uuid, promptMsg );
   }else if( message.drawText){
     let promptMsg: Chat.Chat= getInitChat(message.drawText)
     
@@ -108,7 +114,7 @@ async function onConversation() {
            mlog('localSaveAny error',e);
        }
     }
-    addChat(  +uuid, promptMsg ); 
+    addChat(  uuid, promptMsg ); 
   } 
   
 
@@ -131,13 +137,13 @@ async function onConversation() {
       error: false,
       conversationOptions: null,
       requestOptions: { prompt:  t('mjchat.submiting'), options: { ...options } },
-      uuid:+uuid,
+      uuid:uuid,
       myid: `${Date.now()}`
       ,model:message.action=='gpt.dall-e-3'? message.data.model :'midjourney'
      
     }
   //mlog('outMsg model',outMsg.model );
-  addChat(  +uuid, outMsg  )
+  addChat(  uuid, outMsg  )
   outMsg.index=  dataSources.value.length - 1;
   scrollToBottom()
 
@@ -153,7 +159,7 @@ async function onConversation() {
 
     if (error.message === 'canceled') {
       updateChatSome(
-        +uuid,
+        uuid,
         dataSources.value.length - 1,
         {
           loading: false,
@@ -163,11 +169,11 @@ async function onConversation() {
       return
     }
 
-    const currentChat = getChatByUuidAndIndex(+uuid, dataSources.value.length - 1)
+    const currentChat = getChatByUuidAndIndex(uuid, dataSources.value.length - 1)
 
     if (currentChat?.text && currentChat.text !== '') {
       updateChatSome(
-        +uuid,
+        uuid,
         dataSources.value.length - 1,
         {
           text: `${currentChat.text}\n[${errorMessage}]`,
@@ -179,7 +185,7 @@ async function onConversation() {
     }
 
     updateChat(
-      +uuid,
+      uuid,
       dataSources.value.length - 1,
       {
         dateTime: new Date().toLocaleString(),
@@ -206,7 +212,7 @@ onUnmounted(() => {
 watch(()=>homeStore.myData.act,(n)=>{
     if(n=='draw') {
         prompt.value=homeStore.myData.actData;
-        mlog('draw', homeStore.myData.actData.drawText );
+        mlog('draw', homeStore.myData.actData.drawText||'' );
         handleSubmit();
     }
     if(n=='updateChat'){
@@ -214,7 +220,7 @@ watch(()=>homeStore.myData.act,(n)=>{
         mlog("动作更新",'updateChat' ,  dchat.uuid,dchat.index );
         if(  dchat.uuid && dchat.index ) {
             dchat.dateTime= new Date().toLocaleString();
-            updateChat( +dchat.uuid, +dchat.index, dchat );
+            updateChat( dchat.uuid, +dchat.index, dchat );
             mlog('updateChat 动作更新',dchat.model , dchat.opt?.progress, dchat.opt?.imageUrl  );
             if( dchat.opt?.progress&& dchat.opt?.progress=='100%' && dchat.opt?.imageUrl ){
                // url2base64(dchat.opt?.imageUrl ,'img:'+dchat.mjID ).then(()=>{}).catch((e)=>mlog('url2base64 error',e));

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Ref } from "vue";
-import { computed, onMounted, onUnmounted, ref, watch, h } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch, watchEffect,h } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import {
@@ -66,7 +66,13 @@ const { usingContext, toggleUsingContext } = useUsingContext();
 
 const { uuid } = route.params as { uuid: string };
 
-const dataSources = computed(() => chatStore.getChatByUuid(uuid));
+// const dataSources = computed(() => chatStore.getChatByUuid(uuid));
+
+const dataSources = ref<Chat.Chat[]>([])
+
+watchEffect(async () => {
+  dataSources.value = await chatStore.getChatByUuid(uuid)
+})
 const conversationList = computed(() =>
 	dataSources.value.filter(
 		(item) => !item.inversion && !!item.conversationOptions
@@ -88,7 +94,7 @@ const isChat = computed(() => appStore.isChat);
 
 // 未知原因刷新页面，loading 状态不会重置，手动重置
 dataSources.value.forEach((item, index) => {
-	if (item.loading) updateChatSome(+uuid, index, { loading: false });
+	if (item.loading) updateChatSome(uuid, index, { loading: false });
 });
 
 function handleSubmit() {
@@ -113,7 +119,7 @@ async function onConversation() {
 
 	controller = new AbortController();
 
-	addChat(+uuid, {
+	addChat(uuid, {
 		dateTime: new Date().toLocaleString(),
 		text: message,
 		inversion: true,
@@ -133,7 +139,7 @@ async function onConversation() {
 
 	if (lastContext && usingContext.value) options = { ...lastContext };
 
-	addChat(+uuid, {
+	addChat(uuid, {
 		dateTime: new Date().toLocaleString(),
 		text: "思考中",
 		loading: true,
@@ -163,7 +169,7 @@ async function onConversation() {
 					if (lastIndex !== -1) chunk = responseText.substring(lastIndex);
 					try {
 						const data = JSON.parse(chunk);
-						updateChat(+uuid, dataSources.value.length - 1, {
+						updateChat(uuid, dataSources.value.length - 1, {
 							dateTime: new Date().toLocaleString(),
 							text: lastText + (data.text ?? ""),
 							inversion: false,
@@ -192,7 +198,7 @@ async function onConversation() {
 					}
 				},
 			});
-			updateChatSome(+uuid, dataSources.value.length - 1, { loading: false });
+			updateChatSome(uuid, dataSources.value.length - 1, { loading: false });
 		};
 
 		await fetchChatAPIOnce();
@@ -200,7 +206,7 @@ async function onConversation() {
 		const errorMessage = error?.message ?? t("common.wrong");
 
 		if (error.message === "canceled") {
-			updateChatSome(+uuid, dataSources.value.length - 1, {
+			updateChatSome(uuid, dataSources.value.length - 1, {
 				loading: false,
 			});
 			scrollToBottomIfAtBottom();
@@ -208,12 +214,12 @@ async function onConversation() {
 		}
 
 		const currentChat = getChatByUuidAndIndex(
-			+uuid,
+			uuid,
 			dataSources.value.length - 1
 		);
 
 		if (currentChat?.text && currentChat.text !== "") {
-			updateChatSome(+uuid, dataSources.value.length - 1, {
+			updateChatSome(uuid, dataSources.value.length - 1, {
 				text: `${currentChat.text}\n[${errorMessage}]`,
 				error: false,
 				loading: false,
@@ -221,7 +227,7 @@ async function onConversation() {
 			return;
 		}
 
-		updateChat(+uuid, dataSources.value.length - 1, {
+		updateChat(uuid, dataSources.value.length - 1, {
 			dateTime: new Date().toLocaleString(),
 			text: errorMessage,
 			inversion: false,
@@ -251,7 +257,7 @@ async function onRegenerate(index: number) {
 
 	loading.value = true;
 
-	updateChat(+uuid, index, {
+	updateChat(uuid, index, {
 		dateTime: new Date().toLocaleString(),
 		text: "",
 		inversion: false,
@@ -280,7 +286,7 @@ async function onRegenerate(index: number) {
 					if (lastIndex !== -1) chunk = responseText.substring(lastIndex);
 					try {
 						const data = JSON.parse(chunk);
-						updateChat(+uuid, index, {
+						updateChat(uuid, index, {
 							dateTime: new Date().toLocaleString(),
 							text: lastText + (data.text ?? ""),
 							inversion: false,
@@ -307,12 +313,12 @@ async function onRegenerate(index: number) {
 					}
 				},
 			});
-			updateChatSome(+uuid, index, { loading: false });
+			updateChatSome(uuid, index, { loading: false });
 		};
 		await fetchChatAPIOnce();
 	} catch (error: any) {
 		if (error.message === "canceled") {
-			updateChatSome(+uuid, index, {
+			updateChatSome(uuid, index, {
 				loading: false,
 			});
 			return;
@@ -320,7 +326,7 @@ async function onRegenerate(index: number) {
 
 		const errorMessage = error?.message ?? t("common.wrong");
 
-		updateChat(+uuid, index, {
+		updateChat(uuid, index, {
 			dateTime: new Date().toLocaleString(),
 			text: errorMessage,
 			inversion: false,
@@ -382,7 +388,7 @@ function handleDelete(index: number) {
 		positiveText: t("common.yes"),
 		negativeText: t("common.no"),
 		onPositiveClick: () => {
-			chatStore.deleteChatByUuid(+uuid, index);
+			chatStore.deleteChatByUuid(uuid, index);
 		},
 	});
 }
@@ -396,7 +402,7 @@ function handleClear() {
 		positiveText: t("common.yes"),
 		negativeText: t("common.no"),
 		onPositiveClick: () => {
-			chatStore.clearChatByUuid(+uuid);
+			chatStore.clearChatByUuid(uuid);
 		},
 	});
 }

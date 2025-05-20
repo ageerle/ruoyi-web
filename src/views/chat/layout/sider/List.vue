@@ -73,7 +73,7 @@ function handleEnter(
 	if (event.key === "Enter") chatStore.updateHistory(uuid, { isEdit });
 }
 
-function isActive(uuid: number) {
+function isActive(uuid:string) {
 	// console.log(dataStore.active, uuid);
 	// return dataStore.active.id === uuid;
 	return chatStore.active === uuid;
@@ -83,7 +83,7 @@ const chatSet = new chatSetting(chatStore.active ?? 1002);
 const myuid = ref<gptConfigType[]>([]); //computed( ()=>chatSet.getObjs() ) ;
 const toMyuid = () => (myuid.value = chatSet.getObjs());
 toMyuid();
-const isInObjs = (uuid: number): undefined | gptConfigType => {
+const isInObjs = (uuid:string): undefined | gptConfigType => {
 	// console.log("isInObjs", uuid);
 	if (!myuid.value.length) return;
 	const index = myuid.value.findIndex((item: gptConfigType) => {

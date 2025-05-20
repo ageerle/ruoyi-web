@@ -5,17 +5,17 @@ import { ss } from '@/utils/storage'
 import { mlog } from "./mjapi";
 
 export class chatSetting{
-  private uuid: number;
+  private uuid: string;
   private localKey='chat-setting';
   //private gptConfig: gptConfigType
     // 构造函数
-  constructor(uuid: number) {
+  constructor(uuid: string) {
     this.uuid = uuid;
     //this.gptConfig = gptConfigStore.myData;
     //this.init();
   }
  
-  public setUuid(uuid: number){
+  public setUuid(uuid: string){
     this.uuid = uuid;
     return this
   }

@@ -18,7 +18,7 @@ declare namespace Chat {
 			,duration?:number
 			,lkey?:string
 		} //
-		uuid?:number
+		uuid?:string
 		index?:number
 		myid?:string //唯一随机
 		logo?:string
@@ -29,14 +29,14 @@ declare namespace Chat {
 	interface History {
 		title: string
 		isEdit: boolean
-		uuid: number
+		uuid: string
 	}
 
 	interface ChatState {
-		active: number | null
+		active: number |string| null
 		usingContext: boolean;
 		history: History[]
-		chat: { uuid: number; data: Chat[] }[]
+		chat: { uuid: string; data: Chat[] }[]
 	}
 
 	interface ConversationRequest {

@@ -191,7 +191,7 @@ interface subModelType{
     onError?:(d?:any)=>void
     signal?:AbortSignal
     model?:string
-    uuid?:string|number
+    uuid?:string
     chatType: number
     appId: string
 }
@@ -206,7 +206,7 @@ function getHeaderAuthorization(){
     }
 }
 
-export const getSystemMessage = (uuid?:number )=>{
+export const getSystemMessage = (uuid?:string )=>{
     //KnowledgeCutOffDate
     let sysTem= gptConfigStore.myData.systemMessage;
     if( uuid ){
@@ -230,7 +230,7 @@ export const subModel= async (opt: subModelType)=>{
     let top_p= 1;
     let presence_penalty= 0 , frequency_penalty=0;
     if(opt.uuid){
-        const chatSet= new chatSetting( +opt.uuid);
+        const chatSet= new chatSetting( opt.uuid);
         const gStore= chatSet.getGptConfig();
         temperature= gStore.temperature??temperature;
         top_p = gStore.top_p??top_p;
@@ -419,7 +419,7 @@ export const blurClean= ()=>{
   gptServerStore.myData.UPLOADER_URL=  myTrim( myTrim( gptServerStore.myData.UPLOADER_URL.trim(),'/'),'\\');
 }
 
-export const countTokens= async ( dataSources:Chat.Chat[], input:string ,uuid:number )=>{
+export const countTokens= async ( dataSources:Chat.Chat[], input:string ,uuid:string )=>{
     const chatSet= new chatSetting(uuid);
     const myStore= chatSet.getGptConfig();
     let rz={system:0,input:0 ,history:0,remain:330,modelTokens:'4k',planOuter:myStore.max_tokens  }

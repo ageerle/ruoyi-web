@@ -34,7 +34,7 @@ export interface gptConfigType{
     kid:string //知识库id
     kName:string //知识库名称
     gpts?:gptsType
-    uuid?:number
+    uuid?:string
     temperature?:number // 随机性 : 值越大，回复越随机
     top_p?:number // 核采样 : 与随机性类似，但不要和随机性一起更改
     frequency_penalty?:number

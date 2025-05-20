@@ -20,7 +20,7 @@ const textRz= ref<string[]>([]);
 const goFinish= (  )=>{
     //let dindex = st.value.index>=0? st.value.index : dataSources.value.length - 1;
     //return ;
-    updateChatSome( +st.value.uuid,  st.value.index , { dateTime: new Date().toLocaleString(),loading: false })
+    updateChatSome( st.value.uuid,  st.value.index , { dateTime: new Date().toLocaleString(),loading: false })
     //scrollToBottom();
     emit('finished');
 
@@ -38,7 +38,7 @@ const getMessage= async (start=1000,loadingCnt=3)=>{
 watch( ()=>textRz.value, (n)=>{
     //mlog('🐞 textRz',n);
     if(n.length==0) return ;
-    updateChatSome( +st.value.uuid, st.value.index , { dateTime: new Date().toLocaleString(),text: n.join('') })
+    updateChatSome( st.value.uuid, st.value.index , { dateTime: new Date().toLocaleString(),text: n.join('') })
     //scrollToBottom();
     homeStore.setMyData({act:'scrollToBottomIfAtBottom'})
     //homeStore.setMyData({act:'scrollToBottom'})
@@ -54,7 +54,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
         st.value.uuid =  uuid2 ;
         st.value.chatType = dd.chatType;
         st.value.appId = dd.appId??'';
-        const chatSet = new chatSetting(   +st.value.uuid  );
+        const chatSet = new chatSetting(   st.value.uuid  );
         const nGptStore =   chatSet.getGptConfig();
          mlog('gpt.submit', dd , dd.uuid,  nGptStore ) ;
         let model = nGptStore.model ;//gptConfigStore.myData.model
@@ -89,7 +89,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
                 if(dd.duration && dd.duration>0 ){
                      promptMsg.text=`${t('mj.lang')} ${dd.duration.toFixed(2)}s`;
                 }
-                addChat(  +uuid2, promptMsg );
+                addChat(  uuid2, promptMsg );
                 homeStore.setMyData({act:'scrollToBottom'});
             }catch(e){
                 mlog('localSaveAny error',e);
@@ -105,16 +105,16 @@ watch(()=>homeStore.myData.act, async (n)=>{
                 mlog('whisper 内容>> ', whisper );
                 let opt={duration:0,...promptMsg.opt };
                 opt.duration= dd.duration??0;
-                updateChatSome(  +uuid2, dataSources.value.length-1, {text:whisper.text,opt } );
+                updateChatSome(  uuid2, dataSources.value.length-1, {text:whisper.text,opt } );
                 dd.prompt= whisper.text;
                 //return ;
             }catch(e){
-                updateChatSome(  +uuid2, dataSources.value.length-1, {text:`${t('mj.fail')}：${e}` } );
+                updateChatSome(  uuid2, dataSources.value.length-1, {text:`${t('mj.fail')}：${e}` } );
                 return ;
             }
 
         }else{
-            addChat(  +uuid2, promptMsg );
+            addChat(  uuid2, promptMsg );
             homeStore.setMyData({act:'scrollToBottom'});
         }
 
@@ -126,20 +126,20 @@ watch(()=>homeStore.myData.act, async (n)=>{
             error: false,
             conversationOptions: null,
             requestOptions: { prompt: dd.prompt, options: {  } },
-            uuid:+uuid2,
+            uuid:uuid2,
             model ,
             myid: `${Date.now()}`
         }
         // if(gptConfigStore.myData.gpts){
         //     outMsg.logo= gptConfigStore.myData.gpts.logo ;
         // }
-        //  const chatSet = new chatSetting(   +st.value.uuid  );
+        //  const chatSet = new chatSetting(   st.value.uuid  );
         // const nGptStore =   chatSet.getGptConfig()  ;
         //chatSet
         if( nGptStore.gpts ){
             outMsg.logo= nGptStore.gpts.logo ;
         }
-        addChat(  +uuid2, outMsg  )
+        addChat(  uuid2, outMsg  )
         st.value.index= dataSources.value.length - 1;
         if(textRz.value.length>=0) textRz.value = [ ];
 
@@ -147,15 +147,15 @@ watch(()=>homeStore.myData.act, async (n)=>{
         let historyMesg=  await getMessage();
         mlog('historyMesg', historyMesg );
         //return ;
-        // let message= [ {  "role": "system", "content": getSystemMessage(  +uuid2) },
+        // let message= [ {  "role": "system", "content": getSystemMessage(  uuid2) },
         //         ...historyMesg ];
-        let message= [...historyMesg ];
+        let message:any= [...historyMesg ];
                 
         if( dd.fileBase64 && dd.fileBase64.length>0 ){
             if(isCanBase64Model(model)){ 
                 let obj={
-                        "role": "user",
-                       "content": [] as any
+                        role: "user",
+                       content: [] as any
                 }
                 obj.content.push({ "type": "text",      "text": dd.prompt  });
                 dd.fileBase64.forEach((f:any)=>{
@@ -211,7 +211,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
         }
 
         controller.value = new AbortController();
-        let message= [ {  "role": "system", "content": getSystemMessage(+st.value.uuid ) },
+        let message= [ {  "role": "system", "content": getSystemMessage(st.value.uuid ) },
                 ...historyMesg ];
         textRz.value=[];
 
@@ -223,7 +223,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
         st.value.index= actData.index;
         st.value.uuid= actData.uuid;
         ms.info( t('mj.ttsLoading'));
-        const chatSet = new chatSetting(   +st.value.uuid  );
+        const chatSet = new chatSetting(   st.value.uuid  );
         const nGptStore =   chatSet.getGptConfig()  ;
 
         subTTS({model:'tts-1',input: actData.text , voice:nGptStore.tts_voice }).then(d=>{
@@ -231,7 +231,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
                 mlog('subTTS',d );
                 //d.player.play();
                 //textRz.value.push('ok');
-                updateChatSome( +st.value.uuid,  st.value.index
+                updateChatSome( st.value.uuid,  st.value.index
                 , {
                 dateTime: new Date().toLocaleString(),loading: false
 
@@ -251,7 +251,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
 
 const submit= (model:string, message:any[],opt?:any)=>{
     mlog('提交Model', model  );
-    const chatSet = new chatSetting(   +st.value.uuid  );
+    const chatSet = new chatSetting(   st.value.uuid  );
     const nGptStore =   chatSet.getGptConfig()  ;
     controller.value = new AbortController();
         if(model=='whisper-1'){
@@ -280,7 +280,7 @@ const submit= (model:string, message:any[],opt?:any)=>{
                 mlog('subTTS',d );
                 //d.player.play();
                 //textRz.value.push('ok');
-                updateChatSome( +st.value.uuid,  st.value.index
+                updateChatSome( st.value.uuid,  st.value.index
                 , {
                 dateTime: new Date().toLocaleString(),loading: false
                 ,text:'ok'
