@@ -139,8 +139,8 @@ function handleRegenerate2() {
     </div>
     <div class="overflow-hidden text-sm " :class="[inversion ? 'items-end' : 'items-start']">
       <p class="text-xs group  text-[#b4bbc4] flex  items-center space-x-2 " :class="[inversion ? 'justify-end' : 'justify-start']">
-        <!-- <span>{{ dateTime }}</span>
-        <span v-if="chat.model"  class="text-[#b4bbc4]/50">{{ chat.model }}</span> -->
+        <span>{{ dateTime }}</span>
+        <span v-if="chat.model"  class="text-[#b4bbc4]/50">{{ chat.model }}</span>
         <!-- <span>{{ chat.opt?.progress }}</span> -->
         <template  v-if="chat.opt?.status=='SUCCESS'">
           <SvgIcon icon="ri:restart-line" @click="sendReload"  class="cursor-pointer text-neutral-300 hover:text-neutral-800 dark:hover:text-neutral-300 " ></SvgIcon>
