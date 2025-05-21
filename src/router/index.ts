@@ -10,7 +10,6 @@ import fanyilayout from '@/views/fanyi/layout.vue'
 import pptlayout from '@/views/ppt/layout.vue'
 import musiclayout from '@/views/suno/layout.vue'
 import knowledgelayout from '@/views/knowledge/layout.vue'
-import wxlayout from '@/views/wxbot/layout.vue'
 
 
 const routes: RouteRecordRaw[] = [
@@ -23,19 +22,6 @@ const routes: RouteRecordRaw[] = [
       {
         path: '/chat/:uuid?',
         name: 'Chat',
-        component: () => import('@/views/chat/index.vue'),
-      },
-    ],
-  },
-   {
-    path: '/g',
-    name: 'g',
-    component: ChatLayout,
-    redirect: '/g/g-2fkFE8rbu',
-    children: [
-      {
-        path: '/g/:gid',
-        name: 'GPTs',
         component: () => import('@/views/chat/index.vue'),
       },
     ],
@@ -140,19 +126,7 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
-  {
-    path: '/wxbot',
-    name: 'Wxbot',
-    component: wxlayout,
-    redirect: '/wxbot/t',
-    children: [
-      {
-        path: 't',
-        name: 'wxbot1',
-        component: () => import('@/views/wxbot/bot.vue'),
-      },
-    ],
-  },
+
   {
     path: '/knowledge',
     name: 'Knowledge',
@@ -210,12 +184,12 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/regist',
     name: 'regist',
-    component: () => import('@/views/regist/index.vue'),
+    component: () => import('@/views/login/regist.vue'),
   },
   {
     path: '/resetpassword',
     name: 'resetpassword',
-    component: () => import('@/views/resetpassword/index.vue'),
+    component: () => import('@/views/login/reset.vue'),
   },
   
   {

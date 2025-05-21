@@ -37,6 +37,7 @@
     "@vicons/ionicons5": "^0.13.0",
     "@vue-office/pdf": "^2.0.10",
     "@vueuse/core": "^9.13.0",
+    "ant-design-vue": "^4.2.6",
     "await-to-js": "^3.0.0",
     "element-plus": "^2.9.2",
     "eventsource-parser": "^1.1.1",

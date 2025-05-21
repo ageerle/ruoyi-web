@@ -6,7 +6,6 @@ import { isString } from '@/utils/is'
 import { removeToken } from '@/store/modules/auth/helper'
 import { useRouter } from 'vue-router'
 import { loginOut,getUserInfo} from '@/api/user'
-import { UserData } from "@/typings/user"
 import { defaultSetting,UserInfo } from '@/store/modules/user/helper'
 import { getToken } from "@/store/modules/auth/helper";
 import to from "await-to-js";

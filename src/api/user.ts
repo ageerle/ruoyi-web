@@ -17,7 +17,7 @@ export function doLogin<T>(params:LoginFrom) {
 /**
  * 用户注册
  */
-export function doRegist<T>(username: string, password: string,code:string) {
+export function doRegist<T>(username: string, password: string, code: string) {
 	return request({
 		url: '/auth/register',
 		method: 'post',
