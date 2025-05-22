@@ -6,11 +6,9 @@ import { ChatLayout } from '@/views/chat/layout'
 import mjlayout from '@/views/mj/layout.vue'
 import lumalayout from '@/views/luma/layout.vue'
 import storelayout from '@/views/store/layout.vue'
-import fanyilayout from '@/views/fanyi/layout.vue'
 import pptlayout from '@/views/ppt/layout.vue'
 import musiclayout from '@/views/suno/layout.vue'
 import knowledgelayout from '@/views/knowledge/layout.vue'
-
 
 const routes: RouteRecordRaw[] = [
   {
@@ -57,20 +55,6 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
-		path: "/fanyi",
-		name: "Fanyi",
-		component: fanyilayout,
-		redirect: "/fanyi/index",
-		children: [
-			{
-				path: "index",
-				name: "fanyi",
-				component: () => import("@/views/fanyi/index.vue"),
-			},
-		],
-	},
-
-  {
 		path: "/ppt",
 		name: "Ppt",
 		component: pptlayout,
@@ -79,7 +63,7 @@ const routes: RouteRecordRaw[] = [
 			{
 				path: "index",
 				name: "ppt",
-				component: () => import("@/views/ppt/index.vue"),
+				component: () => import('@/views/ppt/ppt.vue'),
 			},
 		],
 	},
@@ -107,7 +91,7 @@ const routes: RouteRecordRaw[] = [
 			{
 				path: "/music/:uuid?",
 				name: "music",
-				component: () => import("@/views/suno/music.vue"),
+				component: () => import('@/views/suno/music.vue'),
 			},
 		],
 	},

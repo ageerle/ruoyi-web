@@ -4,7 +4,7 @@
 	</div>
 </template>
 
-<script setup>
+ <script setup lang="ts">
 import { onMounted } from 'vue';
 import { getApiToken, successCallback } from '@/api/ppt';
 import { useMessage } from 'naive-ui';
