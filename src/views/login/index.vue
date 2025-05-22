@@ -1,311 +1,450 @@
 <script setup lang="ts">
-import { onMounted, ref, onUnmounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { useMessage, NButton, NInput, NImage, NModal, NCard, NSpin } from "naive-ui";
+import { ref, reactive, computed } from "vue";
+import { useRouter } from "vue-router";
+import {
+  NButton, NInput, NSpin, NText, useMessage,
+  NIcon, useThemeVars
+} from "naive-ui";
 import { LoginFrom } from "@/typings/user";
 import {
-	getConfigKey,
-	getMpQrCode,
-	getLoginType,
-	authSystem,
-} from "@/api/user";
-import { useUserStore } from "@/store/modules/user";
-import to from "await-to-js";
-import { useI18n } from "vue-i18n";
-import { useBasicLayout } from "@/hooks/useBasicLayout";
-const { isMobile } = useBasicLayout();
-const { t } = useI18n();
+  PersonOutline,
+  LockClosedOutline,
+  LogInOutline,
+} from '@vicons/ionicons5';
 
+
+import { useUserStore } from "@/store/modules/user";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 const userStore = useUserStore();
 const router = useRouter();
-const route = useRoute();
 const message = useMessage();
-const user = ref<LoginFrom>(Object.create(null));
+const themeVars = useThemeVars();
 
-// 点击登录
-let loginLoading = ref(false);
-let loading = ref(false);
-async function handleValidateButtonClick(e: MouseEvent) {
-	e&&e.preventDefault();
-	const { username, password } = user.value;
-	// if (!validateAccount(username)) {
-	// 	message.error(t("login.accountFormatError"));
-	// 	return;
-	// }
-	if (username && password) {
-		loginLoading.value = true;
-		const [err] = await to(userStore.userLogin(user.value));
-		if (!err) {
-			message.success(t("login.loginSuccess"));
-			await router.push("/");
-			loginLoading.value = false;
-			loading.value = false
-		} else {
-			message.error(err.message);
-			loginLoading.value = false;
-			loading.value = false
-		}
-	} else {
-		message.error(t("login.usernameOrPasswordEmpty"));
-	}
+// 表单状态管理
+const loginForm = reactive<LoginFrom>({
+  username: '',
+  password: '',
+  type: ''
+});
+
+// 加载状态管理
+const loginLoading = ref(false);
+const pageLoading = ref(false);
+
+// 表单验证
+const formErrors = reactive({
+  username: '',
+  password: ''
+});
+
+// 验证表单
+function validateForm() {
+  let isValid = true;
+
+  // 用户名验证
+  if (!loginForm.username) {
+    formErrors.username = t('login.usernameRequired');
+    isValid = false;
+  } else {
+    formErrors.username = '';
+  }
+
+  // 密码验证
+  if (!loginForm.password) {
+    formErrors.password = t('login.passwordRequired');
+    isValid = false;
+  } else {
+    formErrors.password = '';
+  }
+
+  return isValid;
 }
 
-function validateAccount(account: string) {
-	if (!account) {
-		return false;
-	}
-	const phoneRegex = /^1[3456789]\d{9}$/;
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	return emailRegex.test(account) || phoneRegex.test(account);
+// 账号密码登录
+async function handleLogin(e: MouseEvent) {
+  if (!validateForm()) return;
+
+  try {
+    loginLoading.value = true;
+    await userStore.userLogin(loginForm);
+    message.success(t("login.loginSuccess"));
+    router.push("/");
+  } catch (error: any) {
+    message.error(error.message || t("login.loginFailed"));
+  } finally {
+    loginLoading.value = false;
+  }
 }
 
-const handleRegistBtnClick = async (e: MouseEvent) => {
-	router.push("/regist");
+// 跳转到注册页面
+const navigateToRegister = () => {
+  router.push("/regist");
 };
 
-const copyright = ref("");
 
-const logo = ref("");
 
-const activate = ref(false);
+// 计算背景样式，适配暗黑模式
+const brandSectionStyle = computed(() => {
+  const isDark = themeVars.value.bodyColor.startsWith('#1') ||
+    themeVars.value.bodyColor.startsWith('#2') ||
+    themeVars.value.bodyColor.startsWith('#3');
 
-const code = ref("");
-
-// 在组件挂载后执行异步操作
-onMounted(async () => {
-	console.log("onMounted", route.query);
-	const {u, p} = route.query
-	if (u&&p){
-		user.value.username = u
-		user.value.password = p
-		loading.value = true
-		handleValidateButtonClick()
-	}
-
-	const [err, res] = await to(getConfigKey("copyright"));
-	if (err) {
-		console.error("获取配置失败", err.message);
-	} else {
-		copyright.value = res.msg;
-	}
+  return {
+    background: isDark
+      ? 'linear-gradient(135deg, #003b8e, #0058d9)'
+      : 'linear-gradient(135deg, #1867c0, #5cbbf6)'
+  };
 });
 
-const activeTab = ref("login");
 
-const showModal = ref(false);
-
-// 登录二维码
-const qrCode = ref("");
-const ticket = ref("");
-
-let intervalId: string | number | NodeJS.Timer | undefined;
-// 定义轮询间隔时间，例如每3秒轮询一次
-const POLLING_INTERVAL = 3000;
-
-async function handleWxLogin() {
-	
-	showModal.value = true
-	//获取二维码信息
-	const [err1, res1] = await to(getMpQrCode());
-	if (err1) {
-		message.error("获取二维码失败: " + err1.message);
-	} else {
-		qrCode.value = res1.data.qrCodeUrl;
-		ticket.value = res1.data.ticket;
-		intervalId = setInterval(slectLoginType, POLLING_INTERVAL);
-	}
-	
-}
-
-// 1. 定时查询是否登录成功
-async function slectLoginType() {
-	const [err, res] = await to(getLoginType(ticket.value));
-	if (!err) {
-		console.log("res.token", res);
-		if (res.data.token) {
-			// 2. 登录成功,保存token
-			userStore.userQrLogin(res.data.token);
-			clearInterval(intervalId);
-			// 3. 跳转到主页
-			message.success(t("login.loginSuccess"));
-			await router.push("/");
-		}
-	}
-}
-
-onUnmounted(() => {
-	// 页面组件卸载前清除定时器，避免内存泄漏
-	if (intervalId !== undefined) {
-		clearInterval(intervalId);
-	}
-});
 </script>
 
 <template>
-	<div id="app" >
-		<br /><br /><br /><br />
-		<div class="flex justify-center mt-8 md:mt-0">
-			<img style="border-radius: 60px; width: 120px; height: 120px" :src="logo" alt="Robot Icon"
-				class="h-12 w-fit hover:cursor-pointer md:h-16" />
-		</div>
-		<br />
-		<n-spin :show="loading">
-			<div class="relative w-full bg-white mt-10 overflow-hidden shadow-xl ring-1 sm:mx-auto sm:h-min sm:max-w-4xl sm:rounded-lg lg:max-w-5xl 2xl:max-w-6xl login-box"
-				:style="{ width: isMobile ? '100%' : '880px' }" v-loading="loading" >
-				<div class="px-6 pt-4 pb-8 sm:px-10">
-					<main class="mx-auto sm:max-w-4xl lg:max-w-5xl 2xl:max-w-6xl">
-						<div v-if="activeTab === 'login'">
-							<!-- 登录表单 -->
-							<div class="flex flex-col justify-center my-4 space-y-8">
-								<div class="mx-auto w-full max-w-md">
-									<h2 class="text-3xl font-bold text-center text-gray-900">
-										{{ $t("login.login") }}
-									</h2>
-									<p class="mt-2 text-sm text-center text-gray-600 login-desc">
-										{{ $t("login.or") }}
-										<a @click="handleRegistBtnClick"
-											class="font-semibold text-teal-500 hover:text-teal-600">{{ $t("login.register")
-											}}</a>
-										{{ $t("login.andExperience") }}
-									</p>
-								</div>
-								<div class="mx-auto w-full max-w-sm">
-									<form class="space-y-6" :style="{
-										width: !isMobile ? '580px' : 'calc(100% - 20px)',
-										marginLeft: isMobile ? '10px' : 'calc(50% - 290px)',
-									}">
-										<div>
-											<label for="email" class="block text-sm font-medium text-gray-700">{{
-												$t("login.emailOrPhone") }}</label>
-											<div class="mt-1">
-												<input id="email" v-model="user.username"
-													:allow-input="(val: string) => { return !/[^A-Za-z0-9_@.]/g.test(val) }"
-													maxlength="32" :placeholder="$t('login.enterEmailOrPhone')" name="email"
-													type="email" autocomplete="email" required
-													class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:border-teal-500 focus:outline-none focus:ring-teal-500" />
-											</div>
-										</div>
-										<div>
-											<label for="password" class="block text-sm font-medium text-gray-700">{{
-												$t("login.password") }}</label>
-											<div class="mt-1">
-												<input id="password" maxLength="16" v-model="user.password"
-													:placeholder="$t('login.enterPassword')" name="password" type="password"
-													required
-													class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:border-teal-500 focus:outline-none focus:ring-teal-500" />
-											</div>
-											<a style="color: #0084ff; font-weight: 500" href="#/resetpassword"
-												class="float-right mt-2 text-sm font-semibold text-teal-500 hover:text-teal-600">{{
-													$t("login.forgotPassword") }}</a>
-										</div>
-										<div class="footer-login">
-											<n-button :loading="loginLoading" @click="handleValidateButtonClick">{{
-												$t("login.login") }}</n-button>
+  <div class="login-container">
+    <NSpin :show="pageLoading">
+      <div class="login-content">
+        <!-- 左侧品牌区域 -->
+        <div class="brand-section" :style="brandSectionStyle">
+          <div class="brand-content">
+            <h1 class="brand-title">AI知识库系统</h1>
+            <p class="brand-description">
+              企业级智能知识管理平台，助力数字化转型
+            </p>
+          </div>
+        </div>
 
-											<n-button @click="handleWxLogin">微信登录</n-button>
-										</div>
-									</form>
-								</div>
-							</div>
-						</div>
+        <!-- 右侧登录表单 -->
+        <div class="form-wrapper">
+  
+          <div class="login-methods">
+            <div class="active-method">账号密码登录</div>
+          </div>
 
-						<!-- 扫码登录 -->
-						<n-modal
-							v-model:show="showModal"
-							title="请扫描下方二维码登录"
-							preset="card"
-							draggable
-							:style="{ width: '400px' }"
-							>
-							<n-image width="350" :src="qrCode" />
-						</n-modal>
-					</main>
-				</div>
-			</div>
-			<div class="footer">
-				<a target="_blank" style="color: #999999; font-size: 14px" href="https://beian.miit.gov.cn/">
-					&nbsp;{{ copyright }}
-				</a>
-			</div>
-		</n-spin>
-		<!-- <div v-if="!activate" id="specialDiv">
-			<p>
-				{{ $t("login.systemNotActivated") }}
-				<n-button size="small" secondary strong @click="showModal = true">{{
-					$t("login.activate")
-				}}</n-button>
-			</p>
-		</div> -->
-	</div>
-	<!-- <n-modal v-model:show="showModal">
-		<n-card
-			style="width: 600px"
-			:bordered="false"
-			size="huge"
-			role="dialog"
-			aria-modal="true"
-		>
-			<p class="text-sm text-center" style="margin-right: 10px">
-				{{ $t("login.enterAuthCode") }}
-			</p>
-			<br />
-			<div style="display: flex; align-items: center; justify-content: center">
-				<input
-					id="code"
-					v-model="code"
-					maxlength="32"
-					:placeholder="$t('login.activationCode')"
-					class="block w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md focus:border-teal-500 focus:outline-none focus:ring-teal-500"
-				/>
-				<n-button style="margin-left: 10px" @click="sysAuth()">{{
-					$t("login.activate")
-				}}</n-button>
-			</div>
-		</n-card>
-	</n-modal> -->
+          <div class="form-content">
+            <!-- 用户名输入 -->
+            <div class="input-group">
+              <div class="input-label-row">
+                <NText strong class="input-label">
+                  {{ $t("login.username") }}
+                </NText>
+                <div v-if="formErrors.username" class="error-message">{{ formErrors.username }}</div>
+              </div>
+              <NInput v-model:value="loginForm.username" :placeholder="$t('login.enterEmailOrPhone')" round clearable
+                class="custom-input" :status="formErrors.username ? 'error' : undefined">
+                <template #prefix>
+                  <NIcon :component="PersonOutline" />
+                </template>
+              </NInput>
+            </div>
+
+            <!-- 密码输入 -->
+            <div class="input-group">
+              <div class="input-label-row">
+                <NText strong class="input-label">
+                  {{ $t("login.password") }}
+                </NText>
+                <div v-if="formErrors.password" class="error-message">{{ formErrors.password }}</div>
+              </div>
+              <NInput v-model:value="loginForm.password" type="password" :placeholder="$t('login.enterPassword')" round
+                show-password-on="click" class="custom-input" :status="formErrors.password ? 'error' : undefined">
+                <template #prefix>
+                  <NIcon :component="LockClosedOutline" />
+                </template>
+              </NInput>
+            </div>
+
+            <!-- 额外链接 -->
+            <div class="additional-links">
+              <NButton text tag="a" href="#/resetpassword" class="forgot-password">
+                {{ $t("login.forgotPassword") }}
+              </NButton>
+            </div>
+
+            <!-- 登录按钮 -->
+            <div class="action-buttons">
+              <NButton type="primary" block :loading="loginLoading" @click="handleLogin" class="login-button">
+                <template #icon>
+                  <NIcon :component="LogInOutline" />
+                </template>
+                {{ $t("login.login") }}
+              </NButton>
+            </div>
+
+            <!-- 注册提示 -->
+            <div class="register-prompt">
+              还没有账号？
+              <NButton text type="primary" @click="navigateToRegister">
+                立即注册
+              </NButton>
+              并免费体验问答助手
+            </div>
+          </div>
+        </div>
+      </div>
+    </NSpin>
+
+  </div>
 </template>
 
 <style scoped>
-#app {
-	display: flex;
-	flex-direction: column;
-	min-height: 100vh;
-	/* background-image: url('@/assets/background.jpg'); */
-	background-color: #141718;
-	background-size: cover;
-	background-repeat: no-repeat;
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--n-body-color);
+  padding: 20px;
 }
 
-.footer {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	text-align: center;
-	width: 100%;
-	margin-top: auto;
+.login-content {
+  display: flex;
+  width: 900px;
+  max-width: 100%;
+  min-height: 500px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
-.custom-card {
-	width: 500px;
+html.dark .login-content {
+  outline: 2px solid rgb(17, 19, 17) !important;
 }
 
-input {
-	color: black !important;
+/* 左侧品牌区域 */
+.brand-section {
+  flex: 1;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
 }
 
-#specialDiv {
-	position: relative;
-	/* 使内部的绝对定位元素相对定位 */
+.brand-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
 }
 
-#specialDiv p {
-	position: absolute;
-	/* 绝对定位 */
-	bottom: 0;
-	/* 将元素对齐到底部 */
-	right: 0;
-	/* 将元素对齐到右边 */
-	margin: 0;
-	/* 去除默认的段落外边距 */
+.brand-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.brand-description {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  max-width: 300px;
+  margin: 0 auto;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 右侧表单区域 */
+.form-wrapper {
+  flex: 1;
+  background: var(--n-color-modal);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  border: #07c160;
+}
+
+.form-title {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-methods {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.active-method {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--n-text-color);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--n-primary-color);
+}
+
+.form-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.input-label {
+  font-size: 14px;
+}
+
+.error-message {
+  font-size: 12px;
+  color: var(--n-error-color);
+}
+
+.custom-input {
+  transition: all 0.3s ease;
+}
+
+.additional-links {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.forgot-password {
+  font-size: 14px;
+}
+
+.action-buttons {
+  margin-bottom: 1.5rem;
+}
+
+.login-button {
+  height: 40px;
+  font-size: 16px;
+}
+
+.alternative-logins {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.wx-login-button {
+  color: #07c160;
+  border-color: #07c160;
+  transition: all 0.3s;
+}
+
+.wx-login-button:hover {
+  background-color: rgba(7, 193, 96, 0.1);
+}
+
+.register-prompt {
+  text-align: center;
+  font-size: 14px;
+  color: var(--n-text-color-3);
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+/* 微信登录弹窗 */
+.wx-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wx-modal-title {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.qrcode-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  min-height: 280px;
+  justify-content: center;
+}
+
+.qrcode-image {
+  width: 200px;
+  height: 200px;
+  border: 1px solid var(--n-border-color);
+  border-radius: 8px;
+}
+
+.qrcode-placeholder {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--n-color-modal-overlay);
+  border-radius: 8px;
+  border: 1px dashed var(--n-border-color);
+}
+
+.qrcode-tip {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--n-text-color-3);
+}
+
+/* 错误状态 */
+.qrcode-error {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--n-color-modal-overlay);
+  border-radius: 8px;
+  border: 1px dashed var(--n-border-color);
+  padding: 20px;
+}
+
+.error-icon {
+  color: var(--n-warning-color);
+  margin-bottom: 12px;
+}
+
+.error-msg {
+  text-align: center;
+  color: var(--n-text-color);
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.retry-button {
+  min-width: 100px;
+}
+
+.wx-modal-footer {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .login-content {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .brand-section {
+    padding: 30px;
+    min-height: 150px;
+  }
+
+  .form-wrapper {
+    padding: 30px 20px;
+  }
+
+  .brand-title {
+    font-size: 2rem;
+  }
 }
 </style>
