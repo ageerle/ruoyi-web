@@ -3,7 +3,7 @@ import request from '@/utils/request/req';
 // 获取API Token
 export function getApiToken() {
 	return request({
-		url: '/ppt/getApiToken',
+		url: '/system/model/getPPT',
 		method: 'get',
 	})
 }

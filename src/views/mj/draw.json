@@ -233,6 +233,10 @@
 	],
 	"versionList": [
 		{
+			"labelKey": "draw.versionList.mjV7",
+			"value": "--v 7.0"
+		},
+		{
 			"labelKey": "draw.versionList.mjV6",
 			"value": "--v 6.0"
 		},

@@ -18,7 +18,7 @@ let token = '';
 async function getToken() {
 	const res = await getApiToken();
 	if (res.code == 200) {
-		token = res.msg;
+		token = res.data.apiKey;
 		initPPT();
 	} else {
 		message.error('获取API Token失败');

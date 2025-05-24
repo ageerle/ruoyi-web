@@ -343,6 +343,7 @@ export default {
 			moody: "情緒化",
 		},
 		versionList: {
+      mjV7: "MJ V7",
 			mjV6: "MJ V6",
 			mjV52: "MJ V5.2",
 			mjV51: "MJ V5.1",
