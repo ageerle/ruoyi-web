@@ -45,7 +45,7 @@ const formErrors = reactive({
 // 验证表单
 function validateForm() {
   let isValid = true;
-  
+
   // 用户名验证
   if (!registerForm.username) {
     formErrors.username = t('register.usernameRequired');
@@ -109,7 +109,7 @@ async function handleRegister(e: MouseEvent) {
   try {
     registerLoading.value = true;
     await doRegist(
-      registerForm.username,
+      registerForm.email,
       registerForm.password,
       registerForm.code,
     );
@@ -147,7 +147,7 @@ async function sendVerificationCode() {
     isSending.value = true;
     await getVerificationCode(registerForm.email);
     message.success(t("register.codeSent"));
-    
+
     // 开始倒计时
     countdown.value = 60;
     const timer = setInterval(() => {
@@ -193,22 +193,22 @@ const brandSectionStyle = computed(() => {
 
         <!-- 右侧注册表单 -->
         <div class="form-wrapper">
-  
+
           <div class="login-methods">
             <div class="active-method">{{ $t("register.create_account") }}</div>
           </div>
 
           <div class="form-content">
-            <!-- 用户名输入 -->
+            <!-- 邮箱输入 -->
             <div class="input-group">
               <div class="input-label-row">
                 <NText strong class="input-label">
                   {{ $t("register.email") }}
                 </NText>
-                <div v-if="formErrors.username" class="error-message">{{ formErrors.username }}</div>
+                <div v-if="formErrors.email" class="error-message">{{ formErrors.email }}</div>
               </div>
-              <NInput v-model:value="registerForm.username" :placeholder="$t('register.enter_email')" round clearable
-                class="custom-input" :status="formErrors.username ? 'error' : undefined">
+              <NInput v-model:value="registerForm.email" :placeholder="$t('register.enter_email')" round clearable
+                class="custom-input" :status="formErrors.email ? 'error' : undefined">
                 <template #prefix>
                   <NIcon :component="PersonOutline" />
                 </template>
@@ -456,12 +456,12 @@ html.dark .login-content {
   .brand-title {
     font-size: 2rem;
   }
-  
+
   .verification-code-row {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .send-code-button {
     width: 100%;
   }
