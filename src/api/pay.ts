@@ -79,11 +79,6 @@ export function redeemKey(params:VoucherVO) {
 	  });
 }
 
-export function listPlan() {
-	return request({
-		url: '/system/packagePlan/listPlan',
-		method: 'get',
-	  });
-}
+
 
 

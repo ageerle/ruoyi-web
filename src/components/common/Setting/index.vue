@@ -2,8 +2,6 @@
 import { computed, ref } from 'vue'
 import { NModal, NTabPane, NTabs } from 'naive-ui'
 import General from './General.vue'
-import aiMsg from '@/views/chat/aichatmsg.vue'
-import About from './About.vue'
 import { useAuthStore } from '@/store'
 import { SvgIcon } from '@/components/common'
 
@@ -52,33 +50,12 @@ const show = computed({
         <NTabPane v-if="isChatGPTAPI" name="Advanced" tab="Advanced">
           <template #tab>
             <SvgIcon class="text-lg" icon="ri:equalizer-line" />
-            <!-- <span class="ml-2">{{ $t('setting.advanced') }}</span> -->
             <span class="ml-2">{{ $t('setting.model') }}</span>
           </template>
           <div class="min-h-[100px]">
-            <!-- <Advanced /> -->
             <aiModel/>
           </div>
         </NTabPane>
-
-        
-       <NTabPane name="chatmsg" tab="chatmsg">
-          <template #tab>
-            <SvgIcon class="text-lg" icon="mdi:message" />
-            <span class="ml-2">{{ $t('setting.message') }}</span>
-          </template>
-          <aiMsg />
-        </NTabPane>
-
-        <!-- <NTabPane name="Config" tab="Config">
-          <template #tab>
-            <SvgIcon class="text-lg" icon="ri:list-settings-line" />
-            <span class="ml-2">{{ $t('setting.about') }}</span>
-          </template>
-          <About />
-        </NTabPane> -->
-
-
       </NTabs>
     </div>
   </NModal>

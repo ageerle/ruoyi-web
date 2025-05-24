@@ -143,9 +143,9 @@ const st = ref({
 	micStart: false,
 });
 
-onMounted(() => {
-	getModelList();
-});
+// onMounted(() => {
+// 	getModelList();
+// });
 
 async function getModelList() {
 	try {

@@ -2,7 +2,7 @@
 import { computed, ref, onUnmounted, watch, onMounted, h } from 'vue'
 import { NCard, NTag, NSpace, NModal, NTabs, NButton, NTabPane, NImage, NDataTable, NInput, NSwitch } from 'naive-ui'
 import { useMessage } from 'naive-ui'
-import { payUrl, getSPayUrl, getOrderInfo, redeemKey, listPlan } from '@/api/pay'
+import { payUrl, getSPayUrl, getOrderInfo, redeemKey } from '@/api/pay'
 import to from "await-to-js";
 import { modelList } from '@/api/model'
 import { t } from '@/locales';
@@ -10,13 +10,10 @@ import { useBasicLayout } from '@/hooks/useBasicLayout'
 
 onMounted(() => {
 	fetchData1()
-	// 查询套餐信息
-	fetchPackages()
 });
 
 interface Props {
-	visible: boolean,
-	title: string
+	visible: boolean
 }
 
 interface Emit {

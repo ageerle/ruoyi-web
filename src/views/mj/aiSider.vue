@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, onMounted, Component, h } from "vue";
-import { IconSvg, PromptStore, SvgIcon } from '@/components/common'
-import { getConfigKey } from '@/api/user';
+import { PromptStore, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 const { isMobile } = useBasicLayout()
 import { removeToken } from '@/store/modules/auth/helper'
-import { NTooltip, useMessage, NAvatar, NPopover, NMenu, NIcon } from 'naive-ui'
-import { homeStore, useChatStore } from '@/store'
+import { NTooltip, NAvatar, NPopover, NMenu, NIcon } from 'naive-ui'
+
 import { loginOut, getUserInfo } from '@/api/user'
-import { UserData } from "@/typings/user"
+
 import { defaultSetting, UserInfo } from '@/store/modules/user/helper'
 import { useRouter } from 'vue-router'
 import { getToken } from "@/store/modules/auth/helper";
@@ -19,16 +18,13 @@ import {
   LogOut as out
 } from '@vicons/ionicons5'
 
-const chatStore = useChatStore()
-//import gallery from '@/views/gallery/index.vue'
 
 const Setting = defineAsyncComponent(() => import('@/components/common/Setting/index.vue'))
-
 
 const st = ref({ 'show': false, showImg: false, menu: [], active: 'chat' })
 const router1 = useRouter()
 const userInfo = ref<UserInfo>(defaultSetting().userInfo)
-const message = useMessage()
+
 const show = ref(false)
 const urouter = useRouter() //
 const isLogin = computed(() => {
@@ -42,21 +38,9 @@ const goHome = computed(() => {
 });
 
 onMounted(() => {
-  getLogo();
   getLoginUserInfo();
 });
 
-/**
- * 获取默认头像
- */
-async function getLogo() {
-  const [err1, res1] = await to(getConfigKey("logoImage"));
-  if (err1) {
-    console.error("获取配置失败", err1.message);
-  } else {
-    userInfo.value.avatar = res1.msg;
-  }
-}
 
 /**
  * 获取当前登录用户信息
@@ -82,9 +66,6 @@ async function getLoginUserInfo() {
   }
 }
 
-const chatId = computed(() => chatStore.active ?? '1002');/**
- * 退出登录
- */
 async function handleReset() {
   await loginOut()
   // 删除用户token
@@ -213,8 +194,7 @@ const handleSelect = (key: string) => {
       </div>
 
       <div class="flex flex-col  space-y-2 ">
-        <!-- <NAvatar  v-show="isLogin"  size="large"  round  :src="userInfo.avatar"   v-if="userInfo.avatar"  :fallback-src="defaultAvatar"
-         class=" cursor-pointer"  /> -->
+ 
 
         <n-popover trigger="click" :show-arrow="false">
           <template #trigger>

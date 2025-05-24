@@ -67,7 +67,7 @@ let fileList = ref<UploadFileInfo[]>([
     id: 'avatar',
     name: '头像预览',
     status: 'finished',
-    url: 'http://panda-1253683406.cos.ap-guangzhou.myqcloud.com/panda/2024/01/03/0e3600b455914b0dade9943f281be19b.png'
+    url: 'https://ruoyi-ai-1254149996.cos.ap-guangzhou.myqcloud.com/2025/05/24/727370b029b648ea968977085da2b20f.jpg'
   },
 ])
 
