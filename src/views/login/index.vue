@@ -3,15 +3,16 @@ import { ref, reactive, computed } from "vue";
 import { useRouter } from "vue-router";
 import {
   NButton, NInput, NSpin, NText, useMessage,
-  NIcon, useThemeVars
+  NModal, NIcon, useThemeVars
 } from "naive-ui";
 import { LoginFrom } from "@/typings/user";
 import {
   PersonOutline,
   LockClosedOutline,
   LogInOutline,
+  LogoWechat,
+  ReloadOutline
 } from '@vicons/ionicons5';
-
 
 import { useUserStore } from "@/store/modules/user";
 import { useI18n } from "vue-i18n";
@@ -84,7 +85,6 @@ const navigateToRegister = () => {
 };
 
 
-
 // 计算背景样式，适配暗黑模式
 const brandSectionStyle = computed(() => {
   const isDark = themeVars.value.bodyColor.startsWith('#1') ||
@@ -97,7 +97,6 @@ const brandSectionStyle = computed(() => {
       : 'linear-gradient(135deg, #1867c0, #5cbbf6)'
   };
 });
-
 
 </script>
 
@@ -171,7 +170,7 @@ const brandSectionStyle = computed(() => {
                 {{ $t("login.login") }}
               </NButton>
             </div>
-
+            
             <!-- 注册提示 -->
             <div class="register-prompt">
               还没有账号？
@@ -185,6 +184,53 @@ const brandSectionStyle = computed(() => {
       </div>
     </NSpin>
 
+    <!-- 微信登录弹窗 -->
+    <NModal v-model:show="wxLoginModal" preset="card" style="width: 350px" @close="closeWxLoginModal">
+      <template #header>
+        <div class="wx-modal-header">
+          <NIcon :component="LogoWechat" color="#07C160" :size="24" />
+          <span class="wx-modal-title">微信扫码登录</span>
+        </div>
+      </template>
+
+      <NSpin :show="wxLoginLoading">
+        <div class="qrcode-container">
+          <!-- 正常显示二维码 -->
+          <template v-if="qrCode && !wxLoginError">
+            <img :src="qrCode" alt="微信登录二维码" class="qrcode-image" />
+            <p class="qrcode-tip">请使用微信扫描二维码登录</p>
+          </template>
+
+          <!-- 错误状态 -->
+          <template v-else-if="wxLoginError">
+            <div class="qrcode-error">
+              <NIcon :component="ReloadOutline" size="40" class="error-icon" />
+              <p class="error-msg">{{ wxLoginErrorMsg }}</p>
+              <NButton type="primary" @click="retryWxLogin" class="retry-button">
+                重新获取
+              </NButton>
+            </div>
+          </template>
+
+          <!-- 加载占位符 -->
+          <template v-else>
+            <div class="qrcode-placeholder">
+              <NSpin size="medium" />
+            </div>
+            <p class="qrcode-tip">二维码加载中...</p>
+          </template>
+        </div>
+      </NSpin>
+
+      <template #footer>
+        <div class="wx-modal-footer">
+          <NButton @click="closeWxLoginModal">取消</NButton>
+          <NButton type="primary" @click="retryWxLogin" :disabled="wxLoginLoading">
+            刷新二维码
+          </NButton>
+        </div>
+      </template>
+    </NModal>
   </div>
 </template>
 

@@ -23,7 +23,6 @@ const themeVars = useThemeVars();
 // 表单状态管理
 const registerForm = reactive({
   username: '',
-  email: '',
   code: '',
   password: '',
   confirmPassword: ''
@@ -48,7 +47,7 @@ function validateForm() {
   
   // 用户名验证
   if (!registerForm.username) {
-    formErrors.username = t('register.usernameRequired');
+    formErrors.username = t('register.invalid_account');
     isValid = false;
   } else if (registerForm.username.length < 3) {
     formErrors.username = t('register.usernameTooShort');
@@ -58,10 +57,10 @@ function validateForm() {
   }
 
   // 邮箱验证
-  if (!registerForm.email) {
-    formErrors.email = t('register.emailRequired');
+  if (!registerForm.username) {
+    formErrors.email = t('register.enter_email');
     isValid = false;
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.username)) {
     formErrors.email = t('register.invalidEmail');
     isValid = false;
   } else {
@@ -113,10 +112,10 @@ async function handleRegister(e: MouseEvent) {
       registerForm.password,
       registerForm.code,
     );
-    message.success(t("register.registerSuccess"));
+    message.success(t("register.registration_success"));
     router.push("/login");
   } catch (error: any) {
-    message.error(error.message || t("register.registerFailed"));
+    message.error(error.message || t("register.registration_failed"));
   } finally {
     registerLoading.value = false;
   }
@@ -131,22 +130,20 @@ const codeButtonText = computed(() => {
 
 async function sendVerificationCode() {
   // 验证邮箱
-  if (!registerForm.email) {
-    formErrors.email = t('register.emailRequired');
+  if (!registerForm.username) {
+    message.error("用户名不能为空!");
     return;
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.email)) {
-    formErrors.email = t('register.invalidEmail');
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerForm.username)) {
+     message.error("请输入正确的邮箱!");
     return;
-  } else {
-    formErrors.email = '';
   }
 
   if (isSending.value) return;
 
   try {
     isSending.value = true;
-    await getVerificationCode(registerForm.email);
-    message.success(t("register.codeSent"));
+    await getVerificationCode(registerForm.username);
+    message.success(t('register.send_success'));
     
     // 开始倒计时
     countdown.value = 60;

@@ -46,7 +46,7 @@ function validateForm() {
 
   // 邮箱验证
   if (!resetForm.email) {
-    formErrors.email = t('reset.emailRequired');
+    formErrors.email = t('reset.usernameOrPasswordEmpty');
     isValid = false;
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resetForm.email)) {
     formErrors.email = t('reset.invalidEmail');
