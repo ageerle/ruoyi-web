@@ -1,4 +1,4 @@
-import request from '@/utils/request/req'
+import request from "@/utils/request/req";
 
 /**
  * 查询未隐藏模型
@@ -6,12 +6,12 @@ import request from '@/utils/request/req'
  */
 export function modelList(category: string) {
 	return request({
-		url: '/system/model/modelList',
-		method: 'get',
-    params: {
+		url: "/system/model/modelList",
+		method: "get",
+		params: {
 			category,
 		},
-	})
+	});
 }
 
 /**
@@ -19,9 +19,12 @@ export function modelList(category: string) {
  *
  * @returns
  */
-export function list() {
+export function list(category: string) {
 	return request({
-		url: '/system/model/list',
-		method: 'get',
-	})
+		url: "/system/model/list",
+		method: "get",
+		params: {
+			category,
+		},
+	});
 }

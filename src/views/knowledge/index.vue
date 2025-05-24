@@ -9,7 +9,6 @@ import {
 	NForm,
 	NFormItem,
 	NInput,
-	// NDivider,
 	NSpace,
 	useMessage,
 	NGrid,
@@ -23,13 +22,12 @@ import {
 	getKnowledge,
 	delKnowledge,
 } from "@/api/knowledge";
-import to from "await-to-js";
 import { useRouter } from "vue-router";
 import { t } from "@/locales";
-import { modelList } from "@/api/model";
+import { list } from "@/api/model";
 
 onMounted(() => {
-	fetchData(),getModelList();
+	fetchData(), getModelList();
 });
 
 const router = useRouter();
@@ -48,19 +46,15 @@ const formValue = ref({
 	overlapChar: 50, // 重叠字符数
 	retrieveLimit: 3, // 知识库中检索的条数
 	textBlockSize: 500, // 文本块大小
-	vectorModelName: "", //  向量库
-	embeddingModelName: "", //  向量模型
+	vectorModelName: "weaviate", //  向量库
+	embeddingModelName: "baai/bge-m3", //  向量模型
 });
 
 async function submitForm() {
 	// 关闭弹框
 	active.value = false;
-	// 发起一个请求
-	const [err, result] = await to(createKnowledgeReq(formValue.value));
-	console.log("result===", result);
-	if (err) {
-		message.error(err.message);
-	} else {
+	const result = await createKnowledgeReq(formValue.value);
+	if (result.code == 200) {
 		message.success("添加成功");
 		// 重新获取数据，更新表格
 		await fetchData();
@@ -72,11 +66,11 @@ async function delKnowledgeForm(kid: string) {
 	const req = {
 		kid: kid, // 附件id
 	};
-	const [err] = await to(delKnowledge(req));
-	if (err) {
-		message.error("操作失败!");
+	const result = await delKnowledge(req);
+	if (result.code == 200) {
+		message.error("删除成功!");
 	} else {
-		message.success("删除成功!");
+		message.success("删除失败!" + result.data.msg);
 	}
 	// 重新获取数据，更新表格
 	await fetchData();
@@ -103,17 +97,15 @@ const placement = ref<DrawerPlacement>("right");
 
 const getVector = reactive([
 	{ label: "weaviate", value: "weaviate" },
-	{ label: "milvus", value: "milvus" }, 
 ]);
 
 const getVectorModel = ref([]);
 
 async function getModelList() {
 	try {
-		const res = await modelList('vector');
-		getVectorModel.value = res.data;
+		const res = await list('vector');
+		getVectorModel.value = res.rows;
 	} catch (error) {
-		console.error("获取模型列表失败:", error);
 		message.error("获取模型列表失败");
 	}
 }
@@ -122,13 +114,13 @@ const createColumns = () => {
 	return [
 		...(false
 			? [
-					{
-						title: "ID",
-						key: "id",
-						width: 80,
-						ellipsis: true,
-					},
-			  ]
+				{
+					title: "ID",
+					key: "id",
+					width: 80,
+					ellipsis: true,
+				},
+			]
 			: []),
 		{
 			title: t("knowledge.number"),
@@ -181,17 +173,10 @@ const createColumns = () => {
 const tableData = ref([]);
 
 const fetchData = async () => {
-	try {
-		// 发起一个请求
-		const [err, result] = await to(getKnowledge());
-		console.log("result===", result);
-		if (err) {
-			message.error(err.message);
-		} else {
-			tableData.value = result.rows;
-		}
-	} catch (error) {
-		console.error("Error fetching data:", error);
+	// 发起一个请求
+	const result = await getKnowledge();
+	if (result.code == 200) {
+		tableData.value = result.rows;
 	}
 };
 
@@ -201,160 +186,90 @@ const columns = ref(createColumns());
 <template>
 	<div class="knowledge-container">
 		<div class="knowledge-header">
-			<n-button
-				@click="activate('right')"
-				type="primary"
-				:bordered="false"
-				class="create-button"
-			>
+			<n-button @click="activate('right')" type="primary" :bordered="false" class="create-button">
 				{{ $t("knowledge.createKnowledgeBase") }}
 			</n-button>
 		</div>
 
 		<div class="knowledge-table-wrapper">
-			<n-data-table
-				striped
-				:bordered="false"
-				:columns="columns"
-				:data="tableData"
-				class="knowledge-table"
-			/>
+			<n-data-table striped :bordered="false" :columns="columns" :data="tableData" class="knowledge-table" />
 		</div>
 	</div>
 
-	<n-drawer
-		class="knowledge-drawer"
-		v-model:show="active"
-		:width="800"
-		:placement="placement"
-		display-directive="show"
-		:mask-closable="false"
-	>
-		<n-drawer-content
-			:title="$t('knowledge.createKnowledgeBase')"
-			class="drawer-content"
-			closable
-		>
+	<n-drawer class="knowledge-drawer" v-model:show="active" :width="800" :placement="placement"
+		display-directive="show" :mask-closable="false">
+		<n-drawer-content :title="$t('knowledge.createKnowledgeBase')" class="drawer-content" closable>
 			<n-space vertical>
-				<n-form
-					ref="formRef"
-					:label-width="100"
-					:model="formValue"
-					class="knowledge-form"
-					label-placement="left"
-				>
+				<n-form ref="formRef" :label-width="100" :model="formValue" class="knowledge-form"
+					label-placement="left">
 					<n-grid :cols="24" :x-gap="24" :y-gap="16">
 						<n-gi :span="12">
 							<n-form-item label="知识库名称" required>
-								<n-input
-									v-model:value="formValue.kname"
-									placeholder="请输入知识库名称"
-									clearable
-								/>
+								<n-input v-model:value="formValue.kname" placeholder="请输入知识库名称" clearable />
 							</n-form-item>
 						</n-gi>
 
 						<n-gi :span="12">
 							<n-form-item label="分隔符">
-								<n-input
-									v-model:value="formValue.knowledgeSeparator"
-									placeholder="请输入知识分隔符"
-									clearable
-								/>
+								<n-input v-model:value="formValue.knowledgeSeparator" placeholder="请输入知识分隔符"
+									clearable />
 							</n-form-item>
 						</n-gi>
 
 						<n-gi :span="12">
 							<n-form-item label="检索条数" required>
-								<n-input-number
-									v-model:value="formValue.retrieveLimit"
-									placeholder="请输入检索条数"
-									:min="1"
-									:max="10"
-									class="full-width"
-								/>
+								<n-input-number v-model:value="formValue.retrieveLimit" placeholder="请输入检索条数" :min="1"
+									:max="10" class="full-width" />
 							</n-form-item>
 						</n-gi>
 
 						<n-gi :span="12">
 							<n-form-item label="文本块大小" required>
-								<n-input-number
-									v-model:value="formValue.textBlockSize"
-									placeholder="请输入文本块大小"
-									:min="100"
-									:max="2000"
-									class="full-width"
-								/>
+								<n-input-number v-model:value="formValue.textBlockSize" placeholder="请输入文本块大小"
+									:min="100" :max="2000" class="full-width" />
 							</n-form-item>
 						</n-gi>
 
 						<n-gi :span="12">
 							<n-form-item label="重叠字符">
-								<n-input-number
-									v-model:value="formValue.overlapChar"
-									placeholder="请输入重叠字符数"
-									:min="0"
-									:max="200"
-									class="full-width"
-								/>
+								<n-input-number v-model:value="formValue.overlapChar" placeholder="请输入重叠字符数" :min="0"
+									:max="200" class="full-width" />
 							</n-form-item>
 						</n-gi>
 
 						<n-gi :span="12">
 							<n-form-item label="向量库" required>
-								<n-select
-									:options="getVector"
-									v-model:value="formValue.vectorModelName"
-									placeholder="请选择向量库"
-									clearable
-								></n-select>
+								<n-select :options="getVector" v-model:value="formValue.vectorModelName"
+									placeholder="请选择向量库" clearable></n-select>
 							</n-form-item>
 						</n-gi>
 
 						<n-gi :span="12">
 							<n-form-item label="提问分割符">
-								<n-input
-									v-model:value="formValue.questionSeparator"
-									placeholder="请输入提问分割符"
-									clearable
-								/>
+								<n-input v-model:value="formValue.questionSeparator" placeholder="请输入提问分割符" clearable />
 							</n-form-item>
 						</n-gi>
 
 						<n-gi :span="12">
 							<n-form-item label="向量模型" required>
-								<n-select
-									:options="getVectorModel"
-									v-model:value="formValue.embeddingModelName"
-									value-field="modelDescribe"
-									label-field="modelName"
-									placeholder="请选择向量模型"
-									clearable
-								></n-select>
+								<n-select :options="getVectorModel" v-model:value="formValue.embeddingModelName"
+									value-field="modelDescribe" label-field="modelName" placeholder="请选择向量模型"
+									clearable></n-select>
 							</n-form-item>
 						</n-gi>
 
 						<n-gi :span="24">
 							<n-form-item :label="$t('knowledge.knowledgeDescription')">
-								<n-input
-									maxlength="1000"
-									type="textarea"
-									v-model:value="formValue.description"
+								<n-input maxlength="1000" type="textarea" v-model:value="formValue.description"
 									:placeholder="$t('knowledge.enterKnowledgeDescription')"
-									:autosize="{ minRows: 3, maxRows: 5 }"
-									show-count
-								/>
+									:autosize="{ minRows: 3, maxRows: 5 }" show-count />
 							</n-form-item>
 						</n-gi>
 
 						<n-gi :span="24">
 							<n-form-item label="是否公开" label-placement="left">
-								<n-switch
-									size="large"
-									checked-value="1"
-									unchecked-value="0"
-									@update:value="handleUpdateValue"
-								>
+								<n-switch size="large" checked-value="1" unchecked-value="0"
+									@update:value="handleUpdateValue">
 									<template #checked>是</template>
 									<template #unchecked>否</template>
 								</n-switch>
@@ -366,11 +281,7 @@ const columns = ref(createColumns());
 
 			<template #footer>
 				<div>
-					<n-button
-						@click="active = false"
-						:bordered="true"
-						style="margin-right: 10px"
-					>
+					<n-button @click="active = false" :bordered="true" style="margin-right: 10px">
 						取消
 					</n-button>
 					<n-button @click="submitForm" :bordered="false" type="primary">
@@ -519,9 +430,6 @@ const columns = ref(createColumns());
 	height: 40px;
 	min-width: 100px;
 	font-size: 14px;
-}
-
-.cancel-button:hover {
 }
 
 .draw-button {

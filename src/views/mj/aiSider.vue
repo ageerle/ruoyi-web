@@ -90,7 +90,7 @@ const menuOptions = ref([
     icon: renderIcon(settings)
   },
   {
-    label: '购买套餐',
+    label: '立即充值',
     key: 'buy',
     icon: renderIcon(storefront)
   },
