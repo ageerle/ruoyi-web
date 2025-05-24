@@ -5,7 +5,6 @@ import { setupPageGuard } from './permission'
 import { ChatLayout } from '@/views/chat/layout'
 import mjlayout from '@/views/mj/layout.vue'
 import lumalayout from '@/views/luma/layout.vue'
-import storelayout from '@/views/store/layout.vue'
 import pptlayout from '@/views/ppt/layout.vue'
 import musiclayout from '@/views/suno/layout.vue'
 import knowledgelayout from '@/views/knowledge/layout.vue'
@@ -95,21 +94,6 @@ const routes: RouteRecordRaw[] = [
 			},
 		],
 	},
-
-  {
-    path: '/store',
-    name: 'Store',
-    component: storelayout,
-    redirect: '/store/t',
-    children: [
-      {
-        path: 't',
-        name: 'store',
-        component: () => import('@/views/store/appList.vue'),
-      },
-    ],
-  },
-
 
   {
     path: '/knowledge',
