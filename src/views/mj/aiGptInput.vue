@@ -175,7 +175,7 @@ const upFile = (file: any) => {
     formData.append("file", file);
     ms.info(t("mj.uploading"));
     st.value.isLoad = 1;
-    GptUploader("/v1/upload", formData)
+    GptUploader("/chat/upload", formData)
       .then((r) => {
         //mlog('上传成功', r);
         st.value.isLoad = 0;
