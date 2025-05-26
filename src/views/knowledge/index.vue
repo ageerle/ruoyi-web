@@ -61,10 +61,10 @@ async function submitForm() {
 	}
 }
 
-async function delKnowledgeForm(kid: string) {
+async function delKnowledgeForm(id: string) {
 	// 发起一个请求
 	const req = {
-		kid: kid, // 附件id
+		id: id, // 附件id
 	};
 	const result = await delKnowledge(req);
 	if (result.code == 200) {
@@ -146,7 +146,7 @@ const createColumns = () => {
 					h(
 						NButton,
 						{
-							onClick: () => delKnowledgeForm(row.kid),
+							onClick: () => delKnowledgeForm(row.id),
 							style: "margin-left: 8px; color: #FF4500;",
 							class: "table-button",
 							bordered: false,

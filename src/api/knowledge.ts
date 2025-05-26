@@ -9,7 +9,7 @@ export interface KnowledgeReq {
 }
 
 export interface KnowledgeDelReq {
-	kid: string; // 附件id
+	id: string; // 附件id
 }
 
 export interface KnowledgeDetailDelReq {
@@ -42,7 +42,7 @@ export function createKnowledgeReq(params: KnowledgeReq) {
 
 export function delKnowledge(params: KnowledgeDelReq) {
 	return request({
-		url: "/knowledge/remove/" + params.kid,
+		url: "/knowledge/remove/" + params.id,
 		method: "post",
 	});
 }
