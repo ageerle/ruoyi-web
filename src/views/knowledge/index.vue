@@ -68,9 +68,9 @@ async function delKnowledgeForm(kid: string) {
 	};
 	const result = await delKnowledge(req);
 	if (result.code == 200) {
-		message.error("删除成功!");
+		message.success("删除成功!");
 	} else {
-		message.success("删除失败!" + result.data.msg);
+		message.error("删除失败!" + result.data.msg);
 	}
 	// 重新获取数据，更新表格
 	await fetchData();
