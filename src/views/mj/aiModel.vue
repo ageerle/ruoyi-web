@@ -24,7 +24,7 @@ const config = ref([])
 const fetchData = async () => {
 	try {
 		// 发起一个请求
-		const [err, result] = await to(modelList('chat'));
+		const [err, result] = await to(modelList());
 
 		if (err) {
 			message.error(err.message)
