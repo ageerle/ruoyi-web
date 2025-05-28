@@ -14,6 +14,7 @@ import {
   NModal,
   NDropdown,
 } from "naive-ui";
+
 import { SvgIcon, PromptStore } from "@/components/common";
 import {
   canVisionModel,
@@ -145,13 +146,7 @@ const upFile = (file: any) => {
   if (!canVisionModel(gptConfigStore.myData.model)) {
     if (isFileMp3(file.name)) {
       mlog("mp3", file);
-      //  const formData = new FormData( );
-      // formData.append('file', file);
-      // formData.append('model', 'whisper-1');
 
-      // GptUploader('/v1/audio/transcriptions',formData).then(r=>{
-      //     mlog('语音识别成功', r );
-      // }).catch(e=>ms.error('上传失败:'+ ( e.message?? JSON.stringify(e)) ));
       homeStore.setMyData({
         act: "gpt.whisper",
         actData: { file, prompt: "whisper" },
@@ -284,8 +279,6 @@ const drOption = [
   },
 ];
 const handleSelectASR = (key: string | number) => {
-  console.log("*********");
-
   if (key == "asr") goASR();
   if (key == "whisper") st.value.showMic = true;
 };
@@ -310,6 +303,8 @@ function handleExport() {
 function handleClear() {
   emit("handleClear");
 }
+
+
 </script>
 
 <template>
@@ -443,9 +438,7 @@ function handleClear() {
                   <div v-else v-html="$t('mj.upImg')"></div>
                 </n-tooltip>
               </div>
-              <!-- <div  class=" relative; w-[22px]">
-                    <SvgIcon icon="bi:mic"  class="absolute bottom-[10px] left-[30px] cursor-pointer" @click="st.showMic=true"></SvgIcon>
-                </div> -->
+      
               <n-dropdown
                 trigger="hover"
                 :options="drOption"
@@ -465,7 +458,7 @@ function handleClear() {
                       ></span>
                     </span>
                   </div>
-                  <!-- <SvgIcon icon="bi:mic"  class="absolute bottom-[10px] left-[55px] cursor-pointer" @click="goASR()"></SvgIcon> -->
+                 
                   <SvgIcon
                     icon="bi:mic"
                     class="absolute bottom-[10px] left-[30px] cursor-pointer"
@@ -583,22 +576,6 @@ function handleClear() {
             icon="clear"
             width="19px"
             height="19px"/>
-          <!-- <div @click="show = true">
-            {{ $t('store.siderButton') }}
-        </div>
-
-          <!-- <n-tooltip trigger="hover">
-						<template #trigger>
-							<n-tag :bordered="false" :type="chatTypeBn" :round="true" style="margin-top:-3px;margin-left:-5px">
-								<IconSvg  style="margin:0px 5px"  @click="st.chatType = !st.chatType"
-									icon="search"
-									width="22px"
-									height="22px"
-								></IconSvg>
-							</n-tag>
-						</template>
-						联网搜索
-				</n-tooltip> -->
         </div>
         <div class="send" @click="handleSubmit">
           <IconSvg
@@ -610,36 +587,6 @@ function handleClear() {
           />
         </div>
       </div>
-
-      <!--   <div class="send"
-           @click="handleSubmit"
-           v-if="!isMobile">
-        <IconSvg icon="send"
-                 width="20px"
-                 height="19px"/>
-        |
-        <IconSvg icon="money"
-                 width="14px"
-                 height="24px"></IconSvg>
-        <NPopover trigger="hover">
-          <template #trigger>
-            {{ myToken.modelTokens }}
-          </template>
-          <div class="w-[300px]">
-            {{ $t("mj.tokenInfo1") }}
-            <p class="py-1"
-               v-text="$t('mj.tokenInfo2')"></p>
-            <p class="text-right">
-              <NButton @click="st.isShow = true"
-                       type="info"
-                       size="small">{{
-                $t("setting.setting")
-              }}</NButton>
-            </p>
-          </div>
-        </NPopover>
-      </div>    -->
-      <!-- translate-y-[-8px]       -->
     </div>
   </div>
 
@@ -654,16 +601,21 @@ function handleClear() {
   </NModal>
 
   <PromptStore v-model:visible="show"></PromptStore>
-  <!-- <n-drawer v-model:show="st.showMic" :width="420" :on-update:show="onShowFun">
-    <n-drawer-content title="录音" closable>
-        <AiMic />
-    </n-drawer-content>
-</n-drawer> -->
+
 </template>
 
 <style>
+
+/* 明暗主题 */
 .myinputs .n-input .n-input-wrapper {
-  @apply items-stretch;
-  background: #fff !important;
+  display: flex;
+  align-items: stretch;
+  background: var(--n-color) !important; /* 使用 Naive UI 的颜色变量 */
+}
+
+/* 暗黑模式 */
+html.dark .myinputs .n-input .n-input-wrapper,
+body.dark .myinputs .n-input .n-input-wrapper {
+  background: #232627!important; /* 暗黑模式背景 */
 }
 </style>

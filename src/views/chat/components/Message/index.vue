@@ -55,11 +55,11 @@ const options = computed(() => {
       key: 'delete',
       icon: iconRender({ icon: 'ri:delete-bin-line' }),
     },
-    {
-      label: t('common.edit'),
-      key: 'edit',
-      icon: iconRender({ icon: 'ri:edit-2-line' }),
-    },
+    // {
+    //   label: t('common.edit'),
+    //   key: 'edit',
+    //   icon: iconRender({ icon: 'ri:edit-2-line' }),
+    // },
   ]
 
   if (!props.inversion) {
