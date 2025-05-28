@@ -311,11 +311,11 @@ export interface ttsType{
 }
 export const subTTS = async (tts:ttsType )=>{
     if(!tts.voice) tts.voice='alloy';
-    let url= getUrl('/speech');
+    let url= getUrl('/chat/speech');
     let headers=  {
         'Content-Type': 'application/json'
       }
-     headers={...headers,...getHeaderAuthorization()}
+    headers={...headers,...getHeaderAuthorization()}
     const response = await fetch(url, {
       method: 'POST',
       headers,
