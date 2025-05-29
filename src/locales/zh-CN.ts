@@ -207,6 +207,9 @@ export default {
     return: "返回",
     no: "片段编号",
     content: "片段内容",
+    share: "是否公开",
+    authRoles: "可见角色",
+    authType: "权限类型",
   },
 
 

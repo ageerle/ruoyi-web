@@ -4,7 +4,7 @@ import { ref ,computed,watch, onMounted} from "vue";
 import {gptConfigStore, homeStore,useChatStore} from '@/store'
 import { mlog,chatSetting } from "@/api";
 import { t } from "@/locales";
-import { getKnowledge } from '@/api/knowledge'
+import { getKnowledgeAuth } from '@/api/knowledge'
 import { getToken } from "@/store/modules/auth/helper";
 import to from "await-to-js";
 import { modelList } from '@/api/model'
@@ -41,7 +41,7 @@ const fetchDataGetKnowledge = async () => {
 	if(getToken()){
 		try {
 			// 发起一个请求
-			const [err, result] = await to(getKnowledge());
+			const [err, result] = await to(getKnowledgeAuth());
 			console.log("result===", result.rows)
 			if (err) {
 				ms.error(err.message)

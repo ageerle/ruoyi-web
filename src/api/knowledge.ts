@@ -32,6 +32,13 @@ export function getKnowledge() {
 	});
 }
 
+export function getKnowledgeAuth() {
+	return request({
+		url: "/knowledge/list-auth",
+		method: "get",
+	});
+}
+
 export function createKnowledgeReq(params: KnowledgeReq) {
 	return request({
 		url: "/knowledge/save",
@@ -66,4 +73,12 @@ export function getfragmentList(docId: string) {
 		url: "/knowledge/fragment/list/" + docId,
 		method: "get",
 	});
+}
+
+// 添加获取角色列表的API函数
+export function getRoleList() {
+	return request({
+		url: '/system/role/optionselect',
+		method: 'get',
+	})
 }
