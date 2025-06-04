@@ -185,7 +185,12 @@ const reSet=()=>{
 	<section class="mb-5 change-select"  >
 		<div style="margin-bottom: 8px;">{{ $t('mjchat.role') }}</div>
 		<div>
-			<n-input  type="textarea"  :placeholder=" $t('mjchat.rolePlaceholder') "   v-model:value="nGptStore.systemMessage" :autosize="{ minRows: 3 }"
+			<n-input 
+				type="textarea" 
+				:placeholder="$t('mjchat.rolePlaceholder')" 
+				v-model:value="nGptStore.systemMessage" 
+				:autosize="{ minRows: 3, maxRows: 10 }"
+				resize="vertical"
 			/>
 		</div>
 	</section>
@@ -228,12 +233,6 @@ const reSet=()=>{
 			</div>
 		</section>
 		<div class="mb-5 text-[12px] text-gray-300 dark:text-gray-300/20">{{ $t('mj.frequency_penaltyInfo') }}</div>
-
-		<section class="mb-4 justify-between items-center change-select"  >
-			<div style="margin-bottom: 8px;">{{ $t('mj.tts_voice') }}</div>
-			<n-select v-model:value="nGptStore.tts_voice" :options="voiceList" size="small"   />
-		</section>
-
 
 	</template>
 	<div v-else class="text-right cursor-pointer mb-4" @click="st.openMore=true">

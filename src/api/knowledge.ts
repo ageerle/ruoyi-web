@@ -25,10 +25,11 @@ export interface SimpleGenerate {
 	text: string;
 }
 
-export function getKnowledge() {
+export function getKnowledge(pageNum: number, pageSize: number) {
 	return request({
 		url: "/knowledge/list",
 		method: "get",
+		params: { pageNum, pageSize },
 	});
 }
 

@@ -2,7 +2,7 @@
 import { h, onMounted, reactive, ref } from "vue";
 import {
 	NButton,
-	NDataTable,
+	// NDataTable, // NDataTable 已被移除，可以注释或删除
 	DrawerPlacement,
 	NDrawer,
 	NDrawerContent,
@@ -16,6 +16,8 @@ import {
 	NSwitch,
 	NInputNumber,
 	NSelect,
+	NPagination,
+	NCard, // 添加 NCard 导入
 } from "naive-ui";
 import {
 	createKnowledgeReq,
@@ -172,27 +174,82 @@ const createColumns = () => {
 
 const tableData = ref([]);
 
+const pagination = reactive({
+	page: 1,
+	pageSize: 12,
+	itemCount: 0,
+	pageSizes: [12, 24, 36, 48],
+	onUpdatePage: (page: number) => {
+		pagination.page = page;
+		fetchData();
+	},
+	onUpdatePageSize: (pageSize: number) => {
+		pagination.pageSize = pageSize;
+		pagination.page = 1;
+		fetchData();
+	},
+});
+
 const fetchData = async () => {
 	// 发起一个请求
-	const result = await getKnowledge();
+	const result = await getKnowledge(pagination.page, pagination.pageSize);
 	if (result.code == 200) {
 		tableData.value = result.rows;
+		console.log('Knowledge data:', result);
+		pagination.itemCount = result.total; // 根据后端返回的数据结构，使用 total 作为总数
 	}
 };
 
-const columns = ref(createColumns());
+
 </script>
 
 <template>
-	<div class="knowledge-container">
-		<div class="knowledge-header">
-			<n-button @click="activate('right')" type="primary" :bordered="false" class="create-button">
-				{{ $t("knowledge.createKnowledgeBase") }}
+	<div class="page-container">
+		<div class="create-app-panel">
+			<n-button type="primary" @click="activate('right')">
+				创建知识库
 			</n-button>
 		</div>
 
-		<div class="knowledge-table-wrapper">
-			<n-data-table striped :bordered="false" :columns="columns" :data="tableData" class="knowledge-table" />
+		<div class="content-panel">
+			<div class="knowledge-card-list">
+				<n-grid :x-gap="8" :y-gap="8" :cols="4" item-responsive responsive="screen">
+					<n-gi v-for="item in tableData" :key="item.id">
+						<n-card :title="item.kname" hoverable class="knowledge-card">
+							<!-- Add icon and subtitle similar to the image -->
+							<template #cover>
+								<!-- Placeholder for an icon, e.g., using an NIcon component or an img tag -->
+							</template>
+							<div class="card-meta">
+								<span class="card-author">{{ item.id || 'N/A2' }}</span> - <span class="card-date">{{ item.createTime || 'N/A1' }}</span>
+							</div>
+							<p class="card-description">{{ item.description }}</p>
+							<template #action>
+								<n-space justify="end">
+									<n-button size="small" @click="handleActionButtonClick(item, 'action3')" type="primary" ghost>
+										{{ $t("knowledge.attachment") }}
+									</n-button>
+									<n-button size="small" @click="delKnowledgeForm(item.id)" type="error" ghost>
+										{{ $t("knowledge.delete") }}
+									</n-button>
+								</n-space>
+							</template>
+						</n-card>
+					</n-gi>
+				</n-grid>
+			</div>
+
+			<div class="pagination-wrapper">
+				<n-pagination
+					v-model:page="pagination.page"
+					:item-count="pagination.itemCount"
+					v-model:page-size="pagination.pageSize"
+					:page-sizes="pagination.pageSizes"
+					show-size-picker
+					@update:page="pagination.onUpdatePage"
+					@update:page-size="pagination.onUpdatePageSize"
+				/>
+			</div>
 		</div>
 	</div>
 
@@ -294,48 +351,88 @@ const columns = ref(createColumns());
 </template>
 
 <style scoped>
-.knowledge-container {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
-	padding: 20px;
-	border-radius: 8px;
+.page-container {
+  min-height: 100vh;
+  background-color: var(--n-color-body);
+  padding: 20px;
+  padding-top: 80px;
 }
 
-.knowledge-header {
-	display: flex;
-	justify-content: flex-start;
-	margin-bottom: 20px;
+.create-app-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
 }
 
-.create-button {
-	padding: 10px 20px;
-	font-weight: 500;
+.panel-title {
+	font-size: 16px;
+	color: #888;
+	margin-bottom: 15px;
+	font-weight: bold;
+}
+
+.panel-button {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding: 10px 15px;
+	margin-bottom: 10px;
 	font-size: 14px;
+	color: #333;
 	border-radius: 6px;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-	transition: all 0.3s ease;
-	height: 40px;
-	min-width: 120px;
+	transition: background-color 0.2s ease;
 }
 
-.create-button:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+.panel-button:hover {
+	background-color: #f0f2f5;
 }
 
-.knowledge-table-wrapper {
-	flex: 1;
+.content-panel {
+	flex: 1; /* Takes the remaining space */
+}
+
+
+.knowledge-card {
+	border-radius: 20px;
 	overflow: hidden;
-	border-radius: 8px;
-	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+	transition: all 0.3s ease;
+	cursor: pointer;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.knowledge-table {
-	--n-td-color: transparent;
-	--n-td-color-hover: rgba(0, 0, 0, 0.02);
-	--n-td-text-color: #333;
-	--n-border-color: #f0f0f0;
+.knowledge-card:hover {
+	transform: translateY(-5px); /* 更明显的悬停效果 */
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-meta {
+	font-size: 12px;
+	color: #999;
+	margin-top: 5px;
+	margin-bottom: 10px;
+}
+
+.card-author,
+.card-date {
+	color: #666;
+}
+
+.card-description {
+	font-size: 14px;
+	color: #666;
+	min-height: 60px; /* 确保描述区域有最小高度 */
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 3; /* 限制描述显示3行 */
+	-webkit-box-orient: vertical;
+}
+
+.pagination-wrapper {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 20px;
 }
 
 .knowledge-drawer {
@@ -399,8 +496,6 @@ const columns = ref(createColumns());
 .knowledge-form :deep(.n-base-selection) {
 	height: 40px;
 	font-size: 14px;
-}
-
 .knowledge-form :deep(.n-input:hover),
 .knowledge-form :deep(.n-input-number:hover),
 .knowledge-form :deep(.n-select:hover) {
@@ -418,9 +513,131 @@ const columns = ref(createColumns());
 	width: 100%;
 }
 
-.knowledge-form :deep(.n-button) {
+
+
+.knowledge-table {
+	--n-td-color: transparent;
+	--n-td-color-hover: rgba(0, 0, 0, 0.02);
+	--n-td-text-color: #333;
+	--n-border-color: #f0f0f0;
+}
+
+.knowledge-card-list {
+	margin-top: 20px;
+}
+
+.knowledge-card {
+	border-radius: 20px;
+	overflow: hidden;
+	transition: all 0.3s ease;
+	cursor: pointer;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.knowledge-card:hover {
+	transform: translateY(-5px); /* 更明显的悬停效果 */
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-description {
+	font-size: 14px;
+	color: #666;
+	min-height: 60px; /* 确保描述区域有最小高度 */
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 3; /* 限制描述显示3行 */
+	-webkit-box-orient: vertical;
+}
+
+.pagination-wrapper {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 20px;
+}
+
+.knowledge-drawer {
+	--n-body-padding: 24px;
+}
+
+.drawer-content {
+	padding: 0;
+}
+
+.drawer-header {
+	padding: 16px 24px;
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.drawer-title {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	color: #333;
+}
+
+.drawer-description {
+	color: #666;
+	margin: 16px 24px;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.drawer-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+	padding: 16px 24px;
+	border-top: 1px solid #f0f0f0;
+}
+
+.knowledge-form {
+	padding: 0 24px 24px;
+}
+
+.knowledge-form :deep(.n-form-item-label) {
+	font-weight: 500;
+	/* color: #333; */
+}
+
+.knowledge-form :deep(.n-form-item-feedback-wrapper) {
+	min-height: 18px;
+}
+
+.knowledge-form :deep(.n-input),
+.knowledge-form :deep(.n-input-number),
+.knowledge-form :deep(.n-select) {
+	width: 100%;
+	border-radius: 6px;
+	height: 40px;
+}
+
+.knowledge-form :deep(.n-input .n-input__input-el),
+.knowledge-form :deep(.n-input-number-input),
+.knowledge-form :deep(.n-base-selection) {
 	height: 40px;
 	font-size: 14px;
+.knowledge-form :deep(.n-input:hover),
+.knowledge-form :deep(.n-input-number:hover),
+.knowledge-form :deep(.n-select:hover) {
+	border-color: #18a058;
+}
+
+.knowledge-form :deep(.n-input:focus),
+.knowledge-form :deep(.n-input-number:focus),
+.knowledge-form :deep(.n-select:focus) {
+	border-color: #18a058;
+	box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.2);
+}
+
+.knowledge-form :deep(.n-input-number) {
+	width: 100%;
+}
+
+
+	height: 40px;
+	font-size: 14px;
+}
 }
 
 .cancel-button {
