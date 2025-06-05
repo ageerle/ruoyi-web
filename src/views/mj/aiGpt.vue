@@ -66,7 +66,7 @@ watch(()=>homeStore.myData.act, async (n)=>{
 
         let promptMsg = getInitChat(dd.prompt );
         if( dd.fileBase64 && dd.fileBase64.length>0 ){
-            if( !canVisionModel(model)  ) model='gpt-4o-mini';
+            if( !canVisionModel(model)  ) model='gpt-image';
 
             try{
                     let images= await localSaveAny( JSON.stringify( dd.fileBase64)  ) ;
