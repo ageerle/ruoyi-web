@@ -15,30 +15,54 @@ export interface gptsType{
     bad?:string|number
     modelName:string
 }
- //const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
-export function upImg(file:any   ):Promise<any>
-{
-    const maxSize= homeStore.myData.session.uploadImgSize? (+homeStore.myData.session.uploadImgSize):1
-    return new Promise((h,r)=>{
+
+export function upImg(file: any): Promise<any> {
+    const maxSize = homeStore.myData.session.uploadImgSize ? (+homeStore.myData.session.uploadImgSize) : 1
+    return new Promise((resolve, reject) => {
         const filename = file.name;
-        if(file.size>(1024*1024 * maxSize)){
-            r(t('mjchat.no1m',{m:maxSize}))
-            return ;
+        if (file.size > (1024 * 1024 * maxSize)) {
+            reject(t('mjchat.no1m', { m: maxSize }))
+            return;
         }
-        if (! (filename.endsWith('.jpg') ||
+        if (!(filename.endsWith('.jpg') ||
             filename.endsWith('.gif') ||
             filename.endsWith('.png') ||
-            filename.endsWith('.jpeg') )) {
-            r(t('mjchat.imgExt') );
-            return ;
+            filename.endsWith('.jpeg'))) {
+            reject(t('mjchat.imgExt'));
+            return;
         }
-        const reader = new FileReader();
-        // 当读取操作完成时触发该事件
-        //reader.onload = (e:any)=> st.value.fileBase64 = e.target.result;
-        reader.onload = (e:any)=>  h( e.target.result);
-        reader.readAsDataURL(file);
-    })
 
+        // 创建FormData对象
+        const formData = new FormData();
+        formData.append('file', file);
+
+        // 调用后台上传接口
+        const header = {
+            'Authorization': 'Bearer ' + getToken()
+        };
+
+        fetch('/api/resource/oss/upload', {
+            method: 'POST',
+            headers: header,
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.code === 200) {
+                // 返回上传成功的结果
+                resolve({
+                    url: data.data.url,
+                    fileName: data.data.fileName,
+                    ossId: data.data.ossId
+                });
+            } else {
+                reject(data.msg || '上传失败');
+            }
+        })
+        .catch(error => {
+            reject('上传失败: ' + error.toString());
+        });
+    })
 }
 
 export const file2blob= (selectedFile: any  )=>{

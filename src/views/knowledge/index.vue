@@ -399,6 +399,7 @@ const fetchData = async () => {
 	transition: all 0.3s ease;
 	cursor: pointer;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	margin: 10px; /* 添加上下左右 10px 边距 */
 }
 
 .knowledge-card:hover {

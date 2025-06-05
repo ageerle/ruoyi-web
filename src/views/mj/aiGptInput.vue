@@ -154,13 +154,17 @@ const upFile = (file: any) => {
       return;
     } else {
       upImg(file)
-        .then((d) => {
+        .then((uploadResult) => {
           fsRef.value.value = "";
-          if (st.value.fileBase64.findIndex((v) => v == d) > -1) {
+          // 只取URL部分
+          const imageUrl = uploadResult.url;
+          // 检查是否已经上传过相同的URL
+          if (st.value.fileBase64.findIndex((v) => v === imageUrl) > -1) {
             ms.error(t("mj.noReUpload")); //'不能重复上传'
             return;
           }
-          st.value.fileBase64.push(d);
+          // 将图片URL添加到数组中
+          st.value.fileBase64.push(imageUrl);
         })
         .catch((e) => ms.error(e));
     }
