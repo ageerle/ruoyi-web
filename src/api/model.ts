@@ -12,11 +12,11 @@ export function modelList() {
 }
 
 /**
- * 查询所有模型
+ * 根据分类查询模型
  *
  * @returns
  */
-export function list(category: string) {
+export function getModelListByCategory(category: string) {
 	return request({
 		url: "/system/model/list",
 		method: "get",

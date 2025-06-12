@@ -26,10 +26,11 @@ import {
 } from "@/api/knowledge";
 import { useRouter } from "vue-router";
 import { t } from "@/locales";
-import { list } from "@/api/model";
+import { getModelListByCategory } from "@/api/model";
+import { getPromptTemplateListByCategory } from "@/api/promptTemplate";
 
 onMounted(() => {
-	fetchData(), getModelList();
+	fetchData(), getModelList(), getPromptTemplateList();
 });
 
 const router = useRouter();
@@ -50,6 +51,7 @@ const formValue = ref({
 	textBlockSize: 500, // 文本块大小
 	vectorModelName: "weaviate", //  向量库
 	embeddingModelName: "baai/bge-m3", //  向量模型
+	promptTemplateId: "", //  提示词模板ID
 });
 
 async function submitForm() {
@@ -102,15 +104,26 @@ const getVector = reactive([
 ]);
 
 const getVectorModel = ref([]);
+const getPromptTemplate = ref([]);
 
 async function getModelList() {
 	try {
-		const res = await list('vector');
+		const res = await getModelListByCategory('vector');
 		getVectorModel.value = res.rows;
 	} catch (error) {
 		message.error("获取模型列表失败");
 	}
 }
+
+async function getPromptTemplateList() {
+	try {
+		const res = await getPromptTemplateListByCategory('vector');
+		getPromptTemplate.value = res.rows;
+	} catch (error) {
+		message.error("获取提示词模板列表失败");
+	}
+}
+
 
 const createColumns = () => {
 	return [
@@ -314,6 +327,22 @@ const fetchData = async () => {
 									clearable></n-select>
 							</n-form-item>
 						</n-gi>
+
+						<n-gi :span="12">
+							<n-form-item label="提示词模板">
+								<n-select
+									:options="getPromptTemplate"
+									v-model:value="formValue.promptTemplateId"
+									value-field="id"
+									label-field="templateContent"
+									placeholder="请选择提示词模板"
+									clearable
+								>
+								</n-select>
+							</n-form-item>
+						</n-gi>
+
+
 
 						<n-gi :span="24">
 							<n-form-item :label="$t('knowledge.knowledgeDescription')">
