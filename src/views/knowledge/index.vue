@@ -323,7 +323,7 @@ const fetchData = async () => {
 						<n-gi :span="12">
 							<n-form-item label="向量模型" required>
 								<n-select :options="getVectorModel" v-model:value="formValue.embeddingModelName"
-									value-field="modelDescribe" label-field="modelName" placeholder="请选择向量模型"
+									value-field="modelName" label-field="modelName" placeholder="请选择向量模型"
 									clearable></n-select>
 							</n-form-item>
 						</n-gi>
