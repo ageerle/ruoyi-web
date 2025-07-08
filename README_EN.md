@@ -34,7 +34,7 @@ A modern AI chat application frontend based on Vue 3, supporting ChatGPT, Midjou
 ### Download Project
 
 ```bash
-git clone https://gitee.com/ageerle/ruoyi-web
+git clone https://github.com/ageerle/ruoyi-web
 cd ruoyi-web
 ```
 
