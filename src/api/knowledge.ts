@@ -33,6 +33,14 @@ export function getKnowledge(pageNum: number, pageSize: number) {
 	});
 }
 
+export function getKnowledgeByRole(pageNum: number, pageSize: number) {
+	return request({
+		url: "/knowledge/listByRole",
+		method: "get",
+		params: { pageNum, pageSize },
+	});
+}
+
 export function createKnowledgeReq(params: KnowledgeReq) {
 	return request({
 		url: "/knowledge/save",
