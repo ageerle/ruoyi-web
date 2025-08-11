@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useBasicLayout } from "@/hooks/useBasicLayout";
 import { t } from "@/locales";
 import {
@@ -35,6 +35,9 @@ import { useRoute } from "vue-router";
 import aiModel from "@/views/mj/aiModel.vue";
 import AiMic from "./aiMic.vue";
 import { useIconRender } from "@/hooks/useIconRender";
+import to from "await-to-js";
+import { modelList } from "@/api/model";
+import { ModelAbilityEnum } from "@/enums/ModelAbilityEnum";
 
 
 const { iconRender } = useIconRender();
@@ -308,6 +311,52 @@ function handleClear() {
   emit("handleClear");
 }
 
+// ===== 模型能力解析（与aiModel.vue一致） =====
+const modelConfigList = ref<any[]>([]);
+const fetchModelConfig = async () => {
+	const [err, result] = await to(modelList());
+	if (!err) modelConfigList.value = result.data || [];
+};
+
+onMounted(() => {
+	fetchModelConfig();
+});
+
+const selectedModel = computed<any>(() => {
+	const name = nGptStore.value?.model || gptConfigStore.myData?.model;
+	return modelConfigList.value.find((o: any) => o.modelName === name);
+});
+
+const abilityNameList = computed<string[]>(() => {
+	const m = selectedModel.value as any;
+	if (!m) return [];
+	const namesFromAbilities: string[] = Array.isArray(m?.modelAbilities)
+		? (m.modelAbilities as any[])
+			.map((x: any) => x?.name)
+			.filter((x: any) => typeof x === "string")
+		: [];
+	let namesFromCapability: string[] = [];
+	if (m?.modelCapability) {
+		try {
+			const parsed = typeof m.modelCapability === "string"
+				? JSON.parse(m.modelCapability)
+				: m.modelCapability;
+			if (Array.isArray(parsed)) namesFromCapability = parsed.filter((x: any) => typeof x === "string");
+		} catch {}
+	}
+	return Array.from(new Set([...
+		namesFromAbilities,
+		...namesFromCapability,
+	]));
+});
+
+const showUpload = computed<boolean>(() => {
+	const names = abilityNameList.value;
+	return names.includes(ModelAbilityEnum.IMAGE) || names.includes(ModelAbilityEnum.VIDEO);
+});
+
+// ===== 结束 能力解析 =====
+
 
 </script>
 
@@ -420,7 +469,8 @@ function handleClear() {
             @keypress="handleEnter"
           >
             <template #prefix v-if="isMobile">
-              <div class="relative; w-[22px]">
+							<!-- 上传按钮（移动端），按能力显示/隐藏 -->
+							<div class="relative; w-[22px]" v-if="showUpload">
                 <n-tooltip trigger="hover">
                   <template #trigger>
                     <SvgIcon
@@ -442,7 +492,7 @@ function handleClear() {
                   <div v-else v-html="$t('mj.upImg')"></div>
                 </n-tooltip>
               </div>
-      
+							<!-- 语音按钮保留原有逻辑 -->
               <n-dropdown
                 trigger="hover"
                 :options="drOption"
@@ -462,7 +512,7 @@ function handleClear() {
                       ></span>
                     </span>
                   </div>
-                 
+
                   <SvgIcon
                     icon="bi:mic"
                     class="absolute bottom-[10px] left-[30px] cursor-pointer"
@@ -548,7 +598,8 @@ function handleClear() {
               <IconSvg icon="voice" width="19px" height="19px"></IconSvg>
             </div>
           </n-dropdown>
-          <n-tooltip trigger="hover">
+					<!-- 上传按钮（PC端），按能力显示/隐藏 -->
+					<n-tooltip trigger="hover" v-if="showUpload">
             <template #trigger>
               <SvgIcon
                 icon="line-md:uploading-loop"
