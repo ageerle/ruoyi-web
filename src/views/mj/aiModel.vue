@@ -170,14 +170,11 @@ const saveChat = (type: string) => {
 // 添加一个空选项
 const options = ref<{ label: string; value: any }[]>([]);
 
-const onSelectChange = (newValue: any) => {
-	const option = options.value.find(optionValue => optionValue.value === newValue);
-	if (option) nGptStore.value.kName = option.label;
-};
-
-const onSelectChange1 = (newValue: any) => {
-	const option = modellist.value.find(optionValue => optionValue.value === newValue);
-	if (option) nGptStore.value.modelLabel = option.label;
+const onSelectChange = (newValue: any, optionsArray: any[], targetField: string) => {
+	const option = optionsArray.find(optionValue => optionValue.value === newValue);
+	if (option) {
+		(nGptStore.value as any)[targetField] = option.label;
+	}
 };
 
 watch(() => nGptStore.value.model, (n) => {
@@ -204,7 +201,7 @@ const reSet = () => {
 	<section class="mb-5 justify-between items-center">
 		<div style="margin-bottom: 8px;"><span class="text-red-500">*</span> {{ $t('mjset.model') }}</div>
 		<n-select class="change-select" v-model:value="nGptStore.model" :options="modellist"
-							@update:value="onSelectChange1" size="small" />
+							@update:value="(value) => onSelectChange(value, modellist, 'modelLabel')" size="small" />
 		<!-- 能力图标：放在输入框下方作为附属展示 -->
 		<div v-if="abilityMetaList.length" class="mt-2 flex items-center gap-2 flex-wrap opacity-80">
 			<NTooltip v-for="item in abilityMetaList" :key="item.key" trigger="hover">
@@ -229,7 +226,7 @@ const reSet = () => {
 
 	<section class="mb-5 justify-between items-center">
 		<div style="margin-bottom: 8px;">{{ $t('mjchat.knowledgeBase') }} </div>
-		<n-select class="change-select" v-model:value="nGptStore.kid" :options="options" @update:value="onSelectChange"
+		<n-select class="change-select" v-model:value="nGptStore.kid" :options="options" @update:value="(value) => onSelectChange(value, options, 'kName')"
 							size="small" />
 	</section>
 
