@@ -75,7 +75,9 @@ const st = ref<{
 const { isMobile } = useBasicLayout();
 const placeholder = computed(() => {
   if (isMobile.value) return t("chat.placeholderMobile");
-  return t("chat.placeholder"); //可输入说点什么，也可贴截图或拖拽文件
+	return showUpload.value
+		? t("chat.placeholder")
+		: `${t("chat.placeholderMobile")}（Shift + Enter = 换行）`;
 });
 
 const { uuid } = route.params as { uuid: string };
@@ -221,7 +223,13 @@ const drop = (e: DragEvent) => {
   e.stopPropagation();
   if (!e.dataTransfer || e.dataTransfer.files.length == 0) return;
   const files = e.dataTransfer.files;
-  upFile(files[0]);
+	const file = files[0];
+	// 如果是不支持图片的模型且拖入的是图片，给出提示并中断
+	if (!showUpload.value && file.type && file.type.startsWith("image/")) {
+		ms.error("当前模型不支持图片，请切换支持图片的模型");
+		return;
+	}
+	upFile(file);
   //mlog('drop', files);
 };
 const paste = (e: ClipboardEvent) => {
@@ -355,6 +363,16 @@ const showUpload = computed<boolean>(() => {
 	return names.includes(ModelAbilityEnum.IMAGE) || names.includes(ModelAbilityEnum.VIDEO);
 });
 
+const showSpeech = computed<boolean>(() => {
+	const names = abilityNameList.value.map((x) => String(x).toUpperCase());
+	const synonyms = [
+		ModelAbilityEnum.SPEECH,
+		"AUDIO",
+		"VOICE",
+		"ASR",
+	];
+	return synonyms.some((k) => names.includes(String(k)));
+});
 // ===== 结束 能力解析 =====
 
 
@@ -492,8 +510,9 @@ const showUpload = computed<boolean>(() => {
                   <div v-else v-html="$t('mj.upImg')"></div>
                 </n-tooltip>
               </div>
-							<!-- 语音按钮保留原有逻辑 -->
+							<!-- 语音按钮保留原有逻辑（按能力显示/隐藏） -->
               <n-dropdown
+								v-if="showSpeech"
                 trigger="hover"
                 :options="drOption"
                 @select="handleSelectASR"
@@ -577,11 +596,12 @@ const showUpload = computed<boolean>(() => {
             <SvgIcon icon="icon-park-outline:right" />
           </div>
           <n-dropdown
+						v-if="showSpeech"
             trigger="hover"
             :options="drOption"
             @select="handleSelectASR"
           >
-            <div class="relative; w-[22px]" style="margin: 0 25px">
+						<div class="relative; w-[22px]" style="margin: 0 12px">
               <div
                 class="absolute bottom-[14px] left-[31px]"
                 v-if="st.micStart"
@@ -624,7 +644,8 @@ const showUpload = computed<boolean>(() => {
             @click="handleExport"
             icon="screenshot"
             width="19px"
-            height="19px"/>
+						height="19px"
+						:style="{ marginLeft: showSpeech ? '0px' : '10px' }"/>
           <IconSvg
             @click="handleClear"
             class="right"
