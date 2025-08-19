@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { NSelect, NInput, NSlider, NButton, useMessage, NTag } from "naive-ui"
+import { NSelect, NInput, NSlider, NButton, useMessage, NTag, NTooltip } from "naive-ui"
 import { ref, computed, watch, onMounted } from "vue";
 import { gptConfigStore, homeStore, useChatStore } from '@/store'
 import { mlog, chatSetting } from "@/api";
@@ -8,6 +8,8 @@ import { getKnowledgeByRole } from '@/api/knowledge'
 import { getToken } from "@/store/modules/auth/helper";
 import to from "await-to-js";
 import { modelList } from '@/api/model'
+import { SvgIcon } from '@/components/common'
+import { ModelAbilityMeta } from '@/enums/ModelAbilityEnum'
 
 const emit = defineEmits(['close']);
 const chatStore = useChatStore();
@@ -20,7 +22,7 @@ const message = useMessage()
 onMounted(() => { fetchData(), fetchDataGetKnowledge() });
 
 
-const config = ref([])
+const config = ref<any[]>([])
 const fetchData = async () => {
 	try {
 		// 发起一个请求
@@ -29,8 +31,8 @@ const fetchData = async () => {
 		if (err) {
 			message.error(err.message)
 			config.value = []; // 设置为空数组，避免迭代错误
-		} else {
-			config.value = result.data;
+		} else if (result) {
+			config.value = (result as any).data;
 		}
 	} catch (error) {
 		console.error('Error fetching data:', error);
@@ -42,11 +44,12 @@ const fetchDataGetKnowledge = async () => {
 		try {
 			// 发起一个请求
 			const [err, result] = await to(getKnowledgeByRole());
-			console.log("result===", result.rows)
 			if (err) {
 				ms.error(err.message)
-			} else {
-				options.value = result.rows.map((item: any) => ({
+			} else if (result) {
+				const rows = (result as any).rows || [];
+				console.log("result===", rows)
+				options.value = rows.map((item: any) => ({
 					label: item.kname, // 假设后台返回的数据有 'name' 字段
 					value: item.id     // 假设每个数据项都有一个唯一的 'id' 字段
 				}));
@@ -103,7 +106,61 @@ const modellist = computed(() => { //
 	);
 	return uniqueArray;
 });
+
+// 当前选中模型
+const selectedModel = computed<any>(() => {
+	return config.value.find((o: any) => o.modelName === nGptStore.value.model)
+});
+
+// 从后端两个字段汇总能力列表
+const abilityNameList = computed<string[]>(() => {
+	const m = selectedModel.value as any;
+	if (!m) return [];
+	const namesFromAbilities: string[] = Array.isArray(m?.modelAbilities)
+		? (m.modelAbilities as any[])
+			.map((x: any) => x?.name)
+			.filter((x: any) => typeof x === 'string')
+		: [];
+	let namesFromCapability: string[] = [];
+	if (m?.modelCapability) {
+		try {
+			const parsed = typeof m.modelCapability === 'string'
+				? JSON.parse(m.modelCapability)
+				: m.modelCapability;
+			if (Array.isArray(parsed)) namesFromCapability = parsed.filter((x: any) => typeof x === 'string');
+		} catch { /* ignore bad json */ }
+	}
+	return Array.from(new Set([...
+		namesFromAbilities,
+		...namesFromCapability,
+	]));
+});
+
+// name -> 描述
+const abilityDescMap = computed<Record<string, string>>(() => {
+	const map: Record<string, string> = {};
+	const m = selectedModel.value as any;
+	if (m && Array.isArray(m.modelAbilities)) {
+		for (const it of m.modelAbilities) {
+			if (it?.name) map[it.name] = it?.description || '';
+		}
+	}
+	return map;
+});
+
+// 转换为可展示的按钮元信息，仅展示本项目已内置枚举的能力
+const abilityMetaList = computed(() => {
+	return abilityNameList.value
+		.map((n: string) => (ModelAbilityMeta as any)[n])
+		.filter((x: any) => !!x);
+});
+
 const ms = useMessage();
+
+function handleAbilityAction(item: any) {
+	// 这里仅演示行为：提示选择了哪个能力。实际业务可在此触发具体操作
+	ms.info(item.label);
+}
 
 const saveChat = (type: string) => {
 	chatSet.save(nGptStore.value);
@@ -114,12 +171,7 @@ const saveChat = (type: string) => {
 }
 
 // 添加一个空选项
-const options = ref([]);
-
-const onSelectChange = (newValue: any) => {
-	const option = options.value.find(optionValue => optionValue.value === newValue);
-	nGptStore.value.kName = option.label;
-};
+const options = ref<{ label: string; value: any }[]>([]);
 
 const onSelectChange1 = (newValue: any) => {
 	const option = modellist.value.find(optionValue => optionValue.value === newValue);
@@ -131,6 +183,7 @@ const onSelectChange1 = (newValue: any) => {
 		} else {
 			nGptStore.value.autoSelectModel = false;
 		}
+
 	}
 };
 
@@ -144,8 +197,8 @@ watch(() => nGptStore.value.model, (n) => {
 	} else if (n.toLowerCase().includes('claude-3')) {
 		max = 4096 * 2;
 	}
-	config.value.maxToken = max / 2;
-	if (nGptStore.value.max_tokens > config.value.maxToken) nGptStore.value.max_tokens = config.value.maxToken;
+	;(config.value as any).maxToken = max / 2;
+	if (nGptStore.value.max_tokens > (config.value as any).maxToken) nGptStore.value.max_tokens = (config.value as any).maxToken;
 })
 
 const reSet = () => {
@@ -158,7 +211,19 @@ const reSet = () => {
 	<section class="mb-5 justify-between items-center">
 		<div style="margin-bottom: 8px;"><span class="text-red-500">*</span> {{ $t('mjset.model') }}</div>
 		<n-select class="change-select" v-model:value="nGptStore.model" :options="modellist"
-			@update:value="onSelectChange1" size="small" />
+							@update:value="(value) => onSelectChange(value, modellist, 'modelLabel')" size="small" />
+		<!-- 能力图标：放在输入框下方作为附属展示 -->
+		<div v-if="abilityMetaList.length" class="mt-2 flex items-center gap-2 flex-wrap opacity-80">
+			<NTooltip v-for="item in abilityMetaList" :key="item.key" trigger="hover">
+				<template #trigger>
+					<NButton size="tiny" tertiary @click="handleAbilityAction(item)">
+						<SvgIcon :icon="item.icon" class="mr-1" />
+						{{ item.label }}
+					</NButton>
+				</template>
+				<span>{{ abilityDescMap[item.key] || item.label }}</span>
+			</NTooltip>
+		</div>
 	</section>
 
 	<section class="mb-5 flex justify-between items-center">
@@ -171,8 +236,8 @@ const reSet = () => {
 
 	<section class="mb-5 justify-between items-center">
 		<div style="margin-bottom: 8px;">{{ $t('mjchat.knowledgeBase') }} </div>
-		<n-select class="change-select" v-model:value="nGptStore.kid" :options="options" @update:value="onSelectChange"
-			size="small" />
+		<n-select class="change-select" v-model:value="nGptStore.kid" :options="options" @update:value="(value) => onSelectChange(value, options, 'kName')"
+							size="small" />
 	</section>
 
 	<section class=" flex justify-between items-center">
@@ -180,7 +245,7 @@ const reSet = () => {
 		</div>
 		<div class=" flex justify-end items-center w-[80%] max-w-[240px]">
 			<div class=" w-[200px]"><n-slider class="change-slider" v-model:value="nGptStore.talkCount" :step="1"
-					:max="50" /></div>
+																				:max="50" /></div>
 			<div class="w-[40px] text-right">{{ nGptStore.talkCount }}</div>
 		</div>
 	</section>
@@ -191,7 +256,7 @@ const reSet = () => {
 		</div>
 		<div class=" flex justify-end items-center w-[80%] max-w-[240px]">
 			<div class=" w-[200px]"><n-slider class="change-slider" v-model:value="nGptStore.max_tokens" :step="1"
-					:max="1280000" :min="1" /></div>
+																				:max="1280000" :min="1" /></div>
 			<div class="w-[100px] text-right">{{ nGptStore.max_tokens }}</div>
 		</div>
 	</section>
@@ -201,7 +266,7 @@ const reSet = () => {
 		<div style="margin-bottom: 8px;">{{ $t('mjchat.role') }}</div>
 		<div>
 			<n-input type="textarea" :placeholder="$t('mjchat.rolePlaceholder')" v-model:value="nGptStore.systemMessage"
-				:autosize="{ minRows: 3, maxRows: 10 }" resize="vertical" />
+							 :autosize="{ minRows: 3, maxRows: 10 }" resize="vertical" />
 		</div>
 	</section>
 
@@ -210,7 +275,7 @@ const reSet = () => {
 			<div>{{ $t('mj.temperature') }}</div>
 			<div class=" flex justify-end items-center w-[80%] max-w-[240px]">
 				<div class=" w-[200px]"><n-slider class="change-slider" v-model:value="nGptStore.temperature"
-						:step="0.01" :max="1" /></div>
+																					:step="0.01" :max="1" /></div>
 				<div class="w-[40px] text-right">{{ nGptStore.temperature }}</div>
 			</div>
 		</section>
@@ -221,7 +286,7 @@ const reSet = () => {
 			<div> {{ $t('mj.top_p') }}</div>
 			<div class=" flex justify-end items-center w-[80%] max-w-[240px]">
 				<div class=" w-[200px]"><n-slider class="change-slider" v-model:value="nGptStore.top_p" :step="0.01"
-						:max="1" /></div>
+																					:max="1" /></div>
 				<div class="w-[40px] text-right">{{ nGptStore.top_p }}</div>
 			</div>
 		</section>
@@ -231,7 +296,7 @@ const reSet = () => {
 			<div> {{ $t('mj.presence_penalty') }}</div>
 			<div class=" flex justify-end items-center w-[80%] max-w-[240px]">
 				<div class=" w-[200px]"><n-slider class="change-slider" v-model:value="nGptStore.presence_penalty"
-						:step="0.01" :max="1" /></div>
+																					:step="0.01" :max="1" /></div>
 				<div class="w-[40px] text-right">{{ nGptStore.presence_penalty }}</div>
 			</div>
 		</section>
@@ -242,7 +307,7 @@ const reSet = () => {
 			<div>{{ $t('mj.frequency_penalty') }}</div>
 			<div class=" flex justify-end items-center w-[80%] max-w-[240px]">
 				<div class=" w-[200px]"><n-slider class="change-slider" v-model:value="nGptStore.frequency_penalty"
-						:step="0.01" :max="1" /></div>
+																					:step="0.01" :max="1" /></div>
 				<div class="w-[40px] text-right">{{ nGptStore.frequency_penalty }}</div>
 			</div>
 		</section>

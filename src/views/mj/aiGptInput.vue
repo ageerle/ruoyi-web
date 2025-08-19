@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 import { useBasicLayout } from "@/hooks/useBasicLayout";
 import { t } from "@/locales";
 import {
@@ -35,6 +35,9 @@ import { useRoute } from "vue-router";
 import aiModel from "@/views/mj/aiModel.vue";
 import AiMic from "./aiMic.vue";
 import { useIconRender } from "@/hooks/useIconRender";
+import to from "await-to-js";
+import { modelList } from "@/api/model";
+import { ModelAbilityEnum } from "@/enums/ModelAbilityEnum";
 
 
 const { iconRender } = useIconRender();
@@ -72,7 +75,9 @@ const st = ref<{
 const { isMobile } = useBasicLayout();
 const placeholder = computed(() => {
   if (isMobile.value) return t("chat.placeholderMobile");
-  return t("chat.placeholder"); //可输入说点什么，也可贴截图或拖拽文件
+	return showUpload.value
+		? t("chat.placeholder")
+		: `${t("chat.placeholderMobile")}（Shift + Enter = 换行）`;
 });
 
 const { uuid } = route.params as { uuid: string };
@@ -218,7 +223,13 @@ const drop = (e: DragEvent) => {
   e.stopPropagation();
   if (!e.dataTransfer || e.dataTransfer.files.length == 0) return;
   const files = e.dataTransfer.files;
-  upFile(files[0]);
+	const file = files[0];
+	// 如果是不支持图片的模型且拖入的是图片，给出提示并中断
+	if (!showUpload.value && file.type && file.type.startsWith("image/")) {
+		ms.error("当前模型不支持图片，请切换支持图片的模型");
+		return;
+	}
+	upFile(file);
   //mlog('drop', files);
 };
 const paste = (e: ClipboardEvent) => {
@@ -307,6 +318,62 @@ function handleExport() {
 function handleClear() {
   emit("handleClear");
 }
+
+// ===== 模型能力解析（与aiModel.vue一致） =====
+const modelConfigList = ref<any[]>([]);
+const fetchModelConfig = async () => {
+	const [err, result] = await to(modelList());
+	if (!err) modelConfigList.value = result.data || [];
+};
+
+onMounted(() => {
+	fetchModelConfig();
+});
+
+const selectedModel = computed<any>(() => {
+	const name = nGptStore.value?.model || gptConfigStore.myData?.model;
+	return modelConfigList.value.find((o: any) => o.modelName === name);
+});
+
+const abilityNameList = computed<string[]>(() => {
+	const m = selectedModel.value as any;
+	if (!m) return [];
+	const namesFromAbilities: string[] = Array.isArray(m?.modelAbilities)
+		? (m.modelAbilities as any[])
+			.map((x: any) => x?.name)
+			.filter((x: any) => typeof x === "string")
+		: [];
+	let namesFromCapability: string[] = [];
+	if (m?.modelCapability) {
+		try {
+			const parsed = typeof m.modelCapability === "string"
+				? JSON.parse(m.modelCapability)
+				: m.modelCapability;
+			if (Array.isArray(parsed)) namesFromCapability = parsed.filter((x: any) => typeof x === "string");
+		} catch {}
+	}
+	return Array.from(new Set([...
+		namesFromAbilities,
+		...namesFromCapability,
+	]));
+});
+
+const showUpload = computed<boolean>(() => {
+	const names = abilityNameList.value;
+	return names.includes(ModelAbilityEnum.IMAGE) || names.includes(ModelAbilityEnum.VIDEO);
+});
+
+const showSpeech = computed<boolean>(() => {
+	const names = abilityNameList.value.map((x) => String(x).toUpperCase());
+	const synonyms = [
+		ModelAbilityEnum.SPEECH,
+		"AUDIO",
+		"VOICE",
+		"ASR",
+	];
+	return synonyms.some((k) => names.includes(String(k)));
+});
+// ===== 结束 能力解析 =====
 
 
 </script>
@@ -420,7 +487,8 @@ function handleClear() {
             @keypress="handleEnter"
           >
             <template #prefix v-if="isMobile">
-              <div class="relative; w-[22px]">
+							<!-- 上传按钮（移动端），按能力显示/隐藏 -->
+							<div class="relative; w-[22px]" v-if="showUpload">
                 <n-tooltip trigger="hover">
                   <template #trigger>
                     <SvgIcon
@@ -442,8 +510,9 @@ function handleClear() {
                   <div v-else v-html="$t('mj.upImg')"></div>
                 </n-tooltip>
               </div>
-      
+							<!-- 语音按钮保留原有逻辑（按能力显示/隐藏） -->
               <n-dropdown
+								v-if="showSpeech"
                 trigger="hover"
                 :options="drOption"
                 @select="handleSelectASR"
@@ -462,7 +531,7 @@ function handleClear() {
                       ></span>
                     </span>
                   </div>
-                 
+
                   <SvgIcon
                     icon="bi:mic"
                     class="absolute bottom-[10px] left-[30px] cursor-pointer"
@@ -527,11 +596,12 @@ function handleClear() {
             <SvgIcon icon="icon-park-outline:right" />
           </div>
           <n-dropdown
+						v-if="showSpeech"
             trigger="hover"
             :options="drOption"
             @select="handleSelectASR"
           >
-            <div class="relative; w-[22px]" style="margin: 0 25px">
+						<div class="relative; w-[22px]" style="margin: 0 12px">
               <div
                 class="absolute bottom-[14px] left-[31px]"
                 v-if="st.micStart"
@@ -548,7 +618,8 @@ function handleClear() {
               <IconSvg icon="voice" width="19px" height="19px"></IconSvg>
             </div>
           </n-dropdown>
-          <n-tooltip trigger="hover">
+					<!-- 上传按钮（PC端），按能力显示/隐藏 -->
+					<n-tooltip trigger="hover" v-if="showUpload">
             <template #trigger>
               <SvgIcon
                 icon="line-md:uploading-loop"
@@ -573,7 +644,8 @@ function handleClear() {
             @click="handleExport"
             icon="screenshot"
             width="19px"
-            height="19px"/>
+						height="19px"
+						:style="{ marginLeft: showSpeech ? '0px' : '10px' }"/>
           <IconSvg
             @click="handleClear"
             class="right"
