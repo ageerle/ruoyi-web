@@ -68,6 +68,9 @@ const voiceList = computed(() => {
 });
 const modellist = computed(() => { //
 	let rz = [];
+	// 添加auto选项作为第一个选项
+	rz.push({ label: '自动选择', value: 'auto' });
+	
 	for (let o of config.value) {
 		rz.push({ label: o.modelDescribe, value: o.modelName })
 	}
@@ -120,7 +123,15 @@ const onSelectChange = (newValue: any) => {
 
 const onSelectChange1 = (newValue: any) => {
 	const option = modellist.value.find(optionValue => optionValue.value === newValue);
-	nGptStore.value.modelLabel = option.label;
+	if (option) {
+		nGptStore.value.modelLabel = option.label;
+		// 如果选择的是auto，设置自动选择模型为true
+		if (newValue === 'auto') {
+			nGptStore.value.autoSelectModel = true;
+		} else {
+			nGptStore.value.autoSelectModel = false;
+		}
+	}
 };
 
 watch(() => nGptStore.value.model, (n) => {

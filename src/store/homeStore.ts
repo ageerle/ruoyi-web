@@ -40,6 +40,8 @@ export interface gptConfigType{
     frequency_penalty?:number
     presence_penalty?:number
     tts_voice?:string //TTS 人物
+    hasAttachment?:boolean // 是否有附件
+    autoSelectModel?:boolean // 是否自动选择模型
 }
 const getGptInt= ():gptConfigType =>{
     let v:gptConfigType=getDefault();
@@ -66,7 +68,9 @@ let v:gptConfigType={
     frequency_penalty: 0,
     tts_voice: "alloy",
     kid: '',
-    kName: ''
+    kName: '',
+    hasAttachment: false,
+    autoSelectModel: false
 }
     return v ;
 }

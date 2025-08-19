@@ -67,6 +67,11 @@ watch(()=>homeStore.myData.act, async (n)=>{
         let promptMsg = getInitChat(dd.prompt );
         if( dd.fileBase64 && dd.fileBase64.length>0 ){
             if( !canVisionModel(model)  ) model='gpt-image';
+            // 设置是否有附件为true
+            nGptStore.hasAttachment = true;
+            // 立即保存到聊天设置中
+            chatSet.save({ hasAttachment: true });
+            mlog('🐞 检测到附件，设置hasAttachment为true');
 
             try{
                     let images= await localSaveAny( JSON.stringify( dd.fileBase64)  ) ;
@@ -75,9 +80,21 @@ watch(()=>homeStore.myData.act, async (n)=>{
             }catch(e){
                 mlog('localSaveAny error',e);
             }
+        } else {
+            // 没有附件时设置为false
+            nGptStore.hasAttachment = false;
+            // 立即保存到聊天设置中
+            chatSet.save({ hasAttachment: false });
+            mlog('🐞 没有附件，设置hasAttachment为false');
         }
         if( n=='gpt.whisper'){
             //model='whisper-1';
+            // 语音识别也有附件（音频文件）
+            nGptStore.hasAttachment = true;
+            // 立即保存到聊天设置中
+            chatSet.save({ hasAttachment: true });
+            mlog('🐞 语音识别，设置hasAttachment为true');
+            
             try{
                 let bb= await file2blob( dd.file );
                 // bb.blob
@@ -253,6 +270,20 @@ const submit= (model:string, message:any[],opt?:any)=>{
     mlog('提交Model', model  );
     const chatSet = new chatSetting(   +st.value.uuid  );
     const nGptStore =   chatSet.getGptConfig()  ;
+    
+    // 保存新的配置参数
+    chatSet.save({
+        hasAttachment: nGptStore.hasAttachment,
+        autoSelectModel: nGptStore.autoSelectModel
+    });
+    
+    // 添加调试日志
+    mlog('🐞 submit函数中的参数:', {
+        hasAttachment: nGptStore.hasAttachment,
+        autoSelectModel: nGptStore.autoSelectModel,
+        uuid: st.value.uuid
+    });
+    
     controller.value = new AbortController();
         if(model=='whisper-1'){
 
@@ -313,7 +344,9 @@ const submit= (model:string, message:any[],opt?:any)=>{
                 signal: controller.value.signal,
                 kid: '',
                 chatType: st.value.chatType,
-                appId: st.value.appId
+                appId: st.value.appId,
+                hasAttachment: nGptStore.hasAttachment,
+                autoSelectModel: nGptStore.autoSelectModel
             }).then(()=>goFinish() ).catch(e=>{
                 if(e.message!='canceled')  textRz.value.push("\n"+t('mj.fail')+":\n```\n"+(e.reason??JSON.stringify(e,null,2)) +"\n```\n")
                 goFinish();
