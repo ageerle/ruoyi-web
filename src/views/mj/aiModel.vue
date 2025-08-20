@@ -71,6 +71,9 @@ const voiceList = computed(() => {
 });
 const modellist = computed(() => { //
 	let rz = [];
+	// 添加auto选项作为第一个选项
+	rz.push({ label: '自动选择', value: 'auto' });
+	
 	for (let o of config.value) {
 		rz.push({ label: o.modelDescribe, value: o.modelName })
 	}
@@ -170,10 +173,33 @@ const saveChat = (type: string) => {
 // 添加一个空选项
 const options = ref<{ label: string; value: any }[]>([]);
 
-const onSelectChange = (newValue: any, optionsArray: any[], targetField: string) => {
-	const option = optionsArray.find(optionValue => optionValue.value === newValue);
+const onSelectChange = (newValue: any, options: any[], field: string) => {
+	const option = options.find(optionValue => optionValue.value === newValue);
 	if (option) {
-		(nGptStore.value as any)[targetField] = option.label;
+		if (field === 'modelLabel') {
+			nGptStore.value.modelLabel = option.label;
+			// 如果选择的是auto，设置自动选择模型为true
+			if (newValue === 'auto') {
+				nGptStore.value.autoSelectModel = true;
+			} else {
+				nGptStore.value.autoSelectModel = false;
+			}
+		} else if (field === 'kName') {
+			nGptStore.value.kName = option.label;
+		}
+	}
+};
+
+const onSelectChange1 = (newValue: any) => {
+	const option = modellist.value.find(optionValue => optionValue.value === newValue);
+	if (option) {
+		nGptStore.value.modelLabel = option.label;
+		// 如果选择的是auto，设置自动选择模型为true
+		if (newValue === 'auto') {
+			nGptStore.value.autoSelectModel = true;
+		} else {
+			nGptStore.value.autoSelectModel = false;
+		}
 	}
 };
 
