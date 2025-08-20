@@ -173,6 +173,23 @@ const saveChat = (type: string) => {
 // 添加一个空选项
 const options = ref<{ label: string; value: any }[]>([]);
 
+const onSelectChange = (newValue: any, options: any[], field: string) => {
+	const option = options.find(optionValue => optionValue.value === newValue);
+	if (option) {
+		if (field === 'modelLabel') {
+			nGptStore.value.modelLabel = option.label;
+			// 如果选择的是auto，设置自动选择模型为true
+			if (newValue === 'auto') {
+				nGptStore.value.autoSelectModel = true;
+			} else {
+				nGptStore.value.autoSelectModel = false;
+			}
+		} else if (field === 'kName') {
+			nGptStore.value.kName = option.label;
+		}
+	}
+};
+
 const onSelectChange1 = (newValue: any) => {
 	const option = modellist.value.find(optionValue => optionValue.value === newValue);
 	if (option) {
@@ -183,7 +200,6 @@ const onSelectChange1 = (newValue: any) => {
 		} else {
 			nGptStore.value.autoSelectModel = false;
 		}
-
 	}
 };
 
