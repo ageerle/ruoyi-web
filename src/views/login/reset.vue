@@ -92,7 +92,7 @@ async function handleResetPassword(e: MouseEvent) {
 
   try {
     resetLoading.value = true;
-    await reset(resetForm.email, resetForm.code, resetForm.password);
+    await reset(resetForm.email, resetForm.password, resetForm.code);
     message.success(t("reset.resetSuccess"));
     router.push("/login");
   } catch (error: any) {
@@ -127,7 +127,7 @@ async function sendVerificationCode() {
     isSending.value = true;
     await getVerificationCode(resetForm.email);
     message.success(t("reset.codeSent"));
-    
+
     // 开始倒计时
     countdown.value = 60;
     const timer = setInterval(() => {
@@ -436,12 +436,12 @@ html.dark .login-content {
   .brand-title {
     font-size: 2rem;
   }
-  
+
   .verification-code-row {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .send-code-button {
     width: 100%;
   }
