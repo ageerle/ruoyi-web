@@ -327,7 +327,9 @@ async function startSSE(chatContent: string) {
 
     // 获取最后一条用户消息（后端做了长期记忆缓存，只需发送最新的用户消息）
     const lastUserMessage = bubbleItems.value.filter((item: any) => item.role === 'user').pop();
-
+    // 获取最后一条系统消息
+    const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
+    
     // 处理工作流模式下json数据拼接
     if (isWorkflowVisible.value) {
       workFlowRunner.value.inputs[0].content.value = chatContent;
@@ -336,7 +338,10 @@ async function startSSE(chatContent: string) {
     if (isResume.value) {
       reSumeRunner.value.feedbackContent = chatContent;
     }
-
+    // 设置加载中状态
+    lastMessage.loading = true;
+    // 只在第一次收到一条数据时，才将加载状态设置为 false
+    let isFirstChunk = true;
     for await (const chunk of stream({
       model: modelStore.currentModelInfo.modelName ?? '',
       content: lastUserMessage?.content ?? '',
@@ -349,6 +354,11 @@ async function startSSE(chatContent: string) {
       isResume: isResume.value,
       enableWorkFlow: isWorkflowVisible.value,
     })) {
+      if (isFirstChunk) {
+        lastMessage.loading = false;
+        isFirstChunk = false;
+      }
+
       // 处理数据块 - chunk.result 可能是字符串或对象
       // 返回 true 表示流结束
       if (handleDataChunk(chunk.result)) {
