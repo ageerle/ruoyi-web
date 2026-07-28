@@ -1,7 +1,7 @@
-import type { EmailCodeDTO, LoginDTO, LoginVO, RegisterDTO } from './types';
+import type { EmailCodeDTO, LoginDTO, LoginResponse, RegisterDTO } from './types';
 import { get, post } from '@/utils/request';
 
-export const login = (data: LoginDTO) => post<LoginVO>('/auth/login', data).json();
+export const login = (data: LoginDTO) => post<LoginResponse>('/auth/login', data).json();
 
 // 邮箱验证码（后端 GET /resource/email/code，按 query 参数 email 接收）
 export function emailCode(data: EmailCodeDTO) {

@@ -16,6 +16,13 @@ export interface LoginVO {
   userInfo?: LoginUser;
 }
 
+/** Login may be returned directly or wrapped by the backend's R response. */
+export interface LoginResponse extends LoginVO {
+  code?: number;
+  data?: LoginVO;
+  msg?: string;
+}
+
 /**
  * LoginUser，登录用户身份权限
  */

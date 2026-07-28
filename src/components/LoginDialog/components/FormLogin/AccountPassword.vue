@@ -39,8 +39,11 @@ async function handleSubmit() {
     isSubmitting.value = true;
     await formRef.value?.validate();
     const res = await login(formModel);
-    console.log(res.data.access_token, 'res');
-    res.data.access_token && userStore.setToken(res.data.access_token);
+    const loginData = res?.data ?? res;
+    const token = loginData?.access_token || loginData?.token;
+    if (!token)
+      throw new Error('登录响应中缺少访问令牌');
+    userStore.setToken(token);
     // res.data.userInfo && userStore.setUserInfo(res.data.userInfo);
     userStore.resetAuthExpiredHandling();
     ElMessage.success('登录成功');
@@ -52,6 +55,7 @@ async function handleSubmit() {
   }
   catch (error) {
     console.error('请求错误:', error);
+    ElMessage.error(error instanceof Error ? error.message : '登录失败，请稍后重试');
   }
   finally {
     isSubmitting.value = false;
