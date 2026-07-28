@@ -133,13 +133,16 @@ export interface RoleDTO {
 
 // 邮箱验证码
 export interface EmailCodeDTO {
-  username?: string;
+  /**
+   * 邮箱（后端 GET /resource/email/code 按 query 参数 email 接收）
+   */
+  email: string;
 }
 
 // 邮箱注册
 export interface RegisterDTO {
   /**
-   * 邮箱
+   * 邮箱（注册时作为用户名 username 提交给后端）
    */
   username: string;
   /**
@@ -154,4 +157,16 @@ export interface RegisterDTO {
    * 确认密码
    */
   confirmPassword?: string;
+  /**
+   * 客户端 id（后端 RegisterBody 继承 LoginBody，clientId 为必填）
+   */
+  clientId?: string;
+  /**
+   * 授权类型
+   */
+  grantType?: string;
+  /**
+   * 租户 ID
+   */
+  tenantId?: string;
 }
