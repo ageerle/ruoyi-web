@@ -66,6 +66,11 @@ async function handleSubmit() {
       username: formModel.value.username,
       password: formModel.value.password,
       code: formModel.value.code,
+      // 后端 RegisterBody 继承自 LoginBody，clientId / grantType 为必填项，
+      // 且需指定租户，否则注册会被 @Validated 拦截或落到空租户。
+      clientId: import.meta.env.VITE_CLIENT_ID,
+      grantType: 'password',
+      tenantId: '000000',
     };
     await register(params);
     ElMessage.success('注册成功');
@@ -91,7 +96,8 @@ async function getEmailCode() {
   }
   try {
     start();
-    await emailCode({ username: formModel.value.username });
+    // 后端按 query 参数 email 接收，用户端把邮箱放在 username 字段输入。
+    await emailCode({ email: formModel.value.username });
     ElMessage.success('验证码发送成功');
   }
   catch (error) {
