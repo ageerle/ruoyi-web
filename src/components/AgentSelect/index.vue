@@ -5,23 +5,17 @@ import Popover from '@/components/Popover/index.vue';
 import SvgIcon from '@/components/SvgIcon/index.vue';
 import { useAgentStore } from '@/stores/modules/agent';
 import { useChatStore } from '@/stores/modules/chat';
+import { useModelStore } from '@/stores/modules/model';
 
 const agentStore = useAgentStore();
 const chatStore = useChatStore();
+const modelStore = useModelStore();
 
 // 当前选中的工作流（全局；为 null 时走智能体对话，与智能体互斥）
 const currentWorkflow = computed(() => chatStore.currentWorkflow);
 
 onMounted(async () => {
   await agentStore.requestAgentList();
-  // 设置默认智能体（仅当未选工作流时）
-  if (
-    agentStore.agentList.length > 0
-    && (!agentStore.currentAgentInfo || !agentStore.currentAgentInfo.agentName)
-    && !currentWorkflow.value
-  ) {
-    agentStore.setCurrentAgentInfo(agentStore.agentList[0]);
-  }
 });
 
 const currentAgentName = computed(
@@ -65,11 +59,13 @@ function handleClick(item: AgentVO) {
   popoverRef.value?.hide?.();
 }
 
-// 退出工作流，回到默认智能体
-function handleUnbindWorkflow() {
+// 退出应用模式，恢复默认的模型选择
+async function handleUseModel() {
   chatStore.clearCurrentWorkflow();
-  if (agentStore.agentList.length > 0 && !agentStore.currentAgentInfo?.agentName) {
-    agentStore.setCurrentAgentInfo(agentStore.agentList[0]);
+  agentStore.clearCurrentAgentInfo();
+  await modelStore.requestModelList();
+  if (modelStore.modelList.length > 0 && !modelStore.currentModelInfo?.modelName) {
+    modelStore.setCurrentModelInfo(modelStore.modelList[0]);
   }
   popoverRef.value?.hide?.();
 }
@@ -101,18 +97,16 @@ function handleUnbindWorkflow() {
       </template>
 
       <div class="popover-content-box">
-        <!-- 当前为工作流模式时，置顶一个"切回智能体"入口 -->
         <div
-          v-if="isWorkflow"
           class="popover-content-box-items w-full rounded-8px select-none transition-all transition-duration-300 flex items-center hover:cursor-pointer hover:bg-[rgba(0,0,0,.04)]"
         >
           <div
             class="popover-content-box-item p-4px font-size-12px text-overflow line-height-16px is-workflow"
-            @click="handleUnbindWorkflow"
+            @click="handleUseModel"
           >
-            <div>退出工作流：{{ currentWorkflow?.title }}</div>
+            <div>切换到模型</div>
             <div class="agent-sub font-size-11px opacity-60">
-              切回默认智能体
+              使用默认模型对话
             </div>
           </div>
         </div>

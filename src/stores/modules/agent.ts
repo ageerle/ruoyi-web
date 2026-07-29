@@ -13,6 +13,10 @@ export const useAgentStore = defineStore('agent', () => {
     currentAgentInfo.value = agentInfo;
   };
 
+  const clearCurrentAgentInfo = () => {
+    currentAgentInfo.value = {};
+  };
+
   // 智能体列表
   const agentList = ref<AgentVO[]>([]);
   // 请求智能体列表
@@ -34,6 +38,7 @@ export const useAgentStore = defineStore('agent', () => {
   return {
     currentAgentInfo,
     setCurrentAgentInfo,
+    clearCurrentAgentInfo,
     agentList,
     requestAgentList,
   };

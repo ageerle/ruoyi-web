@@ -15,8 +15,6 @@ export interface WorkflowBinding {
   title: string;
   startInputs: WfNodeInputDef[];
   inputs: WfNodeInput[];
-  /** 节点 uuid -> 标题 映射（用于卡片展示） */
-  nodeTitles: Record<string, string>;
 }
 
 export const useChatStore = defineStore('chat', () => {

@@ -4,7 +4,7 @@ import type { AnyObject } from 'typescript-api-pro';
 import type { BubbleProps } from 'vue-element-plus-x/types/Bubble';
 import type { BubbleListInstance } from 'vue-element-plus-x/types/BubbleList';
 import type { ThinkingStatus } from 'vue-element-plus-x/types/Thinking';
-import type { ToolCallInfo, WfNodeEvent } from './types';
+import type { ToolCallInfo } from './types';
 import type { SendDTO, WfNodeInput, WfNodeInputDef } from '@/api/chat/types';
 import { useHookFetch } from 'hook-fetch/vue';
 import { nextTick } from 'vue';
@@ -17,7 +17,6 @@ import { useModelStore } from '@/stores/modules/model';
 import { useUserStore } from '@/stores/modules/user';
 import { codeXRender } from '@/utils/markdownRenderers';
 import ToolCallCard from './components/ToolCallCard.vue';
-import WfNodeCard from './components/WfNodeCard.vue';
 
 type MessageItem = BubbleProps & {
   key: number;
@@ -27,12 +26,6 @@ type MessageItem = BubbleProps & {
   thinlCollapse?: boolean;
   reasoning_content?: string;
   class?: string;
-  /** 工作流人机交互：渲染为输入框气泡 */
-  isWorkflowFeedback?: boolean;
-  /** 人机交互提示词 */
-  feedbackTip?: string;
-  /** 人机交互输入框临时内容 */
-  feedbackValue?: string;
 };
 
 const route = useRoute();
@@ -57,21 +50,8 @@ const toolCallEvents = ref<ToolCallInfo[]>([]);
 // 工具调用事件计数器（用于生成唯一 key）
 let toolCallKeyCounter = 0;
 
-// 工作流节点事件列表（节点输入/输出/运行卡片）
-const wfNodeEvents = ref<WfNodeEvent[]>([]);
-let wfNodeKeyCounter = 0;
-// 节点 uuid -> 标题 映射（从工作流详情取，用于卡片展示）
-const wfNodeUuidToTitle = computed<Record<string, string>>(() =>
-  chatStore.currentWorkflow?.nodeTitles ? { ...chatStore.currentWorkflow.nodeTitles } : {},
-);
-// 当前工作流运行时 uuid（从 [START] 事件解析，用于人机交互恢复）
-let wfRuntimeUuid = '';
-// 节点 uuid -> runtimeNode uuid 映射（[NODE_RUN] 时建立，供 [NODE_INPUT/OUTPUT] 关联）
-const wfNodeUuidToRuntimeUuid = ref<Record<string, string>>({});
-
 // 当前是否选中工作流（全局，与智能体互斥）
 const currentBinding = computed(() => chatStore.currentWorkflow);
-const hasWfNodeEvents = computed(() => wfNodeEvents.value.length > 0);
 
 // 是否有工具调用事件
 const hasToolCallEvents = computed(() => toolCallEvents.value.length > 0);
@@ -105,13 +85,9 @@ watch(
   () => route.params?.id,
   async (_id_) => {
     if (_id_) {
-      // 切换会话时清空工具调用事件与工作流节点事件
+      // 切换会话时清空工具调用事件与工作流运行状态
       toolCallEvents.value = [];
       toolCallKeyCounter = 0;
-      wfNodeEvents.value = [];
-      wfNodeKeyCounter = 0;
-      wfNodeUuidToRuntimeUuid.value = {};
-      wfRuntimeUuid = '';
 
       if (_id_ !== 'not_login') {
         // 判断的当前会话id是否有聊天记录，有缓存则直接赋值展示
@@ -165,14 +141,6 @@ async function startSSE(chatContent: string) {
     // 清空上一次的工具调用事件
     toolCallEvents.value = [];
     toolCallKeyCounter = 0;
-    // 绑定了工作流时，清空上一次的节点事件
-    if (currentBinding.value) {
-      wfNodeEvents.value = [];
-      wfNodeKeyCounter = 0;
-      wfNodeUuidToRuntimeUuid.value = {};
-      wfRuntimeUuid = '';
-    }
-
     // 添加用户输入的消息
     inputValue.value = '';
     addMessage(chatContent, true);
@@ -195,8 +163,9 @@ async function startSSE(chatContent: string) {
       sessionId: route.params?.id !== 'not_login' ? String(route.params?.id) : undefined,
     };
 
-    // 绑定了工作流：走工作流模式（后端 enableWorkFlow 优先级最高，会短路 agent/thinking）
+    // 绑定了工作流：仅发送工作流参数，三种对话模式保持互斥
     if (currentBinding.value) {
+      payload.agentId = undefined;
       payload.enableWorkFlow = true;
       payload.workFlowRunner = {
         uuid: currentBinding.value.uuid,
@@ -279,76 +248,6 @@ function defaultInputsFromDefs(defs: WfNodeInputDef[]): WfNodeInput[] {
     content: { title: d.title, value: null, type: d.type },
     required: d.required,
   }));
-}
-
-/**
- * 人机交互恢复：把用户输入作为 feedbackContent 发回 /chat/send，继续工作流。
- */
-async function startResumeSSE(feedbackContent: string) {
-  if (!feedbackContent.trim() || !wfRuntimeUuid) {
-    return;
-  }
-  try {
-    addMessage(feedbackContent, true);
-    addMessage('', false);
-    bubbleListRef.value?.scrollToBottom();
-
-    const payload: SendDTO = {
-      model: modelStore.currentModelInfo.modelName ?? '',
-      agentId: agentStore.currentAgentInfo?.id || undefined,
-      content: feedbackContent,
-      sessionId: route.params?.id !== 'not_login' ? String(route.params?.id) : undefined,
-      isResume: true,
-      reSumeRunner: {
-        runtimeUuid: wfRuntimeUuid,
-        feedbackContent,
-      },
-    };
-
-    let hasReceivedFirstContent = false;
-    for await (const chunk of stream(payload)) {
-      const isStreamEnd = handleDataChunk(chunk.result as AnyObject | string);
-      if (!hasReceivedFirstContent && chunk.result !== ':connected' && chunk.result !== ':disconnected' && !isStreamEnd) {
-        const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-        if (lastMessage) {
-          lastMessage.loading = false;
-          bubbleItems.value = [...bubbleItems.value];
-        }
-        hasReceivedFirstContent = true;
-      }
-      if (isStreamEnd) {
-        break;
-      }
-      await nextTick();
-    }
-  }
-  catch (err) {
-    handleError(err);
-  }
-  finally {
-    if (bubbleItems.value.length) {
-      const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-      lastMessage.typing = false;
-      lastMessage.loading = false;
-      if (lastMessage.thinkingStatus === 'thinking') {
-        lastMessage.thinkingStatus = 'end';
-      }
-      isThinking = false;
-      bubbleItems.value = [...bubbleItems.value];
-    }
-  }
-}
-
-/**
- * 提交某条反馈气泡的输入。
- */
-function submitFeedback(item: MessageItem) {
-  const value = item.feedbackValue || '';
-  // 把该反馈气泡标记为已提交（转为普通 system 文案），避免重复提交
-  item.isWorkflowFeedback = false;
-  item.content = `已回复：${value}`;
-  bubbleItems.value = [...bubbleItems.value];
-  startResumeSSE(value);
 }
 
 // 封装数据处理逻辑
@@ -449,7 +348,7 @@ function handleDataChunk(chunk: AnyObject | string): boolean {
 /**
  * 工作流 SSE 事件分发。事件名带方括号，来自后端 WorkflowEngine / AdiConstant.SSEEventName：
  * [START] / [DONE] / [ERROR] / [NODE_RUN_<uuid>] / [NODE_INPUT_<uuid>]
- * / [NODE_OUTPUT_<uuid>] / [NODE_CHUNK_<uuid>] / [NODE_WAIT_FEEDBACK_BY_<uuid>]
+ * / [NODE_OUTPUT_<uuid>] / [NODE_CHUNK_<uuid>]
  * 返回 true 表示流结束。
  */
 function handleWorkflowEvent(
@@ -457,11 +356,8 @@ function handleWorkflowEvent(
   rawData: string,
   dataObj: AnyObject | null,
 ): boolean {
-  // [START] 携带 wfRuntimeResp JSON，其中 uuid 即 runtimeUuid
+  // [START] 工作流已启动
   if (eventName === '[START]') {
-    if (dataObj?.uuid) {
-      wfRuntimeUuid = dataObj.uuid as string;
-    }
     return false;
   }
 
@@ -484,29 +380,8 @@ function handleWorkflowEvent(
     return true;
   }
 
-  // [NODE_RUN_<uuid>] 节点开始：记录 runtimeNode uuid 映射
+  // 节点运行状态不在对话区单独展示，仅保留最终流式回答。
   if (eventName.startsWith('[NODE_RUN_')) {
-    const nodeUuid = eventName.replace('[NODE_RUN_', '').replace(']', '');
-    try {
-      const runtimeNode = dataObj ? JSON.parse(rawData) : null;
-      if (runtimeNode?.uuid) {
-        wfNodeUuidToRuntimeUuid.value[nodeUuid] = runtimeNode.uuid;
-      }
-      wfNodeEvents.value = [
-        ...wfNodeEvents.value,
-        {
-          key: ++wfNodeKeyCounter,
-          nodeUuid,
-          nodeTitle: wfNodeUuidToTitle.value[nodeUuid],
-          type: 'run',
-          data: runtimeNode || rawData,
-          timestamp: Date.now(),
-        },
-      ];
-    }
-    catch (e) {
-      console.warn('[SSE] NODE_RUN 解析失败', e);
-    }
     return false;
   }
 
@@ -520,70 +395,13 @@ function handleWorkflowEvent(
     return false;
   }
 
-  // [NODE_INPUT_<uuid>] 节点输入
+  // 节点输入属于流程内部明细，对话模式下不弹出节点卡片。
   if (eventName.startsWith('[NODE_INPUT_')) {
-    const nodeUuid = eventName.replace('[NODE_INPUT_', '').replace(']', '');
-    wfNodeEvents.value = [
-      ...wfNodeEvents.value,
-      {
-        key: ++wfNodeKeyCounter,
-        nodeUuid,
-        nodeTitle: wfNodeUuidToTitle.value[nodeUuid],
-        type: 'input',
-        data: dataObj || rawData,
-        timestamp: Date.now(),
-      },
-    ];
-    bubbleListRef.value?.scrollToBottom();
     return false;
   }
 
-  // [NODE_OUTPUT_<uuid>] 节点输出
+  // 节点输出属于流程内部明细，对话模式下不弹出节点卡片。
   if (eventName.startsWith('[NODE_OUTPUT_')) {
-    const nodeUuid = eventName.replace('[NODE_OUTPUT_', '').replace(']', '');
-    wfNodeEvents.value = [
-      ...wfNodeEvents.value,
-      {
-        key: ++wfNodeKeyCounter,
-        nodeUuid,
-        nodeTitle: wfNodeUuidToTitle.value[nodeUuid],
-        type: 'output',
-        data: dataObj || rawData,
-        timestamp: Date.now(),
-      },
-    ];
-    bubbleListRef.value?.scrollToBottom();
-    return false;
-  }
-
-  // [NODE_WAIT_FEEDBACK_BY_<uuid>] 人机交互等待输入
-  if (eventName.startsWith('[NODE_WAIT_FEEDBACK_BY_')) {
-    const tip = rawData || '流程已暂停，请输入内容后继续';
-    // 先把当前 assistant 气泡的 loading 关掉
-    const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-    if (lastMessage) {
-      lastMessage.loading = false;
-      lastMessage.typing = false;
-    }
-    // 追加一条反馈输入气泡
-    bubbleItems.value = [
-      ...bubbleItems.value,
-      {
-        key: bubbleItems.value.length,
-        avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-        avatarSize: '32px',
-        role: 'system',
-        placement: 'start',
-        isMarkdown: false,
-        loading: false,
-        content: '',
-        isWorkflowFeedback: true,
-        feedbackTip: tip,
-        feedbackValue: '',
-        noStyle: true,
-      } as MessageItem,
-    ];
-    bubbleListRef.value?.scrollToBottom();
     return false;
   }
 
@@ -780,17 +598,6 @@ function sendMessageByKey(key: number) {
         </div>
       </Transition>
 
-      <!-- 工作流节点事件区域 -->
-      <Transition name="tool-events-fade">
-        <div v-if="hasWfNodeEvents" class="tool-events-wrapper">
-          <WfNodeCard
-            v-for="evt in wfNodeEvents"
-            :key="evt.key"
-            :event="evt"
-          />
-        </div>
-      </Transition>
-
       <BubbleList ref="bubbleListRef" :list="bubbleItems" max-height="calc(100vh - 240px)">
         <template #header="{ item }">
           <Thinking
@@ -804,28 +611,8 @@ function sendMessageByKey(key: number) {
         </template>
 
         <template #content="{ item }">
-          <!-- 工作流人机交互：输入框气泡 -->
-          <div v-if="item.isWorkflowFeedback" class="wf-feedback-bubble">
-            <div class="wf-feedback-tip">
-              <el-icon style="color: #E6A23C; margin-right: 4px; vertical-align: -2px;">
-                <WarningFilled />
-              </el-icon>
-              {{ item.feedbackTip || '流程已暂停，请输入内容后继续' }}
-            </div>
-            <el-input
-              v-model="item.feedbackValue"
-              type="textarea"
-              :autosize="{ minRows: 2, maxRows: 5 }"
-              placeholder="输入内容后提交，继续执行流程"
-            />
-            <div class="wf-feedback-actions">
-              <el-button type="primary" size="small" @click="submitFeedback(item)">
-                提交并继续
-              </el-button>
-            </div>
-          </div>
           <XMarkdown
-            v-else-if="item.content && item.role === 'system'"
+            v-if="item.content && item.role === 'system'"
             :markdown="item.content"
             :code-x-render="codeXRender"
             class="markdown-body"
@@ -1036,28 +823,6 @@ function sendMessageByKey(key: number) {
       width: 100%;
       overflow: visible;
     }
-  }
-}
-
-.wf-feedback-bubble {
-  width: 100%;
-  max-width: 520px;
-  padding: 12px;
-  border: 1px solid #f0c78a;
-  background: #fdf6ec;
-  border-radius: 12px;
-
-  .wf-feedback-tip {
-    font-size: 13px;
-    color: #b88230;
-    margin-bottom: 8px;
-    line-height: 1.6;
-  }
-
-  .wf-feedback-actions {
-    margin-top: 8px;
-    display: flex;
-    justify-content: flex-end;
   }
 }
 </style>

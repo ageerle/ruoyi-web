@@ -5,6 +5,9 @@ import { nextTick, ref, watch } from 'vue';
 import { Sender } from 'vue-element-plus-x';
 import AgentSelect from '@/components/AgentSelect/index.vue';
 import FilesSelect from '@/components/FilesSelect/index.vue';
+import ModelSelect from '@/components/ModelSelect/index.vue';
+import { useAgentStore } from '@/stores/modules/agent';
+import { useChatStore } from '@/stores/modules/chat';
 import { useFilesStore } from '@/stores/modules/files';
 import { useUserStore } from '@/stores/modules/user';
 
@@ -21,7 +24,12 @@ const emit = defineEmits<{
 
 const filesStore = useFilesStore();
 const userStore = useUserStore();
+const agentStore = useAgentStore();
+const chatStore = useChatStore();
 const isLoggedIn = computed(() => !!userStore.token);
+const isApplicationMode = computed(
+  () => !!chatStore.currentWorkflow || !!agentStore.currentAgentInfo?.id,
+);
 
 const senderValue = computed({
   get: () => props.modelValue || '',
@@ -130,7 +138,8 @@ defineExpose({
       <div class="sender-prefix-container">
         <!-- 左侧按钮组 -->
         <div class="left-buttons">
-          <AgentSelect />
+          <AgentSelect v-if="isApplicationMode" />
+          <ModelSelect v-else />
         </div>
 
         <!-- 右侧上传按钮 -->

@@ -3,10 +3,14 @@
 import type { GetSessionListVO } from '@/api/model/types';
 import Popover from '@/components/Popover/index.vue';
 import SvgIcon from '@/components/SvgIcon/index.vue';
+import { useAgentStore } from '@/stores/modules/agent';
+import { useChatStore } from '@/stores/modules/chat';
 import { useModelStore } from '@/stores/modules/model';
 import { useUserStore } from '@/stores/modules/user';
 
 const modelStore = useModelStore();
+const agentStore = useAgentStore();
+const chatStore = useChatStore();
 const userStore = useUserStore();
 const isLoggedIn = computed(() => !!userStore.token);
 
@@ -60,6 +64,8 @@ async function showPopover() {
 
 // 点击
 function handleClick(item: GetSessionListVO) {
+  chatStore.clearCurrentWorkflow();
+  agentStore.clearCurrentAgentInfo();
   modelStore.setCurrentModelInfo(item);
   popoverRef.value?.hide?.();
 }

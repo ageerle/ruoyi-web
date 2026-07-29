@@ -40,14 +40,6 @@ export interface WfNodeInput {
 }
 
 /**
- * 人机交互信息体
- */
-export interface ReSumeRunner {
-  runtimeUuid?: string;
-  feedbackContent?: string;
-}
-
-/**
  * SSE 事件类型
  */
 export type SseEventType = 'content' | 'reasoning' | 'done' | 'error' | 'message';
@@ -98,14 +90,6 @@ export interface SendDTO {
    * 工作流请求体
    */
   workFlowRunner?: WorkFlowRunner;
-  /**
-   * 人机交互信息体
-   */
-  reSumeRunner?: ReSumeRunner;
-  /**
-   * 是否为人机交互用户继续输入
-   */
-  isResume?: boolean;
   /**
    * 是否启用工作流
    */

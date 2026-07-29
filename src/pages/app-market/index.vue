@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import type { AgentVO } from '@/api/agent/types';
 import type { WfNodeInput, WfNodeInputDef, WorkflowNodeDto, WorkflowResp } from '@/api/chat/types';
 import { useRouter } from 'vue-router';
 import { getWorkflowDetail, getWorkflowList } from '@/api';
+import { useAgentStore } from '@/stores/modules/agent';
 import { useChatStore } from '@/stores/modules/chat';
 import { useUserStore } from '@/stores/modules/user';
 
 const router = useRouter();
+const agentStore = useAgentStore();
 const chatStore = useChatStore();
 const userStore = useUserStore();
 
@@ -14,6 +17,10 @@ const loading = ref(false);
 const pageSize = ref(20);
 const currentPage = ref(1);
 const total = ref(0);
+const applications = computed(() => [
+  ...agentStore.agentList.map(item => ({ type: 'agent' as const, data: item })),
+  ...workflows.value.map(item => ({ type: 'workflow' as const, data: item })),
+]);
 
 // 复杂输入表单相关
 const formVisible = ref(false);
@@ -22,10 +29,13 @@ const pendingWorkflow = ref<WorkflowResp | null>(null);
 const pendingStartInputs = ref<WfNodeInputDef[]>([]);
 const formValues = ref<WfNodeInput[]>([]);
 
-async function loadWorkflows() {
+async function loadApplications() {
   loading.value = true;
   try {
-    const res = await getWorkflowList({ currentPage: currentPage.value, pageSize: pageSize.value });
+    const [res] = await Promise.all([
+      getWorkflowList({ currentPage: currentPage.value, pageSize: pageSize.value }),
+      agentStore.requestAgentList(),
+    ]);
     // 后端 /workflow/public/search 返回 R<Page<WorkflowResp>>，结构为 {code,msg,data:{records,total}}；
     // 兼容 TableDataInfo 形态 {code,msg,rows,total}（hook-fetch 不解包，原样返回响应体）
     const payload = (res as any)?.data ?? res;
@@ -41,7 +51,7 @@ async function loadWorkflows() {
   }
 }
 
-onMounted(loadWorkflows);
+onMounted(loadApplications);
 
 /**
  * 找到 start 节点：优先按组件名精确匹配（与后端 WorkflowEngine.findStartAndEndNode 一致），
@@ -75,14 +85,6 @@ function extractStartInputs(startNode: WorkflowNodeDto | undefined): WfNodeInput
   }));
 }
 
-function buildNodeTitles(wf: WorkflowResp): Record<string, string> {
-  const map: Record<string, string> = {};
-  (wf.nodes || []).forEach((n) => {
-    map[n.uuid] = n.title || '';
-  });
-  return map;
-}
-
 function defaultInputsFromDefs(defs: WfNodeInputDef[]): WfNodeInput[] {
   return defs.map(d => ({
     uuid: d.uuid,
@@ -110,7 +112,6 @@ async function onCardClick(wf: WorkflowResp) {
     const detail = ((res as any)?.data ?? res) as WorkflowResp;
     const startNode = findStartNode(detail);
     const startInputs = extractStartInputs(startNode);
-    const nodeTitles = buildNodeTitles(detail);
 
     if (needForm(startInputs)) {
       // 复杂输入：弹表单收集
@@ -122,12 +123,22 @@ async function onCardClick(wf: WorkflowResp) {
     }
 
     // 单文本输入或无输入：选中工作流并回主页
-    await selectWorkflow(detail, startInputs, defaultInputsFromDefs(startInputs), nodeTitles);
+    await selectWorkflow(detail, startInputs, defaultInputsFromDefs(startInputs));
   }
   catch (e) {
     console.error('进入工作流失败', e);
     ElMessage.error('进入工作流失败');
   }
+}
+
+async function selectAgent(agent: AgentVO) {
+  if (!userStore.token) {
+    ElMessage.warning('请先登录');
+    return;
+  }
+  chatStore.clearCurrentWorkflow();
+  agentStore.setCurrentAgentInfo(agent);
+  await router.push({ name: 'chat' });
 }
 
 async function submitForm() {
@@ -144,7 +155,6 @@ async function submitForm() {
       pendingStartInputs.value,
       // 表单提交的值克隆一份（文本输入的 value 留给每轮聊天覆盖）
       formValues.value.map(i => ({ ...i, content: { ...i.content } })),
-      buildNodeTitles(pendingWorkflow.value!),
     );
     formVisible.value = false;
   }
@@ -161,7 +171,6 @@ async function selectWorkflow(
   wf: WorkflowResp,
   startInputs: WfNodeInputDef[],
   inputs: WfNodeInput[],
-  nodeTitles: Record<string, string>,
 ) {
   if (!userStore.token) {
     ElMessage.warning('请先登录');
@@ -172,8 +181,8 @@ async function selectWorkflow(
     title: wf.title,
     startInputs,
     inputs,
-    nodeTitles,
   });
+  agentStore.clearCurrentAgentInfo();
   // 回到主页（居中对话框），由用户输入后触发对话
   router.push({ name: 'chat' });
 }
@@ -186,17 +195,17 @@ async function selectWorkflow(
         应用市场
       </h2>
       <p class="market-subtitle">
-        选择一个工作流应用，进入对话即可使用
+        选择智能体或工作流应用，进入对话即可使用
       </p>
     </div>
 
     <div v-loading="loading" class="market-grid">
-      <el-empty v-if="!loading && workflows.length === 0" description="暂无可用工作流" />
+      <el-empty v-if="!loading && applications.length === 0" description="暂无可用应用" />
       <div
-        v-for="wf in workflows"
-        :key="wf.uuid"
+        v-for="app in applications"
+        :key="`${app.type}-${app.type === 'agent' ? app.data.id : app.data.uuid}`"
         class="wf-card"
-        @click="onCardClick(wf)"
+        @click="app.type === 'agent' ? selectAgent(app.data) : onCardClick(app.data)"
       >
         <div class="wf-card-icon">
           <el-icon :size="28">
@@ -205,14 +214,16 @@ async function selectWorkflow(
         </div>
         <div class="wf-card-body">
           <div class="wf-card-title">
-            {{ wf.title }}
+            {{ app.type === 'agent' ? (app.data.agentDescribe || app.data.agentName) : app.data.title }}
           </div>
           <div class="wf-card-desc">
-            {{ wf.remark || '暂无描述' }}
+            {{ app.type === 'agent' ? '智能体应用' : (app.data.remark || '暂无描述') }}
           </div>
         </div>
         <div class="wf-card-footer">
-          <span class="wf-card-author">{{ wf.userName || '官方' }}</span>
+          <el-tag class="app-type-tag" size="small" effect="plain">
+            {{ app.type === 'agent' ? '智能体' : '工作流' }}
+          </el-tag>
           <el-button type="primary" size="small" round>
             开始使用
           </el-button>
@@ -337,6 +348,10 @@ async function selectWorkflow(
     line-height: 1.4;
   }
 
+  .app-type-tag {
+    flex: none;
+  }
+
   .wf-card-desc {
     font-size: 13px;
     color: #909399;
@@ -355,10 +370,6 @@ async function selectWorkflow(
     border-top: 1px solid #f0f0f0;
     padding-top: 10px;
 
-    .wf-card-author {
-      font-size: 12px;
-      color: #c0c4cc;
-    }
   }
 }
 </style>
