@@ -1,150 +1,133 @@
-# RuoYi-AI 用户端
+# RuoYi-AI User Frontend
 
 <div align="center">
 
 <img src="https://github.com/ageerle/ruoyi-ai/raw/main/docs/image/logo.png" alt="RuoYi AI Logo" width="120" height="120">
 
-### 企业级AI助手平台 - 用户前端
+### Enterprise-Grade AI Assistant Platform - User Frontend
 
-*RuoYi-AI 的用户前端，提供 AI 对话、智能体交互、知识库问答等功能*
+*The RuoYi-AI user frontend for AI conversations, agent interactions, and knowledge-base Q&A.*
 
-**[在线体验](https://web.pandarobot.chat)** | **[后端服务](https://github.com/ageerle/ruoyi-ai)** | **[管理后台](https://github.com/ageerle/ruoyi-admin)**
+**[中文](README_ZH.md)** | **[Live Demo](https://web.ruoyiai.chat)** | **[Backend Service](https://github.com/ageerle/ruoyi-ai)** | **[Admin Panel](https://github.com/ageerle/ruoyi-admin)**
 
 </div>
 
-## 技术栈
+## Tech Stack
 
-- **框架**: Vue 3 + TypeScript
-- **UI组件**: Ant Design Vue
-- **状态管理**: Pinia
-- **构建工具**: Vite
+- **Framework**: Vue 3 + TypeScript
+- **UI Components**: Ant Design Vue
+- **State Management**: Pinia
+- **Build Tool**: Vite
 
-## Docker 部署
+## Docker Deployment
 
-本用户端支持两种 Docker 部署方式：
+This user frontend supports two Docker deployment methods:
 
-### 方式一：一键启动所有服务（推荐）
+### Method 1: Start All Services with One Command (Recommended)
 
-使用 `docker-compose-all.yaml` 可以一键启动所有服务（包括后端、管理端、用户端及依赖服务）：
+Use `docker-compose-all.yaml` to start all services at once, including the backend, admin panel, user frontend, and dependencies:
 
 ```bash
-# 克隆后端仓库
+# Clone the backend repository
 git clone https://github.com/ageerle/ruoyi-ai.git
 cd ruoyi-ai
 
-# 启动所有服务（从镜像仓库拉取预构建镜像）
+# Start all services using pre-built images
 docker-compose -f docker-compose-all.yaml up -d
 
-# 访问用户端
-# 地址: http://localhost:25137
-# 账号: admin / admin123
+# Open the user frontend
+# URL: http://localhost:25137
+# Account: admin / admin123
 ```
 
-### 方式二：分步部署（源码编译）
+### Method 2: Deploy Services Separately (Build from Source)
 
-如果您需要从源码构建，请按照以下步骤操作：
+If you need to build from source, follow these steps:
 
-#### 第一步：部署后端服务
+#### Step 1: Deploy the Backend Service
 
 ```bash
-# 进入后端项目目录
+# Enter the backend project directory
 cd ruoyi-ai
 
-# 启动后端服务（源码编译构建）
+# Start the backend service and build from source
 docker-compose up -d --build
 
-# 等待后端服务启动完成
+# Wait for the backend service to start
 docker-compose logs -f backend
 ```
 
-#### 第二步：部署用户端
+#### Step 2: Deploy the User Frontend
 
 ```bash
-# 进入用户端项目目录
+# Enter the user frontend project directory
 cd ruoyi-web
 
-# 构建并启动用户端
+# Build and start the user frontend
 docker-compose up -d --build
 
-# 访问用户端
-# 地址: http://localhost:5137
+# Open the user frontend
+# URL: http://localhost:5137
 ```
 
-#### 第三步：部署管理端（可选）
+#### Step 3: Deploy the Admin Panel (Optional)
 
 ```bash
-# 进入管理端项目目录
+# Enter the admin project directory
 cd ruoyi-admin
 
-# 构建并启动管理端
+# Build and start the admin panel
 docker-compose up -d --build
 
-# 访问管理端
-# 地址: http://localhost:5666
+# Open the admin panel
+# URL: http://localhost:5666
 ```
 
-### 服务端口说明
+### Service Ports
 
-| 服务 | 端口 | 说明 |
+| Service | Port | Description |
 |------|------|------|
-| 用户端 | 5137 | 用户前端访问地址 |
-| 管理端 | 5666 | 管理后台访问地址 |
-| 后端服务 | 6039 | 后端 API 服务 |
-| MySQL | 23306 | 数据库服务 |
-| Redis | 6379 | 缓存服务 |
-| Weaviate | 28080 | 向量数据库 |
-| MinIO | 9000/9090 | 对象存储 |
+| User frontend | 5137 | User frontend URL |
+| Admin panel | 5666 | Admin panel URL |
+| Backend service | 6039 | Backend API service |
+| MySQL | 23306 | Database service |
+| Redis | 6379 | Cache service |
+| Weaviate | 28080 | Vector database |
+| MinIO | 9000/9090 | Object storage |
 
-### 镜像仓库
-
-所有镜像托管在阿里云容器镜像服务：
-
-```
-crpi-31mraxd99y2gqdgr.cn-beijing.personal.cr.aliyuncs.com/ruoyi_ai
-```
-
-可用镜像：
-- `mysql:v3` - MySQL 数据库（包含初始化 SQL）
-- `redis:6.2` - Redis 缓存
-- `weaviate:1.30.0` - 向量数据库
-- `minio:latest` - 对象存储
-- `ruoyi-ai-backend:latest` - 后端服务
-- `ruoyi-ai-admin:latest` - 管理端前端
-- `ruoyi-ai-web:latest` - 用户端前端
-
-## 本地开发
+## Local Development
 
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 启动开发服务器
+# Start the development server
 pnpm dev
 
-# 构建生产版本
+# Build the production version
 pnpm build
 ```
 
-## 常见问题
+## FAQ
 
-**Q: 用户端无法连接后端服务？**
+**Q: The user frontend cannot connect to the backend service.**
 
-A: 请确保后端服务已启动，并检查环境变量 `UPSTREAM_URL` 配置是否正确。
+A: Make sure the backend service is running and verify that the `UPSTREAM_URL` environment variable is configured correctly.
 
-**Q: 一键启动和分步部署有什么区别？**
+**Q: What is the difference between one-command startup and separate deployment?**
 
-A: 一键启动使用预构建的镜像，部署速度快；分步部署从源码编译，适合需要自定义修改的场景。
+A: One-command startup uses pre-built images for faster deployment. Separate deployment builds from source and is suitable when custom changes are required.
 
-## 开源协议
+## License
 
-本项目采用 **MIT 开源协议**，详情请查看 [license](license) 文件。
+This project is licensed under the **MIT License**. See the [license](license) file for details.
 
 ---
 
 <div align="center">
 
-**[⭐ 点个Star支持一下](https://github.com/ageerle/ruoyi-web)** • **[Fork 开始贡献](https://github.com/ageerle/ruoyi-web/fork)**
+**[⭐ Star this project](https://github.com/ageerle/ruoyi-web)** • **[Fork and contribute](https://github.com/ageerle/ruoyi-web/fork)**
 
-*用 ❤️ 打造，由 RuoYi AI 开源社区维护*
+*Made with ❤️ and maintained by the RuoYi AI open-source community*
 
 </div>
