@@ -3,19 +3,20 @@ import type { MediaTask } from '../types';
 import type { MediaType } from '@/api/media/types';
 import { Headset, Picture, VideoCamera } from '@element-plus/icons-vue';
 import { computed, shallowRef, watch } from 'vue';
-import { canQueryMedia, mediaLabels, mediaSource, taskLabels } from '../utils';
+import { useMediaPreview } from '../useMediaPreview';
+import { canQueryMedia, mediaLabels, taskLabels } from '../utils';
 
 const props = defineProps<{ kind: MediaType; task?: MediaTask; querying: boolean; busy: boolean }>();
 const emit = defineEmits<{ pause: [key: string]; resume: [key: string] }>();
-const source = computed(() => props.task?.state === 'success' ? mediaSource(props.task.result, props.task.kind) : '');
+const { source, mimeType, loading, error: contentError, retry } = useMediaPreview(() => props.task);
 const icon = computed(() => ({ image: Picture, audio: Headset, video: VideoCamera })[props.task?.kind || props.kind]);
 const mediaError = shallowRef(false);
 const copied = shallowRef(false);
 const copyError = shallowRef('');
 const canResume = computed(() => Boolean(props.task?.result?.id && props.task.state !== 'success' && canQueryMedia(props.task.provider, props.task.kind)));
-const download = computed(() => source.value.startsWith('data:'));
+const download = computed(() => /^(?:data|blob):/.test(source.value));
 const filename = computed(() => {
-  const mime = source.value.match(/^data:([^;]+);/i)?.[1];
+  const mime = mimeType.value || source.value.match(/^data:([^;]+);/i)?.[1];
   const extension = mime?.split('/')[1].replace('mpeg', 'mp3') || 'bin';
   return `ruoyi-${props.task?.kind || 'media'}.${extension}`;
 });
@@ -51,7 +52,7 @@ async function copyId() {
       <span v-else class="preview-type">{{ mediaLabels[kind] }}预览</span>
     </div>
 
-    <div class="preview-stage" :class="{ 'has-result': source }" aria-live="polite" :aria-busy="task?.state === 'submitting' || querying">
+    <div class="preview-stage" :class="{ 'has-result': source }" aria-live="polite" :aria-busy="loading || task?.state === 'submitting' || querying">
       <template v-if="source && task">
         <img v-if="task.kind === 'image'" :src="source" :alt="task.prompt" class="image-result" @error="mediaError = true">
         <div v-else-if="task.kind === 'audio'" class="audio-result">
@@ -66,14 +67,14 @@ async function copyId() {
         <video v-else :key="source" :src="source" controls playsinline preload="metadata" class="video-result" @error="mediaError = true" />
       </template>
       <div v-else class="empty-preview">
-        <div class="preview-symbol" :class="{ processing: task?.state === 'waiting' || task?.state === 'submitting' }">
+        <div class="preview-symbol" :class="{ processing: loading || task?.state === 'waiting' || task?.state === 'submitting' }">
           <el-icon><component :is="icon" /></el-icon>
         </div>
         <h3 class="empty-title">
-          {{ task ? taskLabels[task.state] : '让想法有一个新模样' }}
+          {{ loading ? '正在加载资源' : contentError ? '资源加载失败' : task ? taskLabels[task.state] : '让想法有一个新模样' }}
         </h3>
         <p class="empty-description">
-          {{ task ? task.message : '选择模型，写下描述。你的创作会出现在这里。' }}
+          {{ loading ? '作品已生成，正在准备预览。' : contentError || (task ? task.message : '选择模型，写下描述。你的创作会出现在这里。') }}
         </p>
       </div>
     </div>
@@ -101,6 +102,9 @@ async function copyId() {
         服务状态：{{ task.result.status }}
       </p>
       <div class="result-actions">
+        <el-button v-if="contentError" @click="retry">
+          重新加载资源
+        </el-button>
         <a v-if="source && download" :href="source" :download="filename" class="resource-link">保存文件</a>
         <a v-else-if="source" :href="source" target="_blank" rel="noopener noreferrer" class="resource-link">打开资源</a>
         <el-button v-if="task.state === 'waiting'" @click="emit('pause', task.key)">
