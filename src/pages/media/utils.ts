@@ -14,14 +14,6 @@ export function createDraft(): MediaDraft {
   return { model: '', prompt: '', size: '', voice: '', responseFormat: '', instructions: '', quality: '' };
 }
 
-export function supportsMedia(provider: string, kind: MediaType): boolean {
-  return ['openai', 'atlas', 'custom_api'].includes(provider) || (kind === 'image' && provider === 'Tongyiwanx');
-}
-
-export function canQueryMedia(provider: string, kind: MediaType): boolean {
-  return provider === 'atlas' || (kind === 'video' && supportsMedia(provider, kind));
-}
-
 /** Only expose browser-renderable media; never pass arbitrary provider URLs to links. */
 export function mediaSource(result: MediaGenerationResponse | undefined, kind: MediaType): string {
   if (!result)

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { MediaType } from '@/api/media/types';
 import { Headset, Picture, Refresh, VideoCamera } from '@element-plus/icons-vue';
 import MediaForm from './components/MediaForm.vue';
 import MediaPreview from './components/MediaPreview.vue';
@@ -31,10 +30,10 @@ const {
   selectTask,
 } = useMediaWorkbench();
 const modes = [
-  { value: 'image' as MediaType, label: '图片生成', icon: Picture, hint: '把描述变成画面' },
-  { value: 'audio' as MediaType, label: '语音合成', icon: Headset, hint: '让文字拥有声音' },
-  { value: 'video' as MediaType, label: '视频生成', icon: VideoCamera, hint: '让场景动起来' },
-];
+  { value: 'image', label: '图片生成', icon: Picture, hint: '把描述变成画面' },
+  { value: 'audio', label: '语音合成', icon: Headset, hint: '让文字拥有声音' },
+  { value: 'video', label: '视频生成', icon: VideoCamera, hint: '让场景动起来' },
+] as const;
 </script>
 
 <template>
@@ -46,7 +45,7 @@ const modes = [
         </p><h1 class="workbench-title">
           媒体工作台
         </h1><p class="workbench-description">
-          从一句描述开始，创作图片、语音与视频。
+          生成图片和视频，或把文字转成语音。
         </p>
       </div>
       <el-button :icon="Refresh" :loading="modelsLoading" :disabled="!loggedIn || busy" @click="loadModels">

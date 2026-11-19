@@ -86,6 +86,7 @@ export interface SendDTO {
    * 对话消息（必填）
    */
   content: string;
+  image?: { dataBase64: string };
   /**
    * 工作流请求体
    */
@@ -252,6 +253,7 @@ export interface GetChatListParams {
  * ChatMessageVo，聊天消息视图对象 chat_message
  */
 export interface ChatMessageVo {
+  hasImage?: boolean;
   /**
    * 消息内容
    */
@@ -263,7 +265,7 @@ export interface ChatMessageVo {
   /**
    * 主键
    */
-  id?: number;
+  id?: string | number;
   /**
    * 模型名称
    */

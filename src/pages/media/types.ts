@@ -1,4 +1,4 @@
-import type { MediaGenerationResponse, MediaType } from '@/api/media/types';
+import type { MediaGenerationResponse, MediaModelOption, MediaType } from '@/api/media/types';
 
 export interface MediaDraft {
   model: string;
@@ -13,11 +13,8 @@ export interface MediaDraft {
   quality: string;
 }
 
-export interface MediaModel {
-  modelName: string;
+export interface MediaModel extends MediaModelOption {
   label: string;
-  providerCode: string;
-  supported: boolean;
 }
 
 export type TaskState = 'submitting' | 'waiting' | 'success' | 'failed' | 'paused';
@@ -28,6 +25,7 @@ export interface MediaTask {
   model: string;
   modelLabel: string;
   provider: string;
+  queryType: MediaModelOption['queryType'];
   prompt: string;
   createdAt: number;
   state: TaskState;

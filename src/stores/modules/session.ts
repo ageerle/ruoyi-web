@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router';
 import {
   create_session,
   delete_session,
-  get_session,
   get_session_list,
   update_session,
 } from '@/api';
@@ -119,42 +118,30 @@ export const useSessionStore = defineStore('session', () => {
     }
   };
 
-  // 发送消息后创建新会话
-  const createSessionList = async (data: Omit<CreateSessionDTO, 'id'>) => {
-    if (!userStore.token) {
-      router.replace({
-        name: 'chatWithId',
-        params: {
-          id: 'not_login',
-        },
-      });
-      return;
-    }
+  // 创建后先进入会话，列表随后刷新。
+  const createSessionList = async (data: Omit<CreateSessionDTO, 'id'>, beforeOpen: (id: string) => void) => {
+    const startingRoute = router.currentRoute.value;
+    if (!userStore.token || startingRoute.name !== 'chat')
+      return false;
 
     try {
       const res = await create_session(data);
-      // 创建会话后立刻查询列表会话
-      // 1. 先找到被修改会话在 sessionList 中的索引（假设 sessionList 是按服务端排序的完整列表）
-      const targetIndex = sessionList.value.findIndex(session => session.id === `${res.data}`);
-      // 2. 计算该会话所在的页码（页大小固定为 pageSize.value）
-      const targetPage
-        = targetIndex >= 0
-          ? Math.floor(targetIndex / pageSize.value) + 1 // 索引从0开始，页码从1开始
-          : 1; // 未找到时默认刷新第一页（可能因排序变化导致位置改变）
-      // 3. 刷新目标页数据
-      await requestSessionList(targetPage, true);
-      // 并将当前勾选信息设置为新增的会话信息
-      const newSessionRes = await get_session(`${res.data}`);
-      setCurrentSession(newSessionRes.data);
+      if (!res.data || router.currentRoute.value !== startingRoute)
+        return false;
 
-      // 跳转聊天页
-      router.replace({
-        name: 'chatWithId',
-        params: { id: `${res.data}` },
-      });
+      const id = String(res.data);
+      beforeOpen(id);
+      const failure = await router.replace({ name: 'chatWithId', params: { id } });
+      if (failure)
+        return false;
+
+      setCurrentSession({ ...data, id });
+      void requestSessionList(1, true);
+      return true;
     }
     catch (error) {
       console.error('createSessionList错误:', error);
+      return false;
     }
   };
 

@@ -1,4 +1,13 @@
 export type MediaType = 'audio' | 'image' | 'video';
+export type MediaQueryType = 'prediction' | 'video';
+
+export interface MediaModelOption {
+  modelName: string;
+  modelDescribe?: string | null;
+  providerCode: string;
+  supported: boolean;
+  queryType?: MediaQueryType | null;
+}
 
 export interface MediaGenerationResponse {
   type?: MediaType;

@@ -80,7 +80,7 @@ function update<K extends keyof MediaDraft>(key: K, value: MediaDraft[K]) {
             :label="model.label" :disabled="!model.supported"
           >
             <span>{{ model.label }}</span>
-            <span class="provider-option">{{ model.supported ? model.providerCode : '暂不支持此厂商' }}</span>
+            <span class="provider-option">{{ model.supported ? model.providerCode : '工作台暂不支持' }}</span>
           </el-option>
         </el-select>
         <p v-if="selectedModel" class="model-caption">

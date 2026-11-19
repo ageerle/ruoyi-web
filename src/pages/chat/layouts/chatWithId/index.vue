@@ -17,13 +17,17 @@ import { useModelStore } from '@/stores/modules/model';
 import { useUserStore } from '@/stores/modules/user';
 import { codeXRender } from '@/utils/markdownRenderers';
 import { buildWorkflowInputs, workflowFinalText } from '@/utils/workflow';
+import ChatMessageImage from './components/ChatMessageImage.vue';
 import ToolCallCard from './components/ToolCallCard.vue';
 import WorkflowRunStatus from './components/WorkflowRunStatus.vue';
+import { createStreamTextBatch } from './stream-text-batch';
 
 type MessageItem = BubbleProps & {
-  key: number;
+  key: number | string;
+  id?: number | string;
+  hasImage?: boolean;
+  imageFile?: File;
   role: 'ai' | 'user' | 'system';
-  avatar: string;
   thinkingStatus?: ThinkingStatus;
   thinlCollapse?: boolean;
   reasoning_content?: string;
@@ -59,15 +63,14 @@ const currentBinding = computed(() => chatStore.currentWorkflow);
 // 是否有工具调用事件
 const hasToolCallEvents = computed(() => toolCallEvents.value.length > 0);
 
-const copyIconMap = ref<Record<number, string>>({}); // 记录每条消息的复制按钮图标
-const editingMessageKeys = ref<number[]>([]); // 跟踪多个编辑中的消息
-const editedContents = ref<Record<number, string>>({}); // 存储每条消息的临时编辑内容
+const copyIconMap = ref<Record<string, string>>({});
+const editingMessageKeys = ref<MessageItem['key'][]>([]);
+const editedContents = ref<Record<string, string>>({});
+const isSending = ref(false);
+let sendVersion = 0;
+let flushStreamText: (() => void) | undefined;
 
-const {
-  stream,
-  loading: isLoading,
-  cancel,
-} = useHookFetch({
+const { stream, cancel } = useHookFetch({
   request: send,
   onError: (err) => {
     console.warn('测试错误拦截', err);
@@ -85,157 +88,138 @@ onMounted(() => {
 let isThinking = false;
 
 watch(
-  () => route.params?.id,
-  async (_id_) => {
-    if (_id_) {
-      // 切换会话时清空工具调用事件与工作流运行状态
-      toolCallEvents.value = [];
-      toolCallKeyCounter = 0;
+  () => route.params.id,
+  async (newId) => {
+    if (isSending.value)
+      cancelSSE();
+    const historyVersion = sendVersion;
+    toolCallEvents.value = [];
+    toolCallKeyCounter = 0;
+    editingMessageKeys.value = [];
+    editedContents.value = {};
+    bubbleItems.value = [];
 
-      if (_id_ !== 'not_login') {
-        // 判断的当前会话id是否有聊天记录，有缓存则直接赋值展示
-        if (chatStore.chatMap[`${_id_}`] && chatStore.chatMap[`${_id_}`].length) {
-          bubbleItems.value = chatStore.chatMap[`${_id_}`] as MessageItem[];
-          // 滚动到底部
-          setTimeout(() => {
-            bubbleListRef.value?.scrollToBottom();
-          }, 350);
-          return;
-        }
+    if (!newId || newId === 'not_login')
+      return;
 
-        // 无缓存则请求聊天记录
-        await chatStore.requestChatList(`${_id_}`);
-        // 请求聊天记录后，赋值回显，并滚动到底部
-        bubbleItems.value = chatStore.chatMap[`${_id_}`] as MessageItem[];
+    const sessionId = String(newId);
+    const pending = chatStore.takeMessage(sessionId);
+    if (pending) {
+      void startSSE(pending.content, pending.image);
+      return;
+    }
 
-        // 滚动到底部
-        setTimeout(() => {
-          bubbleListRef.value?.scrollToBottom();
-        }, 350);
-      }
-
-      // 如果本地有发送内容 ，则直接发送
-      const v = localStorage.getItem('chatContent');
-      if (v) {
-        // 发送消息
-        setTimeout(() => {
-          startSSE(v);
-        }, 350);
-
-        localStorage.removeItem('chatContent');
-      }
+    if (!chatStore.chatMap[sessionId])
+      await chatStore.requestChatList(sessionId);
+    if (route.params.id === newId && sendVersion === historyVersion) {
+      bubbleItems.value = [...(chatStore.chatMap[sessionId] || [])] as MessageItem[];
+      await nextTick();
+      bubbleListRef.value?.scrollToBottom();
     }
   },
-  { immediate: true, deep: true },
+  { immediate: true },
 );
 
-// 封装错误处理逻辑
-function handleError(err: any) {
-  console.error('Fetch error:', err);
+onBeforeUnmount(() => {
+  if (isSending.value)
+    cancelSSE();
+});
+
+function readImageBase64(image: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result);
+      resolve(dataUrl.slice(dataUrl.indexOf(',') + 1));
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(image);
+  });
 }
 
-async function startSSE(chatContent: string) {
+async function startSSE(chatContent: string, image?: File) {
   if (!userStore.token) {
     userStore.ensureLogin('/chat', '登录后即可继续当前对话');
     return;
   }
+  if (isSending.value || (!chatContent.trim() && !image))
+    return;
+
+  const sessionId = route.params.id !== 'not_login' ? String(route.params.id) : undefined;
+  const workflow = currentBinding.value;
+  const version = ++sendVersion;
+  isSending.value = true;
+  toolCallEvents.value = [];
+  toolCallKeyCounter = 0;
+  inputValue.value = '';
+  addMessage(chatContent, true, image);
+  addMessage('', false);
+  const assistant = bubbleItems.value[bubbleItems.value.length - 1];
+  const textBatch = createStreamTextBatch((content, reasoning) => {
+    if (reasoning)
+      assistant.reasoning_content += reasoning;
+    if (content) {
+      assistant.content += content;
+      assistant.loading = false;
+    }
+  });
+  flushStreamText = textBatch.flush;
+  if (workflow)
+    assistant.workflowRun = { title: workflow.title, status: 'running', nodes: 0 };
+
+  void nextTick(() => bubbleListRef.value?.scrollToBottom());
+  const payload: SendDTO = {
+    model: modelStore.currentModelInfo.modelName ?? '',
+    agentId: workflow ? undefined : agentStore.currentAgentInfo?.id || undefined,
+    content: chatContent,
+    sessionId,
+  };
 
   try {
-    // 清空上一次的工具调用事件
-    toolCallEvents.value = [];
-    toolCallKeyCounter = 0;
-    // 添加用户输入的消息
-    inputValue.value = '';
-    addMessage(chatContent, true);
-    addMessage('', false);
-    if (currentBinding.value) {
-      bubbleItems.value[bubbleItems.value.length - 1].workflowRun = { title: currentBinding.value.title, status: 'running', nodes: 0 };
-    }
-
-    // 这里有必要调用一下 BubbleList 组件的滚动到底部 手动触发 自动滚动
-    bubbleListRef.value?.scrollToBottom();
-
-    // 获取最后一条用户消息（后端做了长期记忆缓存，只需发送最新的用户消息）
-    const lastUserMessage = bubbleItems.value.filter((item: any) => item.role === 'user').pop();
-
-    // 标记是否收到第一个有效数据 chunk（用于清除 loading 状态）
-    let hasReceivedFirstContent = false;
-
-    // 构造发送请求体
-    const payload: SendDTO = {
-      model: modelStore.currentModelInfo.modelName ?? '',
-      agentId: agentStore.currentAgentInfo?.id || undefined,
-      content: lastUserMessage?.content ?? '',
-      sessionId: route.params?.id !== 'not_login' ? String(route.params?.id) : undefined,
-    };
-
-    // 绑定了工作流：仅发送工作流参数，三种对话模式保持互斥
-    if (currentBinding.value) {
-      payload.agentId = undefined;
+    if (workflow) {
       payload.enableWorkFlow = true;
       payload.workFlowRunner = {
-        uuid: currentBinding.value.uuid,
-        inputs: buildWorkflowInputs(currentBinding.value, chatContent),
+        uuid: workflow.uuid,
+        inputs: buildWorkflowInputs(workflow, chatContent),
       };
     }
+    if (image)
+      payload.image = { dataBase64: await readImageBase64(image) };
+    if (version !== sendVersion)
+      return;
 
     for await (const chunk of stream(payload)) {
-      // 处理数据块 - chunk.result 可能是字符串或对象
-      // 返回 true 表示流结束
-      const isStreamEnd = handleDataChunk(chunk.result as AnyObject | string);
-
-      // 在收到第一个有效数据后清除 loading 状态（跳过连接状态事件）
-      if (!hasReceivedFirstContent && chunk.result !== ':connected' && chunk.result !== ':disconnected' && !isStreamEnd) {
-        const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-        if (lastMessage) {
-          lastMessage.loading = false;
-          bubbleItems.value = [...bubbleItems.value];
-        }
-        hasReceivedFirstContent = true;
-      }
-
-      if (isStreamEnd) {
-        break; // 提前结束流处理
-      }
-      // 等待 Vue 更新 DOM，实现真正的流式渲染
-      await nextTick();
+      if (version !== sendVersion || handleDataChunk(chunk.result as AnyObject | string, assistant, textBatch))
+        break;
     }
   }
   catch (err) {
-    handleError(err);
-    // 出错时也要清除 loading 状态
-    if (bubbleItems.value.length) {
-      const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-      lastMessage.loading = false;
-      bubbleItems.value = [...bubbleItems.value];
+    if (version === sendVersion) {
+      textBatch.flush();
+      console.error('Chat send failed:', err);
+      if (!assistant.content)
+        assistant.content = '发送失败，请重试。';
     }
   }
   finally {
-    // 停止打字器状态
-    if (bubbleItems.value.length) {
-      const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-      if (lastMessage.workflowRun?.status === 'running') {
-        lastMessage.workflowRun.status = 'error';
-        lastMessage.content += '\n\n> 连接已结束，但未收到流程完成事件，请在管理端确认执行结果。';
+    if (sessionId)
+      chatStore.invalidateChat(sessionId);
+    if (version === sendVersion) {
+      textBatch.flush();
+      flushStreamText = undefined;
+      isSending.value = false;
+      if (assistant.workflowRun?.status === 'running') {
+        assistant.workflowRun.status = 'error';
+        assistant.content += '\n\n> 连接已结束，但未收到流程完成事件，请在管理端确认执行结果。';
       }
-      lastMessage.typing = false;
-      // 无条件重置 loading（停止打字动画）
-      lastMessage.loading = false;
-      // 重置思考状态：如果还在思考中，标记为已完成
-      if (lastMessage.thinkingStatus === 'thinking') {
-        lastMessage.thinkingStatus = 'end';
-      }
-      // 重置isThinking标志
-      isThinking = false;
-      bubbleItems.value = [...bubbleItems.value];
+      finishAssistant(assistant);
     }
   }
 }
 
-// 封装数据处理逻辑
-function handleDataChunk(chunk: AnyObject | string): boolean {
-  console.log('[SSE] 收到 chunk:', chunk, 'type:', typeof chunk);
+type StreamTextBatch = ReturnType<typeof createStreamTextBatch>;
 
+function handleDataChunk(chunk: AnyObject | string, assistant: MessageItem, textBatch: StreamTextBatch): boolean {
   try {
     let dataObj: AnyObject | null = null;
     let eventType = '';
@@ -265,7 +249,14 @@ function handleDataChunk(chunk: AnyObject | string): boolean {
 
       // 工作流事件优先处理（事件名带方括号，如 [NODE_CHUNK_*] / [START] / [DONE]）
       if (eventType.startsWith('[')) {
-        return handleWorkflowEvent(eventType, rawDataStr, dataObj);
+        return handleWorkflowEvent(eventType, rawDataStr, dataObj, assistant, textBatch);
+      }
+
+      if (eventType === 'error') {
+        textBatch.flush();
+        const message = dataObj?.error || dataObj?.message || '回答失败，请重试。';
+        assistant.content = assistant.content ? `${assistant.content}\n\n${message}` : message;
+        return true;
       }
 
       if (eventType === 'done' || dataObj?.done === true) {
@@ -279,45 +270,20 @@ function handleDataChunk(chunk: AnyObject | string): boolean {
       }
 
       if (dataObj && eventType === 'content') {
-        const content = dataObj.content || '';
-        if (content) {
-          handleContentChunk(content);
-        }
-        const reasoningContent = dataObj.reasoning_content || '';
-        if (reasoningContent) {
-          const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-          if (lastMessage) {
-            lastMessage.thinkingStatus = 'thinking';
-            lastMessage.loading = true;
-            lastMessage.thinlCollapse = true;
-            lastMessage.reasoning_content += reasoningContent;
-            bubbleItems.value = [...bubbleItems.value];
-          }
-        }
+        if (dataObj.reasoning_content)
+          appendReasoning(dataObj.reasoning_content, assistant, textBatch);
+        if (dataObj.content)
+          handleContentChunk(dataObj.content, assistant, textBatch);
       }
     }
     else if (typeof chunk === 'object' && chunk !== null) {
-      const reasoningChunk = chunk?.choices?.[0]?.delta?.reasoning_content;
-      if (reasoningChunk) {
-        const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-        if (lastMessage) {
-          lastMessage.thinkingStatus = 'thinking';
-          lastMessage.loading = true;
-          lastMessage.thinlCollapse = true;
-          lastMessage.reasoning_content += reasoningChunk;
-          bubbleItems.value = [...bubbleItems.value];
-        }
-      }
-
-      const parsedChunk = chunk?.choices?.[0]?.delta?.content;
-      if (parsedChunk) {
-        handleContentChunk(parsedChunk);
-      }
-
-      const directContent = chunk?.content;
-      if (directContent) {
-        handleContentChunk(directContent);
-      }
+      const delta = chunk.choices?.[0]?.delta;
+      if (delta?.reasoning_content)
+        appendReasoning(delta.reasoning_content, assistant, textBatch);
+      if (delta?.content)
+        handleContentChunk(delta.content, assistant, textBatch);
+      if (chunk.content)
+        handleContentChunk(chunk.content, assistant, textBatch);
     }
   }
   catch (err) {
@@ -337,44 +303,38 @@ function handleWorkflowEvent(
   eventName: string,
   rawData: string,
   dataObj: AnyObject | null,
+  assistant: MessageItem,
+  textBatch: StreamTextBatch,
 ): boolean {
   // [START] 工作流已启动
   if (eventName === '[START]') {
     return false;
   }
 
-  // [DONE] 流结束
   if (eventName === '[DONE]') {
-    const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-    if (lastMessage) {
-      const output = workflowFinalText(dataObj);
-      if (output !== null)
-        lastMessage.content = output || '流程已完成，结束节点未返回内容。';
-      if (lastMessage.workflowRun)
-        lastMessage.workflowRun.status = 'success';
-      bubbleItems.value = [...bubbleItems.value];
-    }
+    textBatch.flush();
+    const output = workflowFinalText(dataObj);
+    if (output !== null)
+      assistant.content = output || '流程已完成，结束节点未返回内容。';
+    if (assistant.workflowRun)
+      assistant.workflowRun.status = 'success';
     return true;
   }
 
-  // [ERROR]
   if (eventName === '[ERROR]') {
+    textBatch.flush();
     const errMsg = (dataObj?.msg as string) || rawData || '工作流执行失败';
-    const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-    if (lastMessage) {
-      lastMessage.loading = false;
-      if (lastMessage.workflowRun)
-        lastMessage.workflowRun.status = 'error';
-      lastMessage.content += `\n\n> ${errMsg}`;
-      bubbleItems.value = [...bubbleItems.value];
-    }
+    assistant.loading = false;
+    if (assistant.workflowRun)
+      assistant.workflowRun.status = 'error';
+    assistant.content += `\n\n> ${errMsg}`;
     ElMessage.error(errMsg);
     return true;
   }
 
   // 节点运行状态不在对话区单独展示，仅保留最终流式回答。
   if (eventName.startsWith('[NODE_RUN_')) {
-    const run = bubbleItems.value[bubbleItems.value.length - 1]?.workflowRun;
+    const run = assistant.workflowRun;
     if (run)
       run.nodes++;
     return false;
@@ -385,7 +345,7 @@ function handleWorkflowEvent(
     if (rawData) {
       // 去掉后端可能加的多行分隔标记
       const text = rawData.replace(/-_wrap_-/g, '\n');
-      handleContentChunk(text);
+      handleContentChunk(text, assistant, textBatch);
     }
     return false;
   }
@@ -459,64 +419,65 @@ function handleMcpEvent(dataObj: AnyObject) {
   }
 }
 
-function handleContentChunk(content: string) {
-  const lastIndex = bubbleItems.value.length - 1;
-  const lastMessage = bubbleItems.value[lastIndex];
-  if (!lastMessage) {
-    return;
-  }
+function beginThinking(assistant: MessageItem) {
+  if (assistant.thinkingStatus === 'start')
+    assistant.thinlCollapse = true;
+  assistant.thinkingStatus = 'thinking';
+}
 
+function appendReasoning(text: string, assistant: MessageItem, textBatch: StreamTextBatch) {
+  beginThinking(assistant);
+  textBatch.append(text, true);
+}
+
+function handleContentChunk(content: string, assistant: MessageItem, textBatch: StreamTextBatch) {
   let currentText = content;
 
   if (!isThinking && currentText.includes('<think')) {
     const thinkIdx = currentText.indexOf('<think');
-    if (thinkIdx > 0) {
-      const beforeThink = currentText.substring(0, thinkIdx);
-      lastMessage.content += beforeThink;
-    }
-    currentText = currentText.substring(thinkIdx + 7);
+    textBatch.append(currentText.slice(0, thinkIdx));
+    currentText = currentText.slice(thinkIdx + 7);
     isThinking = true;
-    lastMessage.thinkingStatus = 'thinking';
-    lastMessage.loading = true;
-    lastMessage.thinlCollapse = true;
+    beginThinking(assistant);
   }
 
   if (isThinking && currentText.includes('</think')) {
     const thinkEndIdx = currentText.indexOf('</think');
-    if (thinkEndIdx > 0) {
-      const thinkContent = currentText.substring(0, thinkEndIdx);
-      lastMessage.reasoning_content += thinkContent;
-    }
-    currentText = currentText.substring(thinkEndIdx + 8);
+    textBatch.append(currentText.slice(0, thinkEndIdx), true);
+    currentText = currentText.slice(thinkEndIdx + 8);
     isThinking = false;
-    lastMessage.thinkingStatus = 'end';
-    lastMessage.loading = false;
+    assistant.thinkingStatus = 'end';
   }
 
   if (currentText) {
-    if (isThinking) {
-      lastMessage.reasoning_content += currentText;
-    }
-    else {
-      lastMessage.content += currentText;
-    }
+    if (!isThinking && assistant.thinkingStatus === 'thinking')
+      assistant.thinkingStatus = 'end';
+    textBatch.append(currentText, isThinking);
   }
-
-  bubbleItems.value = [...bubbleItems.value];
-  bubbleListRef.value?.scrollToBottom();
 }
 
-async function cancelSSE() {
+function finishAssistant(assistant: MessageItem) {
+  assistant.loading = false;
+  assistant.typing = false;
+  if (assistant.thinkingStatus === 'thinking')
+    assistant.thinkingStatus = 'end';
+  isThinking = false;
+}
+
+function cancelSSE() {
+  flushStreamText?.();
+  flushStreamText = undefined;
+  ++sendVersion;
+  isSending.value = false;
   cancel();
-  if (bubbleItems.value.length) {
-    const lastMessage = bubbleItems.value[bubbleItems.value.length - 1];
-    lastMessage.typing = false;
-    if (lastMessage.workflowRun)
-      lastMessage.workflowRun.status = 'stopped';
-  }
+  const assistant = bubbleItems.value[bubbleItems.value.length - 1];
+  if (assistant?.workflowRun)
+    assistant.workflowRun.status = 'stopped';
+  if (assistant)
+    finishAssistant(assistant);
 }
 
-function copyToClipboard(text: string, key: number) {
+function copyToClipboard(text: string, key: MessageItem['key']) {
   navigator.clipboard
     .writeText(text)
     .then(() => {
@@ -531,14 +492,12 @@ function copyToClipboard(text: string, key: number) {
     });
 }
 
-function addMessage(message: string, isUser: boolean) {
-  const i = bubbleItems.value.length;
+function addMessage(message: string, isUser: boolean, imageFile?: File) {
   const obj: MessageItem = {
-    key: i,
-    avatar: isUser
-      ? avatar.value
-      : 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-    avatarSize: '32px',
+    key: `local-${bubbleItems.value.length}`,
+    imageFile,
+    avatar: isUser ? avatar.value : undefined,
+    avatarSize: isUser ? '32px' : undefined,
     role: isUser ? 'user' : 'system',
     placement: isUser ? 'end' : 'start',
     isMarkdown: !isUser,
@@ -552,8 +511,6 @@ function addMessage(message: string, isUser: boolean) {
   bubbleItems.value.push(obj);
 }
 
-function handleChange(_payload: { value: boolean; status: ThinkingStatus }) {}
-
 function startEditing(item: MessageItem) {
   if (!editingMessageKeys.value.includes(item.key)) {
     editingMessageKeys.value.push(item.key);
@@ -563,7 +520,7 @@ function startEditing(item: MessageItem) {
   item.class = 'editing-bubble';
 }
 
-function cancelEditingByKey(key: number) {
+function cancelEditingByKey(key: MessageItem['key']) {
   const item = bubbleItems.value.find(i => i.key === key);
   if (item) {
     item.noStyle = false;
@@ -573,10 +530,11 @@ function cancelEditingByKey(key: number) {
   delete editedContents.value[key];
 }
 
-function sendMessageByKey(key: number) {
+function sendMessageByKey(key: MessageItem['key']) {
   const newContent = editedContents.value[key];
   if (newContent) {
-    startSSE(newContent);
+    const item = bubbleItems.value.find(message => message.key === key);
+    void startSSE(newContent, item?.imageFile);
     cancelEditingByKey(key);
   }
 }
@@ -584,7 +542,7 @@ function sendMessageByKey(key: number) {
 
 <template>
   <div class="chat-with-id-container">
-    <div class="chat-warp">
+    <div class="chat-warp" :class="{ streaming: isSending }">
       <!-- 工具调用事件区域 -->
       <Transition name="tool-events-fade">
         <div v-if="hasToolCallEvents" class="tool-events-wrapper">
@@ -601,11 +559,11 @@ function sendMessageByKey(key: number) {
           <WorkflowRunStatus v-if="item.workflowRun" :title="item.workflowRun.title" :status="item.workflowRun.status" :nodes="item.workflowRun.nodes" />
           <Thinking
             v-if="item.reasoning_content"
-            v-model="item.thinlCollapse"
+            :model-value="item.thinlCollapse"
             :content="item.reasoning_content"
             :status="item.thinkingStatus"
             class="thinking-chain-warp"
-            @change="handleChange"
+            @update:expanded="item.thinlCollapse = $event"
           />
         </template>
 
@@ -618,10 +576,16 @@ function sendMessageByKey(key: number) {
             :themes="{ light: 'github-light', dark: 'github-dark' }"
             default-theme-mode="dark"
           />
-          <div v-if="item.content && item.role === 'user'" class="userContent">
+          <div v-if="item.role === 'user' && (item.content || item.imageFile || item.hasImage)" class="userContent">
             <div class="user-bubble" :class="{ editing: editingMessageKeys.includes(item.key) }">
+              <ChatMessageImage
+                v-if="item.imageFile || item.hasImage"
+                :file="item.imageFile"
+                :message-id="item.id"
+                :has-image="item.hasImage"
+              />
               <template v-if="!editingMessageKeys.includes(item.key)">
-                <div class="user-content">
+                <div v-if="item.content" class="user-content">
                   {{ item.content }}
                 </div>
               </template>
@@ -646,7 +610,7 @@ function sendMessageByKey(key: number) {
               </template>
             </div>
 
-            <div v-if="!editingMessageKeys.includes(item.key)" class="copy-button-container">
+            <div v-if="item.content && !editingMessageKeys.includes(item.key)" class="copy-button-container">
               <el-tooltip content="复制" placement="bottom">
                 <el-button
                   class="copy-btn"
@@ -667,7 +631,7 @@ function sendMessageByKey(key: number) {
         <ChatSender
           ref="chatSenderRef"
           v-model="inputValue"
-          :loading="isLoading"
+          :loading="isSending"
           @submit="startSSE"
           @cancel="cancelSSE"
         />
@@ -766,6 +730,10 @@ function sendMessageByKey(key: number) {
     justify-content: space-between;
     width: 100%;
     height: calc(100vh - 60px);
+
+    &.streaming :deep(.el-bubble-list) {
+      scroll-behavior: auto;
+    }
 
     .thinking-chain-warp {
       margin-bottom: 12px;

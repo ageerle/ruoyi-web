@@ -4,7 +4,7 @@ import type { MediaType } from '@/api/media/types';
 import { Headset, Picture, VideoCamera } from '@element-plus/icons-vue';
 import { computed, shallowRef, watch } from 'vue';
 import { useMediaPreview } from '../useMediaPreview';
-import { canQueryMedia, mediaLabels, taskLabels } from '../utils';
+import { mediaLabels, taskLabels } from '../utils';
 
 const props = defineProps<{ kind: MediaType; task?: MediaTask; querying: boolean; busy: boolean }>();
 const emit = defineEmits<{ pause: [key: string]; resume: [key: string] }>();
@@ -13,7 +13,7 @@ const icon = computed(() => ({ image: Picture, audio: Headset, video: VideoCamer
 const mediaError = shallowRef(false);
 const copied = shallowRef(false);
 const copyError = shallowRef('');
-const canResume = computed(() => Boolean(props.task?.result?.id && props.task.state !== 'success' && canQueryMedia(props.task.provider, props.task.kind)));
+const canResume = computed(() => Boolean(props.task?.result?.id && props.task.state !== 'success' && props.task.queryType));
 const download = computed(() => /^(?:data|blob):/.test(source.value));
 const filename = computed(() => {
   const mime = mimeType.value || source.value.match(/^data:([^;]+);/i)?.[1];

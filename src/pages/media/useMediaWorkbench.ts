@@ -1,12 +1,9 @@
 import type { MediaModel, MediaTask } from './types';
 import type { MediaGenerationResponse, MediaType } from '@/api/media/types';
-import type { GetSessionListVO } from '@/api/model/types';
 import { computed, onBeforeUnmount, readonly, shallowRef, watch } from 'vue';
-import { generateImage, generateSpeech, generateVideo, getPrediction, getVideoResult } from '@/api/media';
-import { readMediaApiResult } from '@/api/media/response';
-import { getModelList } from '@/api/model';
+import { generateImage, generateSpeech, generateVideo, getMediaModels, getPrediction, getVideoResult } from '@/api/media';
 import { useUserStore } from '@/stores';
-import { canQueryMedia, classifyResult, createDraft, requestError, supportsMedia, validateDraft } from './utils';
+import { classifyResult, createDraft, requestError, validateDraft } from './utils';
 
 const POLL_INTERVAL = 4000;
 const POLL_TIMEOUT = 10 * 60 * 1000;
@@ -27,7 +24,7 @@ export function useMediaWorkbench() {
   const selectedModel = computed(() => models.value.find(model => model.modelName === draft.value.model));
   const selectedTask = computed(() => tasks.value.find(task => task.key === selectedKey.value));
   const busy = computed(() => tasks.value.some(task => task.state === 'submitting' || task.state === 'waiting'));
-  const canQuerySelected = computed(() => Boolean(selectedModel.value && canQueryMedia(selectedModel.value.providerCode, kind.value)));
+  const canQuerySelected = computed(() => Boolean(selectedModel.value?.queryType));
   let modelVersion = 0;
   let operationVersion = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -55,19 +52,15 @@ export function useMediaWorkbench() {
     modelsLoading.value = loggedIn.value;
     if (!loggedIn.value)
       return;
-    const requestedKind = kind.value;
     try {
-      const { data } = await readMediaApiResult<GetSessionListVO[]>(getModelList({ category: requestedKind }));
+      const { data } = await getMediaModels(kind.value);
       if (disposed || version !== modelVersion)
         return;
       if (!Array.isArray(data))
         throw new Error('模型列表格式不正确，请检查后端版本。');
-      const items: GetSessionListVO[] = data;
-      models.value = items.filter(model => model.modelName).map(model => ({
-        modelName: model.modelName!,
-        label: model.modelDescribe?.trim() || model.modelName!,
-        providerCode: model.providerCode || '',
-        supported: supportsMedia(model.providerCode || '', requestedKind),
+      models.value = data.filter(model => model.modelName).map(model => ({
+        ...model,
+        label: model.modelDescribe?.trim() || model.modelName,
       }));
       const existing = models.value.find(model => model.modelName === draft.value.model && model.supported);
       draft.value = { ...draft.value, model: existing?.modelName || models.value.find(model => model.supported)?.modelName || '' };
@@ -116,7 +109,7 @@ export function useMediaWorkbench() {
       type: task.kind,
     };
     const classified = classifyResult(result, task.kind);
-    if (classified.state === 'waiting' && !canQueryMedia(task.provider, task.kind)) {
+    if (classified.state === 'waiting' && !task.queryType) {
       classified.state = 'paused';
       classified.message = '任务已提交，此模型暂不支持在工作台查询结果。请保留任务 ID。';
     }
@@ -137,7 +130,7 @@ export function useMediaWorkbench() {
 
   async function runQuery(key: string, version: number) {
     const task = tasks.value.find(item => item.key === key);
-    if (disposed || version !== operationVersion || !task?.result?.id)
+    if (disposed || version !== operationVersion || !task?.result?.id || !task.queryType)
       return;
     if (Date.now() >= deadline) {
       pause(key, '已达到 10 分钟查询上限，可稍后继续查询。');
@@ -145,7 +138,7 @@ export function useMediaWorkbench() {
     }
     queryingKey.value = key;
     try {
-      const response = task.kind === 'video'
+      const response = task.queryType === 'video'
         ? await getVideoResult({ model: task.model, videoId: task.result.id })
         : await getPrediction({ model: task.model, predictionId: task.result.id });
       if (disposed || version !== operationVersion)
@@ -171,6 +164,7 @@ export function useMediaWorkbench() {
       model: model.modelName,
       modelLabel: model.label,
       provider: model.providerCode,
+      queryType: model.queryType,
       prompt,
       createdAt: Date.now(),
       state,
@@ -238,7 +232,7 @@ export function useMediaWorkbench() {
 
   function resume(key: string) {
     const task = tasks.value.find(item => item.key === key);
-    if (busy.value || !loggedIn.value || !task?.result?.id || !canQueryMedia(task.provider, task.kind))
+    if (busy.value || !loggedIn.value || !task?.result?.id || !task.queryType)
       return;
     selectedKey.value = key;
     updateTask(key, { state: 'waiting', message: '正在查询任务结果。' });

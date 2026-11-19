@@ -17,6 +17,12 @@ export interface WorkflowBinding {
   inputs: WfNodeInput[];
 }
 
+interface PendingMessage {
+  sessionId: string;
+  content: string;
+  image?: File;
+}
+
 export const useChatStore = defineStore('chat', () => {
   const userStore = useUserStore();
 
@@ -43,6 +49,24 @@ export const useChatStore = defineStore('chat', () => {
   // 会议ID对应-聊天记录 map对象
   const chatMap = ref<Record<string, ChatMessageVo[]>>({});
 
+  let pendingMessage: PendingMessage | undefined;
+
+  function queueMessage(message: PendingMessage) {
+    pendingMessage = message;
+  }
+
+  function takeMessage(sessionId: string) {
+    if (pendingMessage?.sessionId === sessionId) {
+      const message = pendingMessage;
+      pendingMessage = undefined;
+      return message;
+    }
+  }
+
+  function invalidateChat(sessionId: string) {
+    delete chatMap.value[sessionId];
+  }
+
   // 当前选中的工作流（全局，与智能体互斥；为 null 时走智能体对话）。
   // 应用市场选工作流后置入此值并回主页，提交时由 chatWithId 据此走 enableWorkFlow。
   const currentWorkflow = ref<WorkflowBinding | null>(null);
@@ -58,10 +82,10 @@ export const useChatStore = defineStore('chat', () => {
   const setChatMap = (id: string, data: ChatMessageVo[]) => {
     chatMap.value[id] = data?.map((item: ChatMessageVo) => {
       const isUser = item.role === 'user';
-      const originalContent = item.content as string;
+      const originalContent = item.content ?? '';
 
-      const thinkContent = extractThkContent(originalContent);
-      const afterThinkContent = extractThkContentAfter(originalContent);
+      const thinkContent = isUser ? '' : extractThkContent(originalContent);
+      const afterThinkContent = isUser ? originalContent : extractThkContentAfter(originalContent);
 
       const result = {
         ...item,
@@ -69,10 +93,8 @@ export const useChatStore = defineStore('chat', () => {
         placement: isUser ? 'end' : 'start',
         isMarkdown: !isUser,
         role: isUser ? 'user' : 'system',
-        avatar: isUser
-          ? avatar
-          : 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png',
-        avatarSize: '32px',
+        avatar: isUser ? avatar : undefined,
+        avatarSize: isUser ? '32px' : undefined,
         typing: false,
         reasoning_content: thinkContent,
         thinkingStatus: 'end',
@@ -130,6 +152,9 @@ export const useChatStore = defineStore('chat', () => {
 
   return {
     chatMap,
+    queueMessage,
+    takeMessage,
+    invalidateChat,
     requestChatList,
     isDeepThinking,
     setDeepThinking,
